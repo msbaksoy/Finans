@@ -10,6 +10,11 @@ struct AddAssetView: View {
     @State private var quantity: String = ""
     @State private var pricePerUnit: String = ""
     @State private var totalAmount: String = ""
+    @FocusState private var customTypeFocused: Bool
+    @FocusState private var nameFocused: Bool
+    @State private var triggerQuantityFocus = false
+    @State private var triggerPriceFocus = false
+    @State private var triggerTotalFocus = false
     
     private var isOtherSelected: Bool { selectedType == "Diğer" }
     private var isQuantityBased: Bool {
@@ -60,8 +65,10 @@ struct AddAssetView: View {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(Color.white.opacity(0.06))
                                     )
+                                    .focused($customTypeFocused)
                             }
                         }
+                        .tappableToFocus($customTypeFocused)
                         
                         // Ad / İsim
                         VStack(alignment: .leading, spacing: 8) {
@@ -75,7 +82,9 @@ struct AddAssetView: View {
                                     RoundedRectangle(cornerRadius: 16)
                                         .fill(Color.white.opacity(0.08))
                                 )
+                                .focused($nameFocused)
                         }
+                        .tappableToFocus($nameFocused)
                         
                         if isQuantityBased {
                             // Adet
@@ -83,8 +92,7 @@ struct AddAssetView: View {
                                 Text("Adet")
                                     .font(.subheadline.weight(.medium))
                                     .foregroundColor(.white.opacity(0.8))
-                                TextField("0", text: $quantity)
-                                    .keyboardType(.decimalPad)
+                                FormattedNumberField(text: $quantity, placeholder: "0", allowDecimals: false, focusTrigger: $triggerQuantityFocus)
                                     .foregroundColor(.white)
                                     .padding(20)
                                     .background(
@@ -92,14 +100,15 @@ struct AddAssetView: View {
                                             .fill(Color.white.opacity(0.08))
                                     )
                             }
+                            .contentShape(Rectangle())
+                            .onTapGesture { triggerQuantityFocus = true }
                             
                             // Birim fiyat
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Güncel Birim Fiyat (₺)")
                                     .font(.subheadline.weight(.medium))
                                     .foregroundColor(.white.opacity(0.8))
-                                TextField("0,00", text: $pricePerUnit)
-                                    .keyboardType(.decimalPad)
+                                FormattedNumberField(text: $pricePerUnit, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerPriceFocus)
                                     .foregroundColor(.white)
                                     .padding(20)
                                     .background(
@@ -107,14 +116,15 @@ struct AddAssetView: View {
                                             .fill(Color.white.opacity(0.08))
                                     )
                             }
+                            .contentShape(Rectangle())
+                            .onTapGesture { triggerPriceFocus = true }
                         } else {
                             // Toplam tutar
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Toplam Değer (₺)")
                                     .font(.subheadline.weight(.medium))
                                     .foregroundColor(.white.opacity(0.8))
-                                TextField("0,00", text: $totalAmount)
-                                    .keyboardType(.decimalPad)
+                                FormattedNumberField(text: $totalAmount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerTotalFocus)
                                     .foregroundColor(.white)
                                     .padding(20)
                                     .background(
@@ -122,6 +132,8 @@ struct AddAssetView: View {
                                             .fill(Color.white.opacity(0.08))
                                     )
                             }
+                            .contentShape(Rectangle())
+                            .onTapGesture { triggerTotalFocus = true }
                         }
                     }
                     .padding(24)
@@ -170,14 +182,14 @@ struct AddAssetView: View {
         guard !nameTrimmed.isEmpty else { return }
         
         if isQuantityBased {
-            guard let q = Double(quantity.replacingOccurrences(of: ",", with: ".")),
-                  let p = Double(pricePerUnit.replacingOccurrences(of: ",", with: ".")),
+            guard let q = parseFormattedNumber(quantity),
+                  let p = parseFormattedNumber(pricePerUnit),
                   q > 0, p >= 0 else { return }
             
             let asset = Asset(type: type, typeName: typeName, name: nameTrimmed, quantity: q, pricePerUnit: p)
             dataManager.addAsset(asset)
         } else {
-            guard let amount = Double(totalAmount.replacingOccurrences(of: ",", with: ".")),
+            guard let amount = parseFormattedNumber(totalAmount),
                   amount > 0 else { return }
             
             let asset = Asset(type: type, typeName: typeName, name: nameTrimmed, totalAmount: amount)

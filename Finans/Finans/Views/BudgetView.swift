@@ -1,81 +1,72 @@
 import SwiftUI
+import UIKit
 
 struct BudgetView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     @State private var showAddIncome = false
     @State private var showAddExpense = false
     @State private var selectedTab = 0
+    @State private var showPdfShare = false
+    @State private var pdfData: Data?
+    @State private var editingIncome: Income?
+    @State private var editingExpense: Expense?
     
     var body: some View {
         ZStack {
-            Color(hex: "0F172A").ignoresSafeArea()
+            appTheme.background.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Özet Kartları
-                    HStack(spacing: 16) {
-                        SummaryCard(
-                            title: "Toplam Gelir",
-                            amount: dataManager.totalIncome,
-                            icon: "arrow.down.circle.fill",
-                            color: Color(hex: "34D399")
-                        )
-                        
-                        SummaryCard(
-                            title: "Toplam Gider",
-                            amount: dataManager.totalExpense,
-                            icon: "arrow.up.circle.fill",
-                            color: Color(hex: "F87171")
-                        )
+            VStack(spacing: 0) {
+                // Kompakt özet
+                HStack(spacing: 10) {
+                    SummaryCard(title: "Gelir", amount: dataManager.totalIncome, icon: "arrow.down.circle.fill", color: Color(hex: "34D399"))
+                    SummaryCard(title: "Gider", amount: dataManager.totalExpense, icon: "arrow.up.circle.fill", color: Color(hex: "F87171"))
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                BalanceCard(amount: dataManager.balance)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                
+                // Ekle butonları + Segment
+                HStack(spacing: 10) {
+                    ActionButton(title: "Gelir Ekle", icon: "plus.circle.fill", color: Color(hex: "34D399")) { showAddIncome = true }
+                    ActionButton(title: "Gider Ekle", icon: "minus.circle.fill", color: Color(hex: "F87171")) { showAddExpense = true }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+                
+                HStack(spacing: 0) {
+                    BudgetSegmentButton(title: "Gelirler", isSelected: selectedTab == 0) {
+                        selectedTab = 0
                     }
-                    .padding(.horizontal, 20)
-                    
-                    // Bakiye
-                    BalanceCard(amount: dataManager.balance)
-                        .padding(.horizontal, 20)
-                    
-                    // Ekle butonları
-                    HStack(spacing: 12) {
-                        ActionButton(
-                            title: "Gelir Ekle",
-                            icon: "plus.circle.fill",
-                            color: Color(hex: "34D399")
-                        ) {
-                            showAddIncome = true
-                        }
-                        
-                        ActionButton(
-                            title: "Gider Ekle",
-                            icon: "minus.circle.fill",
-                            color: Color(hex: "F87171")
-                        ) {
-                            showAddExpense = true
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Segmented Control - Gelir / Gider listesi
-                    Picker("", selection: $selectedTab) {
-                        Text("Gelirler").tag(0)
-                        Text("Giderler").tag(1)
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 20)
-                    
-                    // Liste - ScrollView içinde LazyVStack kullanıyoruz (List yerine)
-                    if selectedTab == 0 {
-                        IncomeListView()
-                    } else {
-                        ExpenseListView()
+                    BudgetSegmentButton(title: "Giderler", isSelected: selectedTab == 1) {
+                        selectedTab = 1
                     }
                 }
-                .padding(.vertical, 24)
+                .padding(4)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(appTheme.isLight ? Color(hex: "E2E8F0") : Color(hex: "334155"))
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+                
+                // Liste – kalan alanı doldur
+                Group {
+                    if selectedTab == 0 {
+                        IncomeListView(editingIncome: $editingIncome)
+                    } else {
+                        ExpenseListView(editingExpense: $editingExpense)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.25), value: selectedTab)
             }
         }
         .navigationTitle("Bütçe")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+        .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .sheet(isPresented: $showAddIncome) {
             AddIncomeView()
@@ -83,6 +74,55 @@ struct BudgetView: View {
         .sheet(isPresented: $showAddExpense) {
             AddExpenseView()
         }
+        .sheet(item: $editingIncome) { income in
+            EditIncomeView(income: income) {
+                editingIncome = nil
+            }
+        }
+        .sheet(item: $editingExpense) { expense in
+            EditExpenseView(expense: expense) {
+                editingExpense = nil
+            }
+        }
+        .sheet(isPresented: $showPdfShare) {
+            if let data = pdfData {
+                PdfShareSheet(pdfData: data)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    if let data = BudgetPdfOlusturucu.olustur(incomes: dataManager.incomes, expenses: dataManager.expenses) {
+                        pdfData = data
+                        showPdfShare = true
+                    }
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+    }
+}
+
+struct BudgetSegmentButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+    @EnvironmentObject var appTheme: AppTheme
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(isSelected ? .white : appTheme.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(isSelected ? Color(hex: "34D399") : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -91,79 +131,57 @@ struct SummaryCard: View {
     let amount: Double
     let icon: String
     let color: Color
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 16))
                     .foregroundColor(color)
                 Text(title)
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+                    .font(.caption)
+                    .foregroundColor(appTheme.textSecondary)
             }
             Text(formatCurrency(amount))
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .foregroundColor(appTheme.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.06))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(color.opacity(0.3), lineWidth: 1)
-                )
+            RoundedRectangle(cornerRadius: 14)
+                .fill(appTheme.listRowBackground)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.3), lineWidth: 1))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
         )
     }
 }
 
 struct BalanceCard: View {
     let amount: Double
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Bakiye")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                Text(formatCurrency(amount))
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(amount >= 0 ? Color(hex: "34D399") : Color(hex: "F87171"))
-            }
+            Text("Bakiye")
+                .font(.caption)
+                .foregroundColor(appTheme.textSecondary)
             Spacer()
-            Image(systemName: "wallet.pass.fill")
-                .font(.system(size: 36))
-                .foregroundColor(.white.opacity(0.2))
+            Text(formatCurrency(amount))
+                .font(.system(size: 18, weight: .bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .foregroundColor(amount >= 0 ? Color(hex: "34D399") : Color(hex: "F87171"))
         }
-        .padding(24)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "1E293B"),
-                            Color(hex: "334155")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "34D399").opacity(0.5),
-                                    Color(hex: "10B981").opacity(0.2)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
+            RoundedRectangle(cornerRadius: 14)
+                .fill(appTheme.listRowBackground)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "34D399").opacity(0.3), lineWidth: 1))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
         )
     }
 }
@@ -196,6 +214,8 @@ struct ActionButton: View {
 
 struct IncomeListView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
+    @Binding var editingIncome: Income?
     
     private var sortedIncomes: [Income] {
         dataManager.incomes.sorted { $0.date > $1.date }
@@ -209,12 +229,17 @@ struct IncomeListView: View {
                     message: "Henüz gelir eklenmedi",
                     submessage: "Yukarıdaki butondan gelir ekleyebilirsiniz"
                 )
-                .padding(.vertical, 40)
+                .padding(.vertical, 24)
             } else {
-                LazyVStack(spacing: 12) {
+                List {
                     ForEach(sortedIncomes) { income in
                         IncomeRowView(income: income)
-                            .contextMenu {
+                            .transition(.opacity.combined(with: .move(edge: .leading)))
+                            .listRowBackground(appTheme.listRowBackground)
+                            .listRowSeparatorTint(appTheme.textSecondary.opacity(0.3))
+                            .contentShape(Rectangle())
+                            .onTapGesture { editingIncome = income }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     if let idx = dataManager.incomes.firstIndex(where: { $0.id == income.id }) {
                                         dataManager.incomes.remove(at: idx)
@@ -226,15 +251,17 @@ struct IncomeListView: View {
                             }
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
     }
 }
 
 struct IncomeRowView: View {
     let income: Income
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack(spacing: 16) {
@@ -249,28 +276,33 @@ struct IncomeRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(income.source)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(appTheme.textPrimary)
                 Text(income.date.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(appTheme.textSecondary)
             }
             
             Spacer()
             
             Text(formatCurrency(income.amount))
                 .font(.system(size: 16, weight: .bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
                 .foregroundColor(Color(hex: "34D399"))
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.08))
+                .fill(appTheme.cardBackgroundSecondary)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
         )
     }
 }
 
 struct ExpenseListView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
+    @Binding var editingExpense: Expense?
     
     private var sortedExpenses: [Expense] {
         dataManager.expenses.sorted { $0.date > $1.date }
@@ -284,12 +316,17 @@ struct ExpenseListView: View {
                     message: "Henüz gider eklenmedi",
                     submessage: "Yukarıdaki butondan gider ekleyebilirsiniz"
                 )
-                .padding(.vertical, 40)
+                .padding(.vertical, 24)
             } else {
-                LazyVStack(spacing: 12) {
+                List {
                     ForEach(sortedExpenses) { expense in
                         ExpenseRowView(expense: expense)
-                            .contextMenu {
+                            .transition(.opacity.combined(with: .move(edge: .leading)))
+                            .listRowBackground(appTheme.listRowBackground)
+                            .listRowSeparatorTint(appTheme.textSecondary.opacity(0.3))
+                            .contentShape(Rectangle())
+                            .onTapGesture { editingExpense = expense }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button(role: .destructive) {
                                     if let idx = dataManager.expenses.firstIndex(where: { $0.id == expense.id }) {
                                         dataManager.expenses.remove(at: idx)
@@ -301,15 +338,17 @@ struct ExpenseListView: View {
                             }
                     }
                 }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
-        .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
     }
 }
 
 struct ExpenseRowView: View {
     let expense: Expense
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack(spacing: 16) {
@@ -324,26 +363,29 @@ struct ExpenseRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(expense.category)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(appTheme.textPrimary)
                 Text(expense.detail)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(appTheme.textSecondary)
                     .lineLimit(1)
                 Text(expense.date.formatted(date: .abbreviated, time: .omitted))
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(appTheme.textSecondary.opacity(0.9))
             }
             
             Spacer()
             
             Text("-\(formatCurrency(expense.amount))")
                 .font(.system(size: 16, weight: .bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
                 .foregroundColor(Color(hex: "F87171"))
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.08))
+                .fill(appTheme.cardBackgroundSecondary)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
         )
     }
 }
@@ -352,35 +394,150 @@ struct EmptyStateView: View {
     let icon: String
     let message: String
     let submessage: String
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 48))
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(appTheme.textSecondary.opacity(0.6))
             Text(message)
                 .font(.headline)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(appTheme.textPrimary)
             Text(submessage)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(appTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-/// Anapara girişinde binlik ayracı (nokta) ile formatlama: 200000 → 200.000
-func formatAnaparaGiris(_ raw: String) -> String {
-    let digits = raw.filter { $0.isNumber }
-    guard !digits.isEmpty else { return "" }
-    let trimmed = digits.drop(while: { $0 == "0" })
-    let str = trimmed.isEmpty ? "0" : String(trimmed)
+/// Rakam girişinde binlik ayracı (nokta) ile formatlama: 200000 → 200.000
+/// allowDecimals: true ise virgülden sonra en fazla 2 hane (1.500,50)
+func formatNumberGiris(_ raw: String, allowDecimals: Bool = false) -> String {
+    if !allowDecimals {
+        let digits = raw.filter { $0.isNumber }
+        guard !digits.isEmpty else { return "" }
+        let trimmed = digits.drop(while: { $0 == "0" })
+        let str = trimmed.isEmpty ? "0" : String(trimmed)
+        var result = ""
+        for (i, c) in str.reversed().enumerated() {
+            if i > 0 && i % 3 == 0 { result = "." + result }
+            result = String(c) + result
+        }
+        return result
+    }
+    // Türk formatı: binlik = nokta (.), ondalık = virgül (,) veya nokta (faiz gibi 4.99)
+    // Virgül varsa ondalık ayracı virgül. Virgül yoksa: nokta sonrası 1–2 rakamsa ondalık (4.99)
+    var intStr: String
+    var decStr: String
+    if raw.contains(",") {
+        let parts = raw.split(separator: ",", maxSplits: 1, omittingEmptySubsequences: false)
+        let intRaw = String(parts[0])
+        intStr = intRaw.replacingOccurrences(of: ".", with: "").filter { $0.isNumber }
+        decStr = parts.count > 1 ? String(String(parts[1]).filter { $0.isNumber }.prefix(2)) : ""
+    } else if let lastDot = raw.lastIndex(of: ".") {
+        let afterDot = String(raw[raw.index(after: lastDot)...]).filter { $0.isNumber }
+        // Nokta sonrası 0–2 rakamsa ondalık (4. veya 4.9 veya 4.99), 3+ ise binlik (1.000)
+        if afterDot.count <= 2 {
+            let beforeDot = String(raw[..<lastDot]).replacingOccurrences(of: ".", with: "").filter { $0.isNumber }
+            intStr = beforeDot
+            decStr = String(afterDot.prefix(2))
+        } else {
+            intStr = raw.replacingOccurrences(of: ".", with: "").filter { $0.isNumber }
+            decStr = ""
+        }
+    } else {
+        intStr = raw.replacingOccurrences(of: ".", with: "").filter { $0.isNumber }
+        decStr = ""
+    }
+    guard !intStr.isEmpty || !decStr.isEmpty else { return "" }
+    let intPart = intStr.isEmpty ? "0" : String(intStr.drop(while: { $0 == "0" })).isEmpty ? "0" : String(intStr.drop(while: { $0 == "0" }))
+    let trimmed = intPart.isEmpty ? "0" : intPart
     var result = ""
-    for (i, c) in str.reversed().enumerated() {
+    for (i, c) in trimmed.reversed().enumerated() {
         if i > 0 && i % 3 == 0 { result = "." + result }
         result = String(c) + result
     }
+    // Ondalık kısmı ekle; virgülden sonra boş olsa bile (kullanıcı "4." yazdıysa "4," göster)
+    let hasTrailingDecimalSep = allowDecimals && (raw.hasSuffix(".") || raw.hasSuffix(","))
+    if !decStr.isEmpty || hasTrailingDecimalSep {
+        result += "," + decStr
+    }
     return result
+}
+
+/// Anapara için (geriye uyumluluk)
+func formatAnaparaGiris(_ raw: String) -> String {
+    formatNumberGiris(raw, allowDecimals: false)
+}
+
+/// Formatlanmış rakam string'ini Double'a çevirir (1.500,50 → 1500.50)
+func parseFormattedNumber(_ s: String) -> Double? {
+    let cleaned = s.replacingOccurrences(of: ".", with: "").replacingOccurrences(of: ",", with: ".")
+    return Double(cleaned)
+}
+
+/// Rakam girişinde yazarken binlik/ondalık formatlama uygulayan alan
+struct FormattedNumberField: UIViewRepresentable {
+    @Binding var text: String
+    let placeholder: String
+    let allowDecimals: Bool
+    @Binding var focusTrigger: Bool
+    var fontSize: CGFloat = 17
+    var fontWeight: UIFont.Weight = .regular
+    var isLightMode: Bool = false
+    
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
+    
+    func makeUIView(context: Context) -> UITextField {
+        let tf = UITextField()
+        tf.placeholder = placeholder
+        tf.font = .systemFont(ofSize: fontSize, weight: fontWeight)
+        tf.keyboardType = allowDecimals ? .decimalPad : .numberPad
+        tf.delegate = context.coordinator
+        tf.textColor = isLightMode ? .label : .white
+        tf.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        context.coordinator.syncFromBinding(to: tf)
+        return tf
+    }
+    
+    func updateUIView(_ uiView: UITextField, context: Context) {
+        context.coordinator.parent = self
+        if uiView.text != text && !context.coordinator.isEditing {
+            context.coordinator.syncFromBinding(to: uiView)
+        }
+        uiView.textColor = isLightMode ? .label : .white
+        if focusTrigger {
+            uiView.becomeFirstResponder()
+            DispatchQueue.main.async { focusTrigger = false }
+        }
+    }
+    
+    class Coordinator: NSObject, UITextFieldDelegate {
+        var parent: FormattedNumberField
+        var isEditing = false
+        
+        init(_ parent: FormattedNumberField) { self.parent = parent }
+        
+        func syncFromBinding(to tf: UITextField) {
+            let formatted = formatNumberGiris(parent.text, allowDecimals: parent.allowDecimals)
+            if tf.text != formatted { tf.text = formatted }
+        }
+        
+        func textFieldDidBeginEditing(_ textField: UITextField) { isEditing = true }
+        func textFieldDidEndEditing(_ textField: UITextField) { isEditing = false }
+        
+        func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+            let current = textField.text ?? ""
+            let ns = current as NSString
+            let proposed = ns.replacingCharacters(in: range, with: string)
+            let formatted = formatNumberGiris(proposed, allowDecimals: parent.allowDecimals)
+            textField.text = formatted
+            parent.text = formatted
+            return false
+        }
+    }
 }
 
 func formatCurrency(_ amount: Double) -> String {
@@ -392,9 +549,23 @@ func formatCurrency(_ amount: Double) -> String {
     return formatter.string(from: NSNumber(value: amount)) ?? "₺0,00"
 }
 
+// MARK: - Geniş tıklama alanı (tüm alana tıklanınca focus)
+// Yeni TextField'larda kullan: VStack { Text("Başlık"); TextField(...).focused($focused) }.tappableToFocus($focused)
+extension View {
+    func tappableToFocus(_ focus: FocusState<Bool>.Binding) -> some View {
+        contentShape(Rectangle())
+            .onTapGesture { focus.wrappedValue = true }
+    }
+    func tappableToFocus<ID: Hashable>(_ focus: FocusState<ID?>.Binding, equals value: ID) -> some View {
+        contentShape(Rectangle())
+            .onTapGesture { focus.wrappedValue = value }
+    }
+}
+
 #Preview {
     NavigationStack {
         BudgetView()
             .environmentObject(DataManager.shared)
+            .environmentObject(AppTheme())
     }
 }

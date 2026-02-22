@@ -1,11 +1,8 @@
 import Foundation
 
-/// Tüketici kredisi hesaplama - KKDF %15, BSMV %15
+/// Tüketici kredisi hesaplama - KKDF ve BSMV oranları parametre ile verilir
 /// HangiKredi referans hesaplaması ile uyumlu
 struct KrediCalculator {
-    
-    static let kkdfOrani: Double = 0.15   // %15
-    static let bsmvOrani: Double = 0.15   // %15
     
     struct OdemeSatiri: Identifiable {
         let id = UUID()
@@ -23,12 +20,14 @@ struct KrediCalculator {
     ///   - anapara: Kredi tutarı (TL)
     ///   - vade: Ay sayısı (1-60)
     ///   - aylikFaizOrani: Aylık faiz oranı - bankaların gösterdiği oran (örn. %4,99 için 4.99)
+    ///   - kkdfOrani: KKDF oranı (örn. 0.15 = %15)
+    ///   - bsmvOrani: BSMV oranı (örn. 0.15 = %15)
     /// - Returns: Ödeme planı satırları
-    static func tuketiciKredisiHesapla(anapara: Double, vade: Int, aylikFaizOrani: Double) -> [OdemeSatiri] {
+    static func tuketiciKredisiHesapla(anapara: Double, vade: Int, aylikFaizOrani: Double, kkdfOrani: Double = 0.15, bsmvOrani: Double = 0.15) -> [OdemeSatiri] {
         guard anapara > 0, vade >= 1, vade <= 60 else { return [] }
         
         let aylikOran = aylikFaizOrani / 100  // %4.99 → 0.0499
-        let vergiCarpani = 1 + kkdfOrani + bsmvOrani  // 1.30
+        let vergiCarpani = 1 + kkdfOrani + bsmvOrani
         let etkinAylikOran = aylikOran * vergiCarpani
         
         // Sabit taksit tutarı (annuity formülü)

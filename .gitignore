@@ -23,6 +23,9 @@ xcuserdata/
 Pods/
 *.xcworkspace
 
+# Cursor IDE
+.cursor/
+
 # macOS
 .DS_Store
 .AppleDouble

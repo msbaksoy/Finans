@@ -3,12 +3,13 @@ import Charts
 
 struct PortfolioView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     @State private var showAddAsset = false
     @State private var assetToEdit: Asset?
     
     var body: some View {
         ZStack {
-            Color(hex: "0F172A").ignoresSafeArea()
+            appTheme.background.ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -48,7 +49,7 @@ struct PortfolioView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Varlıklarım")
                             .font(.headline)
-                            .foregroundColor(.white)
+                            .foregroundColor(appTheme.textPrimary)
                             .padding(.horizontal, 4)
                         
                         if dataManager.assets.isEmpty {
@@ -86,8 +87,8 @@ struct PortfolioView: View {
         }
         .navigationTitle("Portföy")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+        .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+        .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .sheet(isPresented: $showAddAsset) {
             AddAssetView()
@@ -100,14 +101,16 @@ struct PortfolioView: View {
 
 struct PortfolioTotalCard: View {
     let amount: Double
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         VStack(spacing: 8) {
             Text("Toplam Portföy Değeri")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(amount))
                 .font(.system(size: 32, weight: .bold))
+                .monospacedDigit()
                 .foregroundColor(Color(hex: "60A5FA"))
         }
         .frame(maxWidth: .infinity)
@@ -115,14 +118,9 @@ struct PortfolioTotalCard: View {
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: "1E3A5F"),
-                            Color(hex: "0F172A")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    appTheme.isLight
+                        ? LinearGradient(colors: [Color(hex: "E0F2FE"), Color(hex: "F0F9FF")], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        : LinearGradient(colors: [Color(hex: "1E3A5F"), Color(hex: "0F172A")], startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
@@ -160,6 +158,7 @@ struct ChartDataItem: Identifiable {
 
 struct PortfolioChartView: View {
     let assets: [Asset]
+    @EnvironmentObject var appTheme: AppTheme
     
     private var chartData: [ChartDataItem] {
         let grouped = Dictionary(grouping: assets, by: { $0.displayType })
@@ -175,7 +174,7 @@ struct PortfolioChartView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Varlık Dağılımı")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(appTheme.textPrimary)
             
             if chartData.isEmpty {
                 EmptyChartView()
@@ -200,12 +199,13 @@ struct PortfolioChartView: View {
                                 .frame(width: 8, height: 8)
                             Text(item.type)
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.9))
+                                .foregroundColor(appTheme.textPrimary)
                                 .lineLimit(1)
                             Spacer()
                             Text(formatCurrency(item.value))
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
+                                .monospacedDigit()
+                                .foregroundColor(appTheme.textSecondary)
                         }
                     }
                 }
@@ -214,20 +214,22 @@ struct PortfolioChartView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.06))
+                .fill(appTheme.listRowBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(appTheme.cardStroke.opacity(appTheme.isLight ? 1 : 0.5), lineWidth: 1)
                 )
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
         )
     }
 }
 
 struct EmptyChartView: View {
+    @EnvironmentObject var appTheme: AppTheme
     var body: some View {
         Text("Veri yok")
             .font(.subheadline)
-            .foregroundColor(.white.opacity(0.5))
+            .foregroundColor(appTheme.textSecondary)
             .frame(maxWidth: .infinity)
             .frame(height: 120)
     }
@@ -235,6 +237,7 @@ struct EmptyChartView: View {
 
 struct AssetRowView: View {
     let asset: Asset
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack(spacing: 16) {
@@ -250,14 +253,15 @@ struct AssetRowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(asset.name)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(appTheme.textPrimary)
                 Text(asset.displayType)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(appTheme.textSecondary)
                 if asset.type.supportsQuantityAndPrice, let q = asset.quantity, let p = asset.pricePerUnit {
                     Text("\(formatNumber(q)) adet × \(formatCurrency(p))")
                         .font(.caption2)
-                        .foregroundColor(.white.opacity(0.5))
+                        .monospacedDigit()
+                        .foregroundColor(appTheme.textSecondary.opacity(0.9))
                 }
             }
             
@@ -266,16 +270,18 @@ struct AssetRowView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(formatCurrency(asset.totalValue))
                     .font(.system(size: 16, weight: .bold))
+                    .monospacedDigit()
                     .foregroundColor(Color(hex: "60A5FA"))
                 Image(systemName: "chevron.right")
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(appTheme.textSecondary.opacity(0.8))
             }
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.05))
+                .fill(appTheme.cardBackgroundSecondary)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
         )
     }
     
@@ -316,5 +322,6 @@ func formatNumber(_ n: Double) -> String {
     NavigationStack {
         PortfolioView()
             .environmentObject(DataManager.shared)
+            .environmentObject(AppTheme())
     }
 }

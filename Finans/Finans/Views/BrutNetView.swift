@@ -3,6 +3,8 @@ import UIKit
 
 struct BrutNetView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
+    @EnvironmentObject var yanHakKayitStore: YanHakKayitStore
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var showMaasGirisSheet = false
     @State private var showPdfShare = false
@@ -18,7 +20,10 @@ struct BrutNetView: View {
         let brutlar = (1...12).map { ay in
             yilMaaslar.first { $0.ay == ay }?.brutTutar ?? 0
         }
-        return BrutNetCalculator.hesaplaYillikDetayli(brutlar: brutlar)
+        let primler = (1...12).map { ay in
+            yilMaaslar.first { $0.ay == ay }?.primTutar ?? 0
+        }
+        return BrutNetCalculator.hesaplaYillikDetayli(brutlar: brutlar, primler: primler)
     }
     
     private var toplamNet: Double {
@@ -40,7 +45,7 @@ struct BrutNetView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "0F172A").ignoresSafeArea()
+            appTheme.background.ignoresSafeArea()
             
             if isLandscape && !yilMaaslar.isEmpty {
                 // Yatay mod: tablo tüm ekranı kaplar, PDF butonu overlay
@@ -57,7 +62,7 @@ struct BrutNetView: View {
                             .foregroundColor(Color(hex: "F59E0B"))
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
-                            .background(Color(hex: "1E293B").opacity(0.95))
+                            .background(appTheme.backgroundSecondary.opacity(0.95))
                             .cornerRadius(12)
                     }
                     .padding(16)
@@ -66,7 +71,10 @@ struct BrutNetView: View {
                 // Dikey mod: özet kartları + liste
                 ScrollView {
                     VStack(spacing: 24) {
+                        cvOlusturKarti
                         maasGirisKarti
+                        yanHakAnaliziKarti
+                        kayitliYanHakListesi
                         
                         if yilMaaslar.isEmpty {
                             bosDurumView
@@ -94,10 +102,10 @@ struct BrutNetView: View {
                 }
             }
         }
-        .navigationTitle("Brütten Nete")
+        .navigationTitle("İnsan Kaynakları")
         .navigationBarTitleDisplayMode(.large)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+        .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+        .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .toolbar {
             if isLandscape && !yilMaaslar.isEmpty {
@@ -116,6 +124,7 @@ struct BrutNetView: View {
                 showMaasGirisSheet = false
             }
             .environmentObject(dataManager)
+            .environmentObject(appTheme)
         }
         .onDisappear {
             dataManager.brutNetVerileriniTemizle()
@@ -125,6 +134,44 @@ struct BrutNetView: View {
                 PdfShareSheet(pdfData: data)
             }
         }
+    }
+    
+    private var cvOlusturKarti: some View {
+        NavigationLink(destination: CVOlusturView().environmentObject(appTheme)) {
+            HStack(spacing: 20) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(hex: "F59E0B").opacity(0.2))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: "doc.text.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(hex: "F59E0B"))
+                    )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("CV Oluştur")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(appTheme.textPrimary)
+                    Text("cv.docx formatında özgeçmiş hazırla")
+                        .font(.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
+            }
+            .padding(24)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(appTheme.listRowBackground)
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
     }
     
     private var maasGirisKarti: some View {
@@ -143,10 +190,10 @@ struct BrutNetView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Maaş Girişi")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
-                    Text("Tıklayarak aylık brüt maaşlarınızı girin")
+                        .foregroundColor(appTheme.textPrimary)
+                    Text("Brüt maaş ve prim girişi (aylık bazda)")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(appTheme.textSecondary)
                 }
                 Spacer()
                 Image(systemName: "chevron.right.circle.fill")
@@ -157,32 +204,121 @@ struct BrutNetView: View {
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: "1E293B"), Color(hex: "334155")],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(appTheme.listRowBackground)
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
                 }
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
             )
         }
         .buttonStyle(ScaleButtonStyle())
+    }
+    
+    private var yanHakAnaliziKarti: some View {
+        NavigationLink(destination: YanHakAnaliziView().environmentObject(appTheme).environmentObject(yanHakKayitStore)) {
+            HStack(spacing: 20) {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(hex: "F59E0B").opacity(0.2))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: "chart.bar.doc.horizontal")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color(hex: "F59E0B"))
+                    )
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Yan Hak Analizi")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(appTheme.textPrimary)
+                    Text("Mevcut iş vs teklif karşılaştırması")
+                        .font(.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
+            }
+            .padding(24)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(appTheme.listRowBackground)
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
+                }
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+            )
+        }
+        .buttonStyle(ScaleButtonStyle())
+    }
+    
+    private var kayitliYanHakListesi: some View {
+        Group {
+            if !yanHakKayitStore.kayitlar.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Kayıtlı Analizler")
+                        .font(.headline)
+                        .foregroundColor(appTheme.textPrimary)
+                        .padding(.horizontal, 4)
+                    ForEach(yanHakKayitStore.kayitlar) { kayit in
+                        NavigationLink(destination: YanHakAnaliziView(duzenlenenKayit: kayit).environmentObject(appTheme).environmentObject(yanHakKayitStore)) {
+                            HStack(spacing: 16) {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(hex: "F59E0B").opacity(0.2))
+                                    .frame(width: 44, height: 44)
+                                    .overlay(
+                                        Image(systemName: "doc.text.magnifyingglass")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(Color(hex: "F59E0B"))
+                                    )
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(kayit.name)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundColor(appTheme.textPrimary)
+                                    Text(tarihFormatla(kayit.updatedAt))
+                                        .font(.caption)
+                                        .foregroundColor(appTheme.textSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundColor(appTheme.textSecondary)
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(appTheme.listRowBackground)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color(hex: "F59E0B").opacity(0.2), lineWidth: 1)
+                                    )
+                            )
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                    }
+                }
+            }
+        }
+    }
+    
+    private func tarihFormatla(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        f.locale = Locale(identifier: "tr_TR")
+        return f.string(from: date)
     }
     
     private var bosDurumView: some View {
         VStack(spacing: 16) {
             Image(systemName: "tray")
                 .font(.system(size: 56))
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(appTheme.textSecondary.opacity(0.6))
             Text("Henüz maaş verisi yok")
                 .font(.headline)
-                .foregroundColor(.white.opacity(0.8))
-            Text("Yukarıdaki Maaş Girişi alanına tıklayarak brüt maaşlarınızı girin")
+                .foregroundColor(appTheme.textPrimary)
+            Text("Brüt maaş ve prim girişi yapmak için Maaş Girişi alanına tıklayın")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(appTheme.textSecondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
@@ -214,16 +350,18 @@ struct BrutNetView: View {
                     .foregroundColor(Color(hex: "60A5FA"))
                 Text("Yıllık Toplam Net")
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(appTheme.textPrimary)
                 Spacer()
                 Text(formatCurrency(toplamNet))
                     .font(.system(size: 22, weight: .bold))
+                    .monospacedDigit()
                     .foregroundColor(Color(hex: "60A5FA"))
             }
             .padding(20)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white.opacity(0.06))
+                    .fill(appTheme.listRowBackground)
+                    .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
             )
         }
     }
@@ -232,7 +370,7 @@ struct BrutNetView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Aylık Net Maaş")
                 .font(.headline)
-                .foregroundColor(.white)
+                .foregroundColor(appTheme.textPrimary)
             
             LazyVStack(spacing: 12) {
                 ForEach(yilMaaslar) { maas in
@@ -249,6 +387,7 @@ struct OzetKart: View {
     let value: String
     let icon: String
     let color: Color
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -258,21 +397,23 @@ struct OzetKart: View {
                     .foregroundColor(color)
                 Text(title)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(appTheme.textSecondary)
             }
             Text(value)
                 .font(.system(size: 20, weight: .bold))
+                .monospacedDigit()
                 .foregroundColor(color)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.06))
+                .fill(appTheme.listRowBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(color.opacity(0.3), lineWidth: 1)
                 )
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
         )
     }
 }
@@ -280,28 +421,32 @@ struct OzetKart: View {
 // MARK: - Aylık Net Satır
 struct AylikNetRow: View {
     let maas: AylikMaas
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack(spacing: 16) {
             Text(ayIsimleri[maas.ay - 1])
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(appTheme.textPrimary)
                 .frame(width: 70, alignment: .leading)
             
-            Text(formatCurrency(maas.brutTutar))
+            Text(maas.primTutar > 0 ? "\(formatCurrency(maas.brutTutar)) + \(formatCurrency(maas.primTutar))" : formatCurrency(maas.brutTutar))
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.5))
+                .monospacedDigit()
+                .foregroundColor(appTheme.textSecondary)
             
             Spacer()
             
             Text(formatCurrency(maas.netTutar))
                 .font(.system(size: 16, weight: .bold))
+                .monospacedDigit()
                 .foregroundColor(Color(hex: "34D399"))
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.06))
+                .fill(appTheme.listRowBackground)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.04 : 0), radius: appTheme.isLight ? 3 : 0, y: 1)
         )
     }
 }
@@ -309,69 +454,95 @@ struct AylikNetRow: View {
 // MARK: - Maaş Giriş Sheet
 struct MaasGirisSheetView: View {
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     @Environment(\.dismiss) var dismiss
     let yil: Int
     let mevcutMaaslar: [AylikMaas]
     let onTamam: () -> Void
     
-    /// Mevcut veriden veya boş başlat
+    /// Brüt: fill-down — ay N güncellenince N ve sonrası yeni değeri alır. Prim: ay bazlı.
     @State private var brutlar: [String] = Array(repeating: "", count: 12)
-    @State private var ilkGirisYapildi = false
-    @FocusState private var focusedAy: Int?
+    @State private var primler: [String] = Array(repeating: "", count: 12)
+    @State private var triggerBrutFocus: [Bool] = Array(repeating: false, count: 12)
+    @State private var triggerPrimFocus: [Bool] = Array(repeating: false, count: 12)
     
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 0) {
-                        // İki sütun başlık
-                        HStack {
+                        // Üç sütun başlık: Ay | Brüt | Prim
+                        HStack(spacing: 12) {
                             Text("Ay")
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.8))
-                                .frame(width: 80, alignment: .leading)
-                            Text("Brüt Maaş (₺)")
+                                .foregroundColor(appTheme.textSecondary)
+                                .frame(width: 70, alignment: .leading)
+                            Text("Brüt (₺)")
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text("Prim (₺)")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(appTheme.textSecondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 12)
                         
-                        // Ay + Brüt satırları
                         ForEach(1...12, id: \.self) { ay in
-                            HStack(spacing: 16) {
+                            HStack(spacing: 12) {
                                 Text(ayIsimleri[ay - 1])
                                     .font(.subheadline.weight(.medium))
-                                    .foregroundColor(.white)
-                                    .frame(width: 80, alignment: .leading)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .frame(width: 70, alignment: .leading)
                                 
-                                TextField("0", text: bindingForAy(ay))
-                                    .keyboardType(.decimalPad)
-                                    .focused($focusedAy, equals: ay)
-                                    .foregroundColor(.white)
-                                    .padding(14)
+                                FormattedNumberField(
+                                    text: bindingBrutForAy(ay),
+                                    placeholder: "0",
+                                    allowDecimals: false,
+                                    focusTrigger: Binding(
+                                        get: { triggerBrutFocus.indices.contains(ay - 1) ? triggerBrutFocus[ay - 1] : false },
+                                        set: { if triggerBrutFocus.indices.contains(ay - 1) { triggerBrutFocus[ay - 1] = $0 } }
+                                    ),
+                                    isLightMode: appTheme.isLight
+                                )
+                                    .padding(12)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.white.opacity(0.08))
+                                            .fill(appTheme.cardBackgroundSecondary)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(appTheme.cardStroke.opacity(0.5), lineWidth: 1)
+                                            )
                                     )
-                                    .onChange(of: brutlar[ay - 1]) { _, newValue in
-                                        guard let val = Double(newValue.replacingOccurrences(of: ",", with: ".")),
-                                              val >= 1000 else { return }
-                                        let strVal = String(format: "%.0f", val)
-                                        if !ilkGirisYapildi {
-                                            // İlk geçerli giriş: tüm aylara uygula
-                                            ilkGirisYapildi = true
-                                            for i in 0..<12 { brutlar[i] = strVal }
-                                        } else {
-                                            // Sonraki düzenlemeler: Bu ay ve sonraki aylara uygula, öncekilere dokunma
-                                            for i in (ay - 1)..<12 { brutlar[i] = strVal }
-                                        }
-                                    }
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { triggerBrutFocus[ay - 1] = true }
+                                
+                                FormattedNumberField(
+                                    text: bindingPrimForAy(ay),
+                                    placeholder: "0",
+                                    allowDecimals: false,
+                                    focusTrigger: Binding(
+                                        get: { triggerPrimFocus.indices.contains(ay - 1) ? triggerPrimFocus[ay - 1] : false },
+                                        set: { if triggerPrimFocus.indices.contains(ay - 1) { triggerPrimFocus[ay - 1] = $0 } }
+                                    ),
+                                    isLightMode: appTheme.isLight
+                                )
+                                    .padding(12)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .fill(appTheme.cardBackgroundSecondary)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .stroke(appTheme.cardStroke.opacity(0.5), lineWidth: 1)
+                                            )
+                                    )
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { triggerPrimFocus[ay - 1] = true }
                             }
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 6)
                             .padding(.horizontal, 4)
                         }
                     }
@@ -380,8 +551,8 @@ struct MaasGirisSheetView: View {
             }
             .navigationTitle("Maaş Girişi")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -400,47 +571,48 @@ struct MaasGirisSheetView: View {
             }
         }
         .onAppear {
-            if !mevcutMaaslar.isEmpty {
-                for maas in mevcutMaaslar where maas.ay >= 1 && maas.ay <= 12 {
-                    brutlar[maas.ay - 1] = String(format: "%.0f", maas.brutTutar)
-                }
-                ilkGirisYapildi = true
-            }
+            // Her açılışta boş form — eski veriler yüklensin istemiyoruz
         }
     }
     
-    private func bindingForAy(_ ay: Int) -> Binding<String> {
+    /// Brüt: ay N'ye yazınca N ve sonrası aylar aynı değeri alır (fill-down).
+    private func bindingBrutForAy(_ ay: Int) -> Binding<String> {
+        let idx = ay - 1
+        return Binding(
+            get: { brutlar[idx] },
+            set: { newValue in
+                for i in idx..<12 { brutlar[i] = newValue }
+            }
+        )
+    }
+    
+    private func bindingPrimForAy(_ ay: Int) -> Binding<String> {
         Binding(
-            get: { brutlar[ay - 1] },
-            set: { brutlar[ay - 1] = $0 }
+            get: { primler[ay - 1] },
+            set: { primler[ay - 1] = $0 }
         )
     }
     
     private func kaydetVeKapat() {
         var brutListesi: [Double] = []
         for i in 0..<12 {
-            if let val = Double(brutlar[i].replacingOccurrences(of: ",", with: ".")), val > 0 {
-                brutListesi.append(val)
-            } else {
-                brutListesi.append(0)
-            }
+            brutListesi.append(parseFormattedNumber(brutlar[i]) ?? 0)
         }
+        var primListesi: [Double] = []
+        for i in 0..<12 {
+            primListesi.append(parseFormattedNumber(primler[i]) ?? 0)
+        }
+        let sonBrutlar = brutListesi
         
-        // Sadece dolu aylar varsa kaydet
-        if brutListesi.contains(where: { $0 > 0 }) {
-            // 0 olan ayları ilk dolu değerle doldur (tüm aylar aynı mantığı)
-            let ilkDoluBrut = brutListesi.first { $0 > 0 } ?? 0
-            var sonBrutlar: [Double] = []
-            for b in brutListesi {
-                sonBrutlar.append(b > 0 ? b : ilkDoluBrut)
-            }
+        if sonBrutlar.contains(where: { $0 > 0 }) {
             
-            let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: sonBrutlar)
+            let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: sonBrutlar, primler: primListesi)
             for (index, sonuc) in sonuclar.enumerated() {
                 let ay = index + 1
                 let brut = sonBrutlar[index]
+                let prim = primListesi[index]
                 let kesintiCodable = sonuc.kesintiler.map { KesintiKalemCodable(ad: $0.ad, tutar: $0.tutar, oran: $0.oran) }
-                let maas = AylikMaas(ay: ay, brutTutar: brut, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
+                let maas = AylikMaas(ay: ay, brutTutar: brut, primTutar: prim, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
                 dataManager.setAylikMaas(maas)
             }
         }
@@ -460,7 +632,7 @@ struct BrutNetDetayTablosu: View {
     private let rowHeight: CGFloat = 36
     
     private let sutunlar: [(anahtar: KeyPath<AylikBrutNetDetay, Double>, baslik: String)] = [
-        (\.brut, "Brüt"),
+        (\.brutToplam, "Brüt+Prim"),
         (\.sgkIsci, "SSK İşçi"),
         (\.issizlikIsci, "İşsizlik İşçi"),
         (\.aylikGelirVergisi, "Aylık Gelir Vergisi"),
@@ -502,7 +674,7 @@ struct BrutNetDetayTablosu: View {
                 Divider().background(Color.white.opacity(0.25))
                 
                 // Veri satırları
-                ForEach(detaylar.filter { $0.brut > 0 }) { d in
+                ForEach(detaylar.filter { $0.brutToplam > 0 }) { d in
                     HStack(alignment: .center, spacing: 0) {
                         Text(ayIsimleri[d.ay - 1])
                             .frame(width: firstColWidth, alignment: .leading)
@@ -534,14 +706,14 @@ struct BrutNetDetayTablosu: View {
                 }
                 
                 // TOPLAM satırı
-                if !detaylar.filter({ $0.brut > 0 }).isEmpty {
+                if !detaylar.filter({ $0.brutToplam > 0 }).isEmpty {
                     Divider().background(Color.white.opacity(0.3))
                     HStack(alignment: .center, spacing: 0) {
                         Text("TOPLAM")
                             .frame(width: firstColWidth, alignment: .leading)
                             .font(.subheadline.weight(.bold))
                             .foregroundColor(Color(hex: "F59E0B"))
-                        Text(formatCurrency(detaylar.reduce(0) { $0 + $1.brut }))
+                        Text(formatCurrency(detaylar.reduce(0) { $0 + $1.brutToplam }))
                             .frame(minWidth: colWidth, alignment: .trailing)
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(Color(hex: "F59E0B"))
@@ -614,7 +786,7 @@ struct BrutNetDetayTablosu: View {
 // MARK: - PDF Oluşturucu
 struct BrutNetPdfOlusturucu {
     static func olustur(detaylar: [AylikBrutNetDetay], yil: Int) -> Data? {
-        let aylik = detaylar.filter { $0.brut > 0 }
+        let aylik = detaylar.filter { $0.brutToplam > 0 }
         guard !aylik.isEmpty else { return nil }
         
         let pageWidth: CGFloat = 842
@@ -645,8 +817,8 @@ struct BrutNetPdfOlusturucu {
             ])
             y += 36
             
-            let headers = ["Ay", "Brüt", "SSK İşçi", "İşsizlik İşçi", "Gelir Vergisi", "Damga V.", "Küm. Matrah", "Net", "AGİ", "Asg.GV İst.", "Asg.DV İst.", "Toplam Net", "SSK İşv.", "İşsizlik İşv.", "Toplam Maliyet"]
-            let keyPaths: [KeyPath<AylikBrutNetDetay, Double>] = [\.brut, \.sgkIsci, \.issizlikIsci, \.aylikGelirVergisi, \.damgaVergisi, \.kumulatifVergiMatrahi, \.netVergiOncesi, \.agi, \.asgariUcretGVIstisnasi, \.asgariUcretDVIstisnasi, \.toplamNetEleGecen, \.sgkIsveren, \.issizlikIsveren, \.toplamMaliyet]
+            let headers = ["Ay", "Brüt+Prim", "SSK İşçi", "İşsizlik İşçi", "Gelir Vergisi", "Damga V.", "Küm. Matrah", "Net", "AGİ", "Asg.GV İst.", "Asg.DV İst.", "Toplam Net", "SSK İşv.", "İşsizlik İşv.", "Toplam Maliyet"]
+            let keyPaths: [KeyPath<AylikBrutNetDetay, Double>] = [\.brutToplam, \.sgkIsci, \.issizlikIsci, \.aylikGelirVergisi, \.damgaVergisi, \.kumulatifVergiMatrahi, \.netVergiOncesi, \.agi, \.asgariUcretGVIstisnasi, \.asgariUcretDVIstisnasi, \.toplamNetEleGecen, \.sgkIsveren, \.issizlikIsveren, \.toplamMaliyet]
             
             var x = margin
             for (i, h) in headers.enumerated() {
@@ -682,7 +854,7 @@ struct BrutNetPdfOlusturucu {
             ("TOPLAM" as NSString).draw(in: CGRect(x: x, y: y, width: firstColWidth, height: rowHeight), withAttributes: [.font: boldFont, .foregroundColor: UIColor.systemOrange])
             x += firstColWidth
             let toplamlar: [Double] = [
-                aylik.reduce(0) { $0 + $1.brut },
+                aylik.reduce(0) { $0 + $1.brutToplam },
                 aylik.reduce(0) { $0 + $1.sgkIsci },
                 aylik.reduce(0) { $0 + $1.issizlikIsci },
                 aylik.reduce(0) { $0 + $1.aylikGelirVergisi },
@@ -725,5 +897,6 @@ struct PdfShareSheet: UIViewControllerRepresentable {
     NavigationStack {
         BrutNetView()
             .environmentObject(DataManager.shared)
+            .environmentObject(AppTheme())
     }
 }

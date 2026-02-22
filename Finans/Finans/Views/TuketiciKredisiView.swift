@@ -2,20 +2,26 @@ import SwiftUI
 import UIKit
 
 struct TuketiciKredisiView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    @EnvironmentObject var krediConfig: KrediConfigService
     @State private var anaparaText = ""
     @State private var vadeText = ""
     @State private var faizOraniText = ""
     @State private var pdfData: Data?
     @State private var showPdfShare = false
+    @State private var isRefreshing = false
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     private var odemePlani: [KrediCalculator.OdemeSatiri] {
-        guard let anapara = Double(anaparaText.replacingOccurrences(of: ".", with: "").replacingOccurrences(of: ",", with: ".")),
-              let vade = Int(vadeText),
-              let faiz = Double(faizOraniText.replacingOccurrences(of: ",", with: ".")),
-              anapara > 0, vade >= 1, vade <= 60, faiz >= 0
+        guard let anapara = parseFormattedNumber(anaparaText),
+              let vadeD = parseFormattedNumber(vadeText),
+              let faiz = parseFormattedNumber(faizOraniText),
+              anapara > 0, faiz >= 0
         else { return [] }
-        return KrediCalculator.tuketiciKredisiHesapla(anapara: anapara, vade: vade, aylikFaizOrani: faiz)
+        let vade = Int(vadeD)
+        guard vade >= 1, vade <= 60 else { return [] }
+        let c = krediConfig.config
+        return KrediCalculator.tuketiciKredisiHesapla(anapara: anapara, vade: vade, aylikFaizOrani: faiz, kkdfOrani: c.kkdfOrani, bsmvOrani: c.bsmvOrani)
     }
     
     private var toplamFaiz: Double {
@@ -26,8 +32,7 @@ struct TuketiciKredisiView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "0F172A"), Color(hex: "1a1f3a")], startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            appTheme.background.ignoresSafeArea()
             
             if isLandscape && !odemePlani.isEmpty {
                 tuketiciLandscapeView
@@ -37,8 +42,23 @@ struct TuketiciKredisiView: View {
         }
         .navigationTitle("Tüketici Kredisi")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+        .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+        .toolbarBackground(appTheme.background, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isRefreshing = true
+                    Task {
+                        await krediConfig.refresh()
+                        isRefreshing = false
+                    }
+                } label: {
+                    Label("Oranları Yenile", systemImage: "arrow.clockwise")
+                        .font(.subheadline)
+                }
+                .disabled(isRefreshing)
+            }
+        }
         .sheet(isPresented: $showPdfShare) {
             if let data = pdfData {
                 PdfShareSheet(pdfData: data)
@@ -66,7 +86,7 @@ struct TuketiciKredisiView: View {
                     .foregroundColor(Color(hex: "8B5CF6"))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color(hex: "1E293B").opacity(0.95))
+                    .background(appTheme.backgroundSecondary.opacity(0.95))
                     .cornerRadius(12)
             }
             .padding(16)
@@ -97,16 +117,20 @@ struct TuketiciKredisiView: View {
             HStack(spacing: 10) {
                 KrediTextField(title: "Anapara (₺)", text: $anaparaText, placeholder: "50.000", keyboardType: .decimalPad, formatThousands: true)
                     .frame(maxWidth: .infinity)
-                KrediTextField(title: "Vade (ay)", text: $vadeText, placeholder: "12", keyboardType: .numberPad)
+                KrediTextField(title: "Vade (ay)", text: $vadeText, placeholder: "12", keyboardType: .numberPad, formatThousands: true)
                     .frame(maxWidth: .infinity)
             }
-            KrediTextField(title: "Aylık Faiz (%)", text: $faizOraniText, placeholder: "4,99", keyboardType: .decimalPad, suffix: "%")
+            KrediTextField(title: "Aylık Faiz (%)", text: $faizOraniText, placeholder: "4,99", keyboardType: .decimalPad, suffix: "%", formatThousands: true, allowDecimals: true)
+            Text("KKDF %\(Int(krediConfig.config.kkdfOrani * 100)) · BSMV %\(Int(krediConfig.config.bsmvOrani * 100))")
+                .font(.caption)
+                .foregroundColor(appTheme.textSecondary)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.06))
+                .fill(appTheme.listRowBackground)
                 .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "8B5CF6").opacity(0.25), lineWidth: 1))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
         )
     }
     
@@ -144,6 +168,7 @@ struct TuketiciKredisiView: View {
 struct AnaparaTextField: UIViewRepresentable {
     @Binding var text: String
     let placeholder: String
+    @Binding var focusTrigger: Bool
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -163,6 +188,10 @@ struct AnaparaTextField: UIViewRepresentable {
     func updateUIView(_ uiView: UITextField, context: Context) {
         if uiView.text != text && !context.coordinator.isEditing {
             context.coordinator.syncFromBinding(to: uiView)
+        }
+        if focusTrigger {
+            uiView.becomeFirstResponder()
+            DispatchQueue.main.async { focusTrigger = false }
         }
     }
     
@@ -209,35 +238,50 @@ struct KrediTextField: View {
     var keyboardType: UIKeyboardType = .default
     var suffix: String = ""
     var formatThousands: Bool = false
+    /// formatThousands true iken: ondalık kısmı da formatla (örn. faiz: 4,99)
+    var allowDecimals: Bool = false
+    
+    @FocusState private var isFocused: Bool
+    @State private var triggerFocus = false
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(.white.opacity(0.85))
+                .foregroundColor(appTheme.textSecondary)
             HStack(spacing: 0) {
                 if formatThousands {
-                    AnaparaTextField(text: $text, placeholder: placeholder)
+                    FormattedNumberField(text: $text, placeholder: placeholder, allowDecimals: allowDecimals, focusTrigger: $triggerFocus, isLightMode: appTheme.isLight)
                 } else {
                     TextField(placeholder, text: $text)
                         .keyboardType(keyboardType)
                         .foregroundColor(.white)
+                        .focused($isFocused)
                 }
                 if !suffix.isEmpty {
                     Text(suffix)
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(appTheme.textSecondary.opacity(0.8))
                 }
             }
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(Color.white.opacity(0.08))
+                    .fill(appTheme.cardBackgroundSecondary)
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                            .stroke(appTheme.cardStroke.opacity(0.6), lineWidth: 1)
                     )
             )
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if formatThousands {
+                triggerFocus = true
+            } else {
+                isFocused = true
+            }
         }
     }
 }
@@ -247,6 +291,7 @@ struct OzetKrediKart: View {
     let value: Double
     let color: Color
     var icon: String = "creditcard"
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -256,11 +301,12 @@ struct OzetKrediKart: View {
                     .foregroundColor(color)
                 Text(title)
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.75))
+                    .foregroundColor(appTheme.textSecondary)
                     .lineLimit(1)
             }
             Text(formatCurrency(value))
                 .font(.system(size: 13, weight: .bold))
+                .monospacedDigit()
                 .foregroundColor(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -271,6 +317,7 @@ struct OzetKrediKart: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(color.opacity(0.12))
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.25), lineWidth: 1))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
         )
     }
 }
@@ -278,6 +325,7 @@ struct OzetKrediKart: View {
 struct TuketiciKredisiTablo: View {
     let odemePlani: [KrediCalculator.OdemeSatiri]
     var temaRengi: Color = Color(hex: "8B5CF6")
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
@@ -309,10 +357,10 @@ struct TuketiciKredisiTablo: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.05))
+                .fill(appTheme.listRowBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(appTheme.cardStroke.opacity(appTheme.isLight ? 0.8 : 0.3), lineWidth: 1)
                 )
         )
     }
@@ -320,58 +368,67 @@ struct TuketiciKredisiTablo: View {
 
 struct TaksitSatirView: View {
     let satir: KrediCalculator.OdemeSatiri
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         HStack(spacing: 0) {
             Text("\(satir.taksitNo)")
                 .frame(width: 44, alignment: .center)
                 .font(.subheadline.weight(.medium))
-                .foregroundColor(.white.opacity(0.9))
+                .foregroundColor(appTheme.textPrimary)
             Text(formatCurrency(satir.taksitTutari))
                 .frame(width: 92, alignment: .trailing)
                 .font(.subheadline)
-                .foregroundColor(.white)
+                .monospacedDigit()
+                .foregroundColor(appTheme.textPrimary)
             Text(formatCurrency(satir.anapara))
                 .frame(width: 92, alignment: .trailing)
                 .font(.subheadline)
+                .monospacedDigit()
                 .foregroundColor(Color(hex: "34D399"))
             Text(formatCurrency(satir.faiz))
                 .frame(width: 82, alignment: .trailing)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.9))
+                .monospacedDigit()
+                .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(satir.kkdf))
                 .frame(width: 72, alignment: .trailing)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
+                .monospacedDigit()
+                .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(satir.bsmv))
                 .frame(width: 72, alignment: .trailing)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
+                .monospacedDigit()
+                .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(satir.kalanAnapara))
                 .frame(width: 92, alignment: .trailing)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .monospacedDigit()
+                .foregroundColor(appTheme.textSecondary)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(satir.taksitNo.isMultiple(of: 2) ? Color.white.opacity(0.02) : Color.clear)
+        .background(satir.taksitNo.isMultiple(of: 2) ? appTheme.textSecondary.opacity(0.05) : Color.clear)
     }
 }
 
 struct TabloBaslik: View {
     let text: String
     let width: CGFloat
+    @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
         Text(text)
             .frame(width: width, alignment: text == "No" ? .center : .trailing)
             .font(.caption.weight(.semibold))
-            .foregroundColor(.white.opacity(0.95))
+            .foregroundColor(appTheme.textPrimary)
     }
 }
 
 #Preview {
     NavigationStack {
         TuketiciKredisiView()
+            .environmentObject(AppTheme())
     }
 }

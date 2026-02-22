@@ -22,19 +22,17 @@ class DataManager: ObservableObject {
     private let aylikMaaslarKey = "finans_aylik_maaslar"
     private let cloudKitMigratedKey = "finans_cloudkit_migrated"
     
-    private let cloudKit = CloudKitSync.shared
+    /// iCloud entitlement yokken CloudKit çağrıları crash yapıyor. Developer Portal'da iCloud ayarlanınca true yapın.
+    private let useCloudKit = false
     
     init() {
         loadData()
     }
     
     private func loadData() {
-        // Önce UserDefaults'tan yükle (hızlı başlangıç, offline desteği)
         loadFromUserDefaults()
-        
-        // CloudKit'dan senkronize et (background)
-        Task {
-            await syncFromCloudKit()
+        if useCloudKit {
+            Task { await syncFromCloudKit() }
         }
     }
     
@@ -73,14 +71,15 @@ class DataManager: ObservableObject {
     }
     
     private func syncFromCloudKit() async {
-        guard await cloudKit.isCloudAvailable() else { return }
+        guard useCloudKit, await CloudKitSync.shared.isCloudAvailable() else { return }
         
+        let ck = CloudKitSync.shared
         do {
-            let cloudIncomes = try await cloudKit.fetchIncomes()
-            let cloudExpenses = try await cloudKit.fetchExpenses()
-            let cloudAssets = try await cloudKit.fetchAssets()
-            let cloudAylikMaaslar = try await cloudKit.fetchAylikMaaslar()
-            let (cloudSources, cloudCategories, cloudTypes) = try await cloudKit.fetchSettings()
+            let cloudIncomes = try await ck.fetchIncomes()
+            let cloudExpenses = try await ck.fetchExpenses()
+            let cloudAssets = try await ck.fetchAssets()
+            let cloudAylikMaaslar = try await ck.fetchAylikMaaslar()
+            let (cloudSources, cloudCategories, cloudTypes) = try await ck.fetchSettings()
             
             let cloudHasData = !cloudIncomes.isEmpty || !cloudExpenses.isEmpty || !cloudAssets.isEmpty || !cloudAylikMaaslar.isEmpty || !cloudSources.isEmpty || !cloudCategories.isEmpty || !cloudTypes.isEmpty
             let localHasData = !incomes.isEmpty || !expenses.isEmpty || !assets.isEmpty || !aylikMaaslar.isEmpty || !customIncomeSources.isEmpty || !customExpenseCategories.isEmpty || !customAssetTypes.isEmpty
@@ -98,7 +97,7 @@ class DataManager: ObservableObject {
                 saveAllToUserDefaults()
             } else if localHasData && !migrated {
                 // Yerel veri var, CloudKit boş: Migrasyon - yerel veriyi CloudKit'a yükle
-                await uploadToCloudKit()
+                await uploadToCloudKit() // useCloudKit true iken çalışır
                 UserDefaults.standard.set(true, forKey: cloudKitMigratedKey)
             }
         } catch {
@@ -125,25 +124,26 @@ class DataManager: ObservableObject {
     }
     
     private func uploadToCloudKit() async {
-        guard await cloudKit.isCloudAvailable() else { return }
+        guard await CloudKitSync.shared.isCloudAvailable() else { return }
         do {
-            try await cloudKit.saveIncomes(incomes)
-            try await cloudKit.saveExpenses(expenses)
-            try await cloudKit.saveAssets(assets)
-            try await cloudKit.saveAylikMaaslar(aylikMaaslar)
-            try await cloudKit.saveSettings(customIncomeSources: customIncomeSources, customExpenseCategories: customExpenseCategories, customAssetTypes: customAssetTypes)
+            try await CloudKitSync.shared.saveIncomes(incomes)
+            try await CloudKitSync.shared.saveExpenses(expenses)
+            try await CloudKitSync.shared.saveAssets(assets)
+            try await CloudKitSync.shared.saveAylikMaaslar(aylikMaaslar)
+            try await CloudKitSync.shared.saveSettings(customIncomeSources: customIncomeSources, customExpenseCategories: customExpenseCategories, customAssetTypes: customAssetTypes)
         } catch { }
     }
     
     private func syncToCloudKit() {
+        guard useCloudKit else { return }
         Task {
-            guard await cloudKit.isCloudAvailable() else { return }
+            guard await CloudKitSync.shared.isCloudAvailable() else { return }
             do {
-                try await cloudKit.saveIncomes(incomes)
-                try await cloudKit.saveExpenses(expenses)
-                try await cloudKit.saveAssets(assets)
-                try await cloudKit.saveAylikMaaslar(aylikMaaslar)
-                try await cloudKit.saveSettings(customIncomeSources: customIncomeSources, customExpenseCategories: customExpenseCategories, customAssetTypes: customAssetTypes)
+                try await CloudKitSync.shared.saveIncomes(incomes)
+                try await CloudKitSync.shared.saveExpenses(expenses)
+                try await CloudKitSync.shared.saveAssets(assets)
+                try await CloudKitSync.shared.saveAylikMaaslar(aylikMaaslar)
+                try await CloudKitSync.shared.saveSettings(customIncomeSources: customIncomeSources, customExpenseCategories: customExpenseCategories, customAssetTypes: customAssetTypes)
             } catch { }
         }
     }
@@ -160,6 +160,22 @@ class DataManager: ObservableObject {
         expenses.append(expense)
         saveExpenses()
         syncToCloudKit()
+    }
+    
+    func updateIncome(_ income: Income) {
+        if let idx = incomes.firstIndex(where: { $0.id == income.id }) {
+            incomes[idx] = income
+            saveIncomes()
+            syncToCloudKit()
+        }
+    }
+    
+    func updateExpense(_ expense: Expense) {
+        if let idx = expenses.firstIndex(where: { $0.id == expense.id }) {
+            expenses[idx] = expense
+            saveExpenses()
+            syncToCloudKit()
+        }
     }
     
     func addCustomIncomeSource(_ source: String) {
@@ -294,21 +310,24 @@ class DataManager: ObservableObject {
     
     func tumAylariDoldur(brut: Double, yil: Int) {
         let brutlar = Array(repeating: brut, count: 12)
-        let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: brutlar)
-        
+        let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: brutlar, primler: nil)
         for (index, sonuc) in sonuclar.enumerated() {
             let ay = index + 1
             let kesintiCodable = sonuc.kesintiler.map { KesintiKalemCodable(ad: $0.ad, tutar: $0.tutar, oran: $0.oran) }
-            let maas = AylikMaas(ay: ay, brutTutar: brut, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
+            let maas = AylikMaas(ay: ay, brutTutar: brut, primTutar: 0, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
             setAylikMaas(maas)
         }
     }
     
-    func ayGuncelle(ay: Int, brut: Double, yil: Int) {
-        let oncekiAylarBrut = (1..<ay).compactMap { getAylikMaas(ay: $0, yil: yil)?.brutTutar }
-        let sonuc = BrutNetCalculator.hesapla(brut: brut, ay: ay, oncekiAylarBrutlari: oncekiAylarBrut)
+    func ayGuncelle(ay: Int, brut: Double, prim: Double = 0, yil: Int) {
+        var brutlar = (1...12).map { getAylikMaas(ay: $0, yil: yil)?.brutTutar ?? 0 }
+        var primler = (1...12).map { getAylikMaas(ay: $0, yil: yil)?.primTutar ?? 0 }
+        brutlar[ay - 1] = brut
+        primler[ay - 1] = prim
+        let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: brutlar, primler: primler)
+        let sonuc = sonuclar[ay - 1]
         let kesintiCodable = sonuc.kesintiler.map { KesintiKalemCodable(ad: $0.ad, tutar: $0.tutar, oran: $0.oran) }
-        let maas = AylikMaas(ay: ay, brutTutar: brut, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
+        let maas = AylikMaas(ay: ay, brutTutar: brut, primTutar: prim, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
         setAylikMaas(maas)
     }
     

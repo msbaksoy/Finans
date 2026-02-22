@@ -29,6 +29,21 @@
 		A1000020 /* KrediPdfOlusturucu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020 /* KrediPdfOlusturucu.swift */; };
 		A1000021 /* TasitKredisiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000021 /* TasitKredisiView.swift */; };
 		A1000022 /* CloudKitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022 /* CloudKitSync.swift */; };
+		A1000026 /* BudgetPdfOlusturucu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000027 /* BudgetPdfOlusturucu.swift */; };
+		A1000027 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000028 /* AppTheme.swift */; };
+		A1000029 /* MevduatFaiziView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000029 /* MevduatFaiziView.swift */; };
+		A1000030 /* KrediConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* KrediConfigService.swift */; };
+		A1000031 /* MevduatConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031 /* MevduatConfigService.swift */; };
+		A1000032 /* YanHakModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032 /* YanHakModels.swift */; };
+		A1000033 /* YanHakAnaliziView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000033 /* YanHakAnaliziView.swift */; };
+		A1000034 /* GeminiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000034 /* GeminiService.swift */; };
+		A1000035 /* DeepSeekService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000035 /* DeepSeekService.swift */; };
+		A1000036 /* GroqService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000036 /* GroqService.swift */; };
+		A1000037 /* YanHakRaporView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000037 /* YanHakRaporView.swift */; };
+		A1000038 /* YanHakKayitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000038 /* YanHakKayitStore.swift */; };
+		A1000039 /* CVModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000039 /* CVModel.swift */; };
+		A1000040 /* CVOlusturView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000040 /* CVOlusturView.swift */; };
+		A1000041 /* CVTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000041 /* CVTemplateView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +70,21 @@
 		A2000021 /* TasitKredisiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasitKredisiView.swift; sourceTree = "<group>"; };
 		A2000022 /* CloudKitSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSync.swift; sourceTree = "<group>"; };
 		A2000023 /* Finans.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Finans.entitlements; sourceTree = "<group>"; };
+		A2000027 /* BudgetPdfOlusturucu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetPdfOlusturucu.swift; sourceTree = "<group>"; };
+		A2000028 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		A2000029 /* MevduatFaiziView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MevduatFaiziView.swift; sourceTree = "<group>"; };
+		A2000030 /* KrediConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediConfigService.swift; sourceTree = "<group>"; };
+		A2000031 /* MevduatConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MevduatConfigService.swift; sourceTree = "<group>"; };
+		A2000032 /* YanHakModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakModels.swift; sourceTree = "<group>"; };
+		A2000033 /* YanHakAnaliziView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakAnaliziView.swift; sourceTree = "<group>"; };
+		A2000034 /* GeminiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiService.swift; sourceTree = "<group>"; };
+		A2000035 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };
+		A2000036 /* GroqService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroqService.swift; sourceTree = "<group>"; };
+		A2000037 /* YanHakRaporView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakRaporView.swift; sourceTree = "<group>"; };
+		A2000038 /* YanHakKayitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakKayitStore.swift; sourceTree = "<group>"; };
+		A2000039 /* CVModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVModel.swift; sourceTree = "<group>"; };
+		A2000040 /* CVOlusturView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVOlusturView.swift; sourceTree = "<group>"; };
+		A2000041 /* CVTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVTemplateView.swift; sourceTree = "<group>"; };
 		A3000001 /* Finans.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Finans.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -84,10 +114,24 @@
 				A2000002 /* ContentView.swift */,
 				A2000023 /* Finans.entitlements */,
 				A5000004 /* Models */,
+				A5000006 /* Services */,
 				A5000005 /* Views */,
 				A2000008 /* Assets.xcassets */,
 			);
 			path = Finans/Finans;
+			sourceTree = "<group>";
+		};
+		A5000006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A2000030 /* KrediConfigService.swift */,
+				A2000031 /* MevduatConfigService.swift */,
+				A2000034 /* GeminiService.swift */,
+				A2000035 /* DeepSeekService.swift */,
+				A2000036 /* GroqService.swift */,
+				A2000038 /* YanHakKayitStore.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		A5000003 /* Products */ = {
@@ -109,6 +153,10 @@
 				A2000016 /* KrediCalculator.swift */,
 				A2000020 /* KrediPdfOlusturucu.swift */,
 				A2000022 /* CloudKitSync.swift */,
+				A2000027 /* BudgetPdfOlusturucu.swift */,
+				A2000028 /* AppTheme.swift */,
+				A2000032 /* YanHakModels.swift */,
+				A2000039 /* CVModel.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -127,6 +175,11 @@
 				A2000018 /* TuketiciKredisiView.swift */,
 				A2000019 /* KonutKredisiView.swift */,
 				A2000021 /* TasitKredisiView.swift */,
+				A2000029 /* MevduatFaiziView.swift */,
+				A2000033 /* YanHakAnaliziView.swift */,
+				A2000037 /* YanHakRaporView.swift */,
+				A2000040 /* CVOlusturView.swift */,
+				A2000041 /* CVTemplateView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -159,7 +212,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2640;
 				TargetAttributes = {
 					A6000001 = {
 						CreatedOnToolsVersion = 15.0;
@@ -222,6 +275,21 @@
 				A1000021 /* TasitKredisiView.swift in Sources */,
 				A1000020 /* KrediPdfOlusturucu.swift in Sources */,
 				A1000022 /* CloudKitSync.swift in Sources */,
+				A1000026 /* BudgetPdfOlusturucu.swift in Sources */,
+				A1000027 /* AppTheme.swift in Sources */,
+				A1000029 /* MevduatFaiziView.swift in Sources */,
+				A1000030 /* KrediConfigService.swift in Sources */,
+				A1000031 /* MevduatConfigService.swift in Sources */,
+				A1000032 /* YanHakModels.swift in Sources */,
+				A1000033 /* YanHakAnaliziView.swift in Sources */,
+				A1000034 /* GeminiService.swift in Sources */,
+				A1000035 /* DeepSeekService.swift in Sources */,
+				A1000036 /* GroqService.swift in Sources */,
+				A1000037 /* YanHakRaporView.swift in Sources */,
+				A1000038 /* YanHakKayitStore.swift in Sources */,
+				A1000039 /* CVModel.swift in Sources */,
+				A1000040 /* CVOlusturView.swift in Sources */,
+				A1000041 /* CVTemplateView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +301,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -262,7 +331,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -284,6 +355,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -294,6 +366,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -323,7 +396,9 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -338,6 +413,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -350,8 +426,8 @@
 				CODE_SIGN_ENTITLEMENTS = Finans/Finans/Finans.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Finans;
@@ -360,6 +436,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -367,7 +444,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.finans.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -385,8 +461,8 @@
 				CODE_SIGN_ENTITLEMENTS = Finans/Finans/Finans.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = Finans;
@@ -395,6 +471,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -402,7 +479,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.finans.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;

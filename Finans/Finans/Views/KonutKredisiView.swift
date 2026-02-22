@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 
 struct KonutKredisiView: View {
+    @EnvironmentObject var appTheme: AppTheme
     @State private var anaparaText = ""
     @State private var vadeText = ""
     @State private var faizOraniText = ""
@@ -10,11 +11,13 @@ struct KonutKredisiView: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     private var odemePlani: [KrediCalculator.KonutOdemeSatiri] {
-        guard let anapara = Double(anaparaText.replacingOccurrences(of: ".", with: "").replacingOccurrences(of: ",", with: ".")),
-              let vade = Int(vadeText),
-              let faiz = Double(faizOraniText.replacingOccurrences(of: ",", with: ".")),
-              anapara > 0, vade >= 1, vade <= 120, faiz >= 0
+        guard let anapara = parseFormattedNumber(anaparaText),
+              let vadeD = parseFormattedNumber(vadeText),
+              let faiz = parseFormattedNumber(faizOraniText),
+              anapara > 0, faiz >= 0
         else { return [] }
+        let vade = Int(vadeD)
+        guard vade >= 1, vade <= 120 else { return [] }
         return KrediCalculator.konutKredisiHesapla(anapara: anapara, vade: vade, aylikFaizOrani: faiz)
     }
     
@@ -22,8 +25,7 @@ struct KonutKredisiView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(hex: "0F172A"), Color(hex: "1a1f3a")], startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea()
+            appTheme.background.ignoresSafeArea()
             
             if isLandscape && !odemePlani.isEmpty {
                 konutLandscapeView
@@ -33,8 +35,8 @@ struct KonutKredisiView: View {
         }
         .navigationTitle("Konut Kredisi")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarColorScheme(.dark, for: .navigationBar)
-        .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+        .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+        .toolbarBackground(appTheme.background, for: .navigationBar)
         .sheet(isPresented: $showPdfShare) {
             if let data = pdfData {
                 PdfShareSheet(pdfData: data)
@@ -56,7 +58,7 @@ struct KonutKredisiView: View {
                     .foregroundColor(Color(hex: "06B6D4"))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color(hex: "1E293B").opacity(0.95))
+                    .background(appTheme.backgroundSecondary.opacity(0.95))
                     .cornerRadius(12)
             }
             .padding(16)
@@ -87,16 +89,17 @@ struct KonutKredisiView: View {
             HStack(spacing: 10) {
                 KrediTextField(title: "Anapara (₺)", text: $anaparaText, placeholder: "2.000.000", keyboardType: .decimalPad, formatThousands: true)
                     .frame(maxWidth: .infinity)
-                KrediTextField(title: "Vade (ay)", text: $vadeText, placeholder: "120", keyboardType: .numberPad)
+                KrediTextField(title: "Vade (ay)", text: $vadeText, placeholder: "120", keyboardType: .numberPad, formatThousands: true)
                     .frame(maxWidth: .infinity)
             }
-            KrediTextField(title: "Aylık Faiz (%)", text: $faizOraniText, placeholder: "2,50", keyboardType: .decimalPad, suffix: "%")
+            KrediTextField(title: "Aylık Faiz (%)", text: $faizOraniText, placeholder: "2,50", keyboardType: .decimalPad, suffix: "%", formatThousands: true, allowDecimals: true)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.06))
+                .fill(appTheme.listRowBackground)
                 .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "06B6D4").opacity(0.3), lineWidth: 1))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
         )
     }
     
@@ -202,5 +205,6 @@ struct KonutTaksitSatirView: View {
 #Preview {
     NavigationStack {
         KonutKredisiView()
+            .environmentObject(AppTheme())
     }
 }

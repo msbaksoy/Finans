@@ -1,7 +1,7 @@
 import Foundation
 
-/// Türkiye brüt maaştan net maaş hesaplama - 2026 parametreleri
-/// Kümülatif gelir vergisi matrahı ve asgari ücret vergi istisnası dahil
+/// Türkiye 2026 bordro mevzuatına uygun PayrollEngine
+/// Kümülatif vergi, devreden SGK matrahı ve asgari ücret vergi istisnası dahil
 struct BrutNetCalculator {
     
     // MARK: - 2026 Parametreleri
@@ -9,12 +9,11 @@ struct BrutNetCalculator {
     private static let issizlikIsciOrani: Double = 0.01      // %1
     private static let sgkIsverenOrani: Double = 0.155       // %15,5
     private static let issizlikIsverenOrani: Double = 0.02   // %2
-    private static let sgkTavani: Double = 297_270           // Aylık SGK tavanı (TL)
+    private static let sgkTavani: Double = 297_270           // SGK Tavanı (TL)
     private static let asgariUcretBrut: Double = 33_030      // Brüt asgari ücret (TL)
-    private static let damgaVergisiOrani: Double = 0.00759   // %0,759
+    private static let damgaVergisiOrani: Double = 0.00759   // %0,759 (asgari ücret kadar istisna)
     
-    // Asgari ücret matrahı: 33030 - (33030×0.14) - (33030×0.01) = 33030 × 0.85 = 28.075,50
-    private static let asgariUcretMatrah: Double = 28_075.50
+    private static let asgariUcretMatrah: Double = 28_075.50 // 33030 × 0.85
     
     // Gelir vergisi dilimleri 2026 (Yıllık kümülatif matrah - TL)
     private static let gelirVergisiDilimleri: [(ustSinir: Double, oran: Double)] = [
@@ -25,131 +24,73 @@ struct BrutNetCalculator {
         (Double.infinity, 0.40)
     ]
     
+    /// Devreden SGK matrahı — 2 ay ömürlü
+    private struct SGKCarryOver {
+        var amount: Double
+        var remainingMonths: Int
+    }
+    
     struct Sonuc {
         let brut: Double
+        let prim: Double
         let net: Double
         let kesintiler: [KesintiKalemi]
         let toplamKesinti: Double
     }
     
-    /// Tek bir ay için hesaplama. Önceki ayların brüt maaşları kümülatif matrah için gerekli.
-    /// - Parameters:
-    ///   - brut: Bu ayki brüt maaş
-    ///   - ay: Ay (1-12)
-    ///   - oncekiAylarBrutlari: 1. aydan (ay-1)'e kadar olan brüt maaşlar [Ocak, Şubat, ...]
-    static func hesapla(brut: Double, ay: Int = 1, oncekiAylarBrutlari: [Double] = []) -> Sonuc {
-        guard brut > 0 else {
-            return Sonuc(brut: 0, net: 0, kesintiler: [], toplamKesinti: 0)
+    /// Yıllık hesaplama — (brut, prim) çiftleri; hesaplaYillikDetayli üzerinden
+    static func hesaplaYillik(brutlar: [Double], primler: [Double]? = nil) -> [Sonuc] {
+        let detaylar = hesaplaYillikDetayli(brutlar: brutlar, primler: primler)
+        return detaylar.map { d in
+            let kesintiler = [
+                KesintiKalemi(ad: "SGK İşçi Payı", tutar: d.sgkIsci, oran: 14),
+                KesintiKalemi(ad: "İşsizlik Sigortası İşçi Payı", tutar: d.issizlikIsci, oran: 1),
+                KesintiKalemi(ad: "Gelir Vergisi", tutar: d.aylikGelirVergisi, oran: nil),
+                KesintiKalemi(ad: "Damga Vergisi", tutar: d.damgaVergisi, oran: 0.759)
+            ]
+            let toplamKesinti = d.sgkIsci + d.issizlikIsci + d.aylikGelirVergisi + d.damgaVergisi
+            return Sonuc(brut: d.brut, prim: d.prim, net: d.toplamNetEleGecen, kesintiler: kesintiler, toplamKesinti: toplamKesinti)
         }
-        
-        var kesintiler: [KesintiKalemi] = []
-        
-        // Adım 1: SGK kesintileri (tavan uygulanır)
-        let sgkBase = min(brut, sgkTavani)
-        let sgkIsci = (sgkBase * sgkIsciOrani).yuvarla()
-        let issizlikIsci = (sgkBase * issizlikIsciOrani).yuvarla()
-        
-        kesintiler.append(KesintiKalemi(ad: "SGK İşçi Payı", tutar: sgkIsci, oran: 14))
-        kesintiler.append(KesintiKalemi(ad: "İşsizlik Sigortası İşçi Payı", tutar: issizlikIsci, oran: 1))
-        
-        // Adım 2: Bu ayki gelir vergisi matrahı
-        let aylikMatrah = (brut - sgkIsci - issizlikIsci).yuvarla()
-        
-        // Adım 3-4: Kümülatif matrah ve vergi (önceki aylar + bu ay)
-        let oncekiAylarMatrahlari = oncekiAylarBrutlari.map { ob -> Double in
-            let base = min(ob, sgkTavani)
-            let sgk = (base * sgkIsciOrani).yuvarla()
-            let iss = (base * issizlikIsciOrani).yuvarla()
-            return (ob - sgk - iss).yuvarla()
-        }
-        let kumulatifMatrahOnceki = oncekiAylarMatrahlari.reduce(0, +)
-        let kumulatifMatrahBuAy = kumulatifMatrahOnceki + aylikMatrah
-        
-        // Brüt gelir vergisi (bu ay için): Bu ay sonu kümülatif vergi - Geçen ay sonu kümülatif vergi
-        let kumulatifVergiOnceki = kumulatifVergiHesapla(matrah: kumulatifMatrahOnceki)
-        let kumulatifVergiBuAy = kumulatifVergiHesapla(matrah: kumulatifMatrahBuAy)
-        let brutGelirVergisi = (kumulatifVergiBuAy - kumulatifVergiOnceki).yuvarla()
-        
-        // Adım 4: Asgari ücret vergi istisnası
-        let oncekiAySayisi = oncekiAylarBrutlari.count
-        let kumulatifAsgariMatrahOnceki = Double(oncekiAySayisi) * asgariUcretMatrah
-        let kumulatifAsgariMatrahBuAy = Double(oncekiAySayisi + 1) * asgariUcretMatrah
-        let asgariVergiOnceki = kumulatifVergiHesapla(matrah: kumulatifAsgariMatrahOnceki)
-        let asgariVergiBuAy = kumulatifVergiHesapla(matrah: kumulatifAsgariMatrahBuAy)
-        let asgariIstisnaBuAy = (asgariVergiBuAy - asgariVergiOnceki).yuvarla()
-        
-        // Net gelir vergisi (istisna düşülmüş)
-        let netGelirVergisi = max(0, (brutGelirVergisi - asgariIstisnaBuAy).yuvarla())
-        kesintiler.append(KesintiKalemi(ad: "Gelir Vergisi", tutar: netGelirVergisi, oran: nil))
-        
-        // Adım 5: Damga vergisi (asgari ücret üzeri kısımdan)
-        let damgaMatrah = max(0, brut - asgariUcretBrut)
-        let damgaVergisi = (damgaMatrah * damgaVergisiOrani).yuvarla()
-        kesintiler.append(KesintiKalemi(ad: "Damga Vergisi", tutar: damgaVergisi, oran: 0.759))
-        
-        // Adım 6: Net maaş
-        let toplamKesinti = kesintiler.reduce(0) { $0 + $1.tutar }
-        let net = (brut - toplamKesinti).yuvarla()
-        
-        return Sonuc(brut: brut, net: net, kesintiler: kesintiler, toplamKesinti: toplamKesinti)
     }
     
-    /// Kümülatif matraha göre toplam vergi (yıllık dilimler)
-    private static func kumulatifVergiHesapla(matrah: Double) -> Double {
-        guard matrah > 0 else { return 0 }
-        
-        var vergi: Double = 0
-        var kalanMatrah = matrah
-        var oncekiSinir: Double = 0
-        
-        for dilim in gelirVergisiDilimleri {
-            let dilimGenisligi = dilim.ustSinir - oncekiSinir
-            let dilimTutari = min(kalanMatrah, dilimGenisligi)
-            if dilimTutari <= 0 { break }
-            
-            vergi += dilimTutari * dilim.oran
-            kalanMatrah -= dilimTutari
-            oncekiSinir = dilim.ustSinir
-            
-            if kalanMatrah <= 0 { break }
-        }
-        
-        return vergi
-    }
-    
-    /// Yıllık tüm aylar için hesaplama (döngü ile, kümülatif matrah doğru akar)
-    static func hesaplaYillik(brutlar: [Double]) -> [Sonuc] {
-        var sonuclar: [Sonuc] = []
-        var oncekiAylarBrut: [Double] = []
-        
-        for (index, brut) in brutlar.enumerated() {
-            let ay = index + 1
-            let sonuc = hesapla(brut: brut, ay: ay, oncekiAylarBrutlari: oncekiAylarBrut)
-            sonuclar.append(sonuc)
-            oncekiAylarBrut.append(brut)
-        }
-        
-        return sonuclar
-    }
-    
-    /// Yıllık detaylı hesaplama (tablo gösterimi için tüm sütunlar)
-    static func hesaplaYillikDetayli(brutlar: [Double]) -> [AylikBrutNetDetay] {
+    /// Yıllık detaylı hesaplama (tablo için)
+    static func hesaplaYillikDetayli(brutlar: [Double], primler: [Double]? = nil) -> [AylikBrutNetDetay] {
+        let primList = primler ?? Array(repeating: 0, count: brutlar.count)
         var detaylar: [AylikBrutNetDetay] = []
-        var oncekiAylarBrut: [Double] = []
+        var devreden: [SGKCarryOver] = []
+        var oncekiAylarMatrahlari: [Double] = []
         
-        for (index, brut) in brutlar.enumerated() {
-            guard brut > 0 else {
-                detaylar.append(AylikBrutNetDetay(ay: index + 1, brut: 0, sgkIsci: 0, issizlikIsci: 0, aylikGelirVergisi: 0, damgaVergisi: 0, kumulatifVergiMatrahi: 0, netVergiOncesi: 0, agi: 0, asgariUcretGVIstisnasi: 0, asgariUcretDVIstisnasi: 0, toplamNetEleGecen: 0, sgkIsveren: 0, issizlikIsveren: 0, toplamMaliyet: 0))
-                oncekiAylarBrut.append(0)
+        for index in 0..<12 {
+            let brut = index < brutlar.count ? brutlar[index] : 0
+            let prim = index < primList.count ? primList[index] : 0
+            let brutArtıPrim = brut + prim
+            
+            guard brutArtıPrim > 0 else {
+                detaylar.append(AylikBrutNetDetay(ay: index + 1, brut: brut, prim: prim, sgkIsci: 0, issizlikIsci: 0, aylikGelirVergisi: 0, damgaVergisi: 0, kumulatifVergiMatrahi: 0, netVergiOncesi: 0, agi: 0, asgariUcretGVIstisnasi: 0, asgariUcretDVIstisnasi: 0, toplamNetEleGecen: 0, sgkIsveren: 0, issizlikIsveren: 0, toplamMaliyet: 0))
+                oncekiAylarMatrahlari.append(0)
                 continue
             }
             
-            let sgkBase = min(brut, sgkTavani)
-            let sgkIsci = (sgkBase * sgkIsciOrani).yuvarla()
-            let issizlikIsci = (sgkBase * issizlikIsciOrani).yuvarla()
-            let aylikMatrah = (brut - sgkIsci - issizlikIsci).yuvarla()
+            let carryToplam = devreden.reduce(0) { $0 + $1.amount }
+            let totalPotential = brutArtıPrim + carryToplam
+            let appliedMatrah = min(totalPotential, sgkTavani)
+            let currentMonthExcess = max(0, brutArtıPrim - sgkTavani)
             
-            let oncekiAylarMatrahlari = oncekiAylarBrutlariMatrahlari(oncekiAylarBrut)
+            var yeniListe: [SGKCarryOver] = []
+            if currentMonthExcess > 0 {
+                yeniListe.append(SGKCarryOver(amount: currentMonthExcess, remainingMonths: 2))
+            }
+            for item in devreden {
+                if item.remainingMonths > 1 {
+                    yeniListe.append(SGKCarryOver(amount: item.amount, remainingMonths: item.remainingMonths - 1))
+                }
+            }
+            devreden = yeniListe
+            
+            let sgkIsci = (appliedMatrah * sgkIsciOrani).yuvarla()
+            let issizlikIsci = (appliedMatrah * issizlikIsciOrani).yuvarla()
+            let aylikMatrah = (brutArtıPrim - sgkIsci - issizlikIsci).yuvarla()
+            
             let kumulatifMatrahOnceki = oncekiAylarMatrahlari.reduce(0, +)
             let kumulatifMatrahBuAy = kumulatifMatrahOnceki + aylikMatrah
             
@@ -157,7 +98,7 @@ struct BrutNetCalculator {
             let kumulatifVergiBuAy = kumulatifVergiHesapla(matrah: kumulatifMatrahBuAy)
             let brutGelirVergisi = (kumulatifVergiBuAy - kumulatifVergiOnceki).yuvarla()
             
-            let oncekiAySayisi = oncekiAylarBrut.count
+            let oncekiAySayisi = oncekiAylarMatrahlari.count
             let kumulatifAsgariMatrahOnceki = Double(oncekiAySayisi) * asgariUcretMatrah
             let kumulatifAsgariMatrahBuAy = Double(oncekiAySayisi + 1) * asgariUcretMatrah
             let asgariVergiOnceki = kumulatifVergiHesapla(matrah: kumulatifAsgariMatrahOnceki)
@@ -165,21 +106,21 @@ struct BrutNetCalculator {
             let asgariGVIstisnasi = (asgariVergiBuAy - asgariVergiOnceki).yuvarla()
             let netGelirVergisi = max(0, (brutGelirVergisi - asgariGVIstisnasi).yuvarla())
             
-            let damgaMatrah = max(0, brut - asgariUcretBrut)
+            let damgaMatrah = max(0, brutArtıPrim - asgariUcretBrut)
             let damgaVergisi = (damgaMatrah * damgaVergisiOrani).yuvarla()
             let asgariDVIstisnasi = (asgariUcretBrut * damgaVergisiOrani).yuvarla()
             
-            let netVergiOncesi = (brut - sgkIsci - issizlikIsci - brutGelirVergisi - damgaVergisi).yuvarla()
-            // Toplam Net = Net vergi öncesi + Asgari GV İstisnası (+ AGİ=0). Asgari DV istisnası sadece bilgi amaçlıdır.
+            let netVergiOncesi = (brutArtıPrim - sgkIsci - issizlikIsci - brutGelirVergisi - damgaVergisi).yuvarla()
             let toplamNetEleGecen = (netVergiOncesi + asgariGVIstisnasi).yuvarla()
             
-            let sgkIsveren = (sgkBase * sgkIsverenOrani).yuvarla()
-            let issizlikIsveren = (sgkBase * issizlikIsverenOrani).yuvarla()
-            let toplamMaliyet = (brut + sgkIsveren + issizlikIsveren).yuvarla()
+            let sgkIsveren = (appliedMatrah * sgkIsverenOrani).yuvarla()
+            let issizlikIsveren = (appliedMatrah * issizlikIsverenOrani).yuvarla()
+            let toplamMaliyet = (brutArtıPrim + sgkIsveren + issizlikIsveren).yuvarla()
             
             detaylar.append(AylikBrutNetDetay(
                 ay: index + 1,
                 brut: brut,
+                prim: prim,
                 sgkIsci: sgkIsci,
                 issizlikIsci: issizlikIsci,
                 aylikGelirVergisi: netGelirVergisi,
@@ -194,20 +135,27 @@ struct BrutNetCalculator {
                 issizlikIsveren: issizlikIsveren,
                 toplamMaliyet: toplamMaliyet
             ))
-            oncekiAylarBrut.append(brut)
+            oncekiAylarMatrahlari.append(aylikMatrah)
         }
         
         return detaylar
     }
     
-    private static func oncekiAylarBrutlariMatrahlari(_ brutlar: [Double]) -> [Double] {
-        brutlar.map { ob -> Double in
-            guard ob > 0 else { return 0 }
-            let base = min(ob, sgkTavani)
-            let sgk = (base * sgkIsciOrani).yuvarla()
-            let iss = (base * issizlikIsciOrani).yuvarla()
-            return (ob - sgk - iss).yuvarla()
+    private static func kumulatifVergiHesapla(matrah: Double) -> Double {
+        guard matrah > 0 else { return 0 }
+        var vergi: Double = 0
+        var kalanMatrah = matrah
+        var oncekiSinir: Double = 0
+        for dilim in gelirVergisiDilimleri {
+            let dilimGenisligi = dilim.ustSinir - oncekiSinir
+            let dilimTutari = min(kalanMatrah, dilimGenisligi)
+            if dilimTutari <= 0 { break }
+            vergi += dilimTutari * dilim.oran
+            kalanMatrah -= dilimTutari
+            oncekiSinir = dilim.ustSinir
+            if kalanMatrah <= 0 { break }
         }
+        return vergi
     }
 }
 
