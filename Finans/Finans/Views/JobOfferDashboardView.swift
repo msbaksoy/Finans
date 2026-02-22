@@ -12,71 +12,56 @@ struct PremiumCardModifier: ViewModifier {
     }
 }
 
-/// Kazanan teklifi gösteren yeşil tonlarında rozet
-struct WinnerBadgeView: View {
-    let text: String
-    
-    var body: some View {
-        Text(text)
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundColor(Color(UIColor.systemBackground))
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(UIColor.systemGreen),
-                                Color(UIColor.systemGreen).opacity(0.85)
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-            )
-    }
-}
-
 // MARK: - ADIM 2: ALT BİLEŞENLER (SUB-VIEWS)
 
-/// Şirket A ve Şirket B maaş karşılaştırması — ortada WinnerBadgeView
+/// Şirket A ve Şirket B maaş karşılaştırması — kazananın yanında checkmark, odak karmaşası yok
 struct SalaryComparisonRow: View {
     let companyA: String
     let salaryA: Double
     let companyB: String
     let salaryB: Double
-    let winnerText: String?
+    /// true = B kazandı, false = A kazandı, nil = vurgu yok
+    let winnerIsB: Bool?
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 20) {
             // Şirket A
             VStack(alignment: .leading, spacing: 8) {
                 Text(companyA)
                     .font(.subheadline)
                     .foregroundColor(Color(UIColor.secondaryLabel))
-                Text(formatCurrency(salaryA))
-                    .font(.headline)
-                    .monospacedDigit()
-                    .foregroundColor(Color(UIColor.label))
+                HStack(spacing: 6) {
+                    Text(formatCurrency(salaryA))
+                        .font(.system(.headline, design: .rounded))
+                        .fontWeight(.semibold)
+                        .monospacedDigit()
+                        .foregroundColor(Color(UIColor.label))
+                    if winnerIsB == false {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.systemGreen))
+                    }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            
-            // Kazanan rozeti
-            if let winner = winnerText {
-                WinnerBadgeView(text: winner)
-            }
             
             // Şirket B
             VStack(alignment: .trailing, spacing: 8) {
                 Text(companyB)
                     .font(.subheadline)
                     .foregroundColor(Color(UIColor.secondaryLabel))
-                Text(formatCurrency(salaryB))
-                    .font(.headline)
-                    .monospacedDigit()
-                    .foregroundColor(Color(UIColor.label))
+                HStack(spacing: 6) {
+                    if winnerIsB == true {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.subheadline)
+                            .foregroundColor(Color(UIColor.systemGreen))
+                    }
+                    Text(formatCurrency(salaryB))
+                        .font(.system(.headline, design: .rounded))
+                        .fontWeight(.semibold)
+                        .monospacedDigit()
+                        .foregroundColor(Color(UIColor.label))
+                }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
@@ -119,6 +104,7 @@ struct BenefitDetailRow: View {
                 .multilineTextAlignment(.leading)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .layoutPriority(1)
             
             Text(companyBValue)
                 .font(.subheadline)
@@ -127,16 +113,17 @@ struct BenefitDetailRow: View {
                 .multilineTextAlignment(.trailing)
                 .lineLimit(2)
                 .frame(maxWidth: .infinity, alignment: .trailing)
+                .layoutPriority(1)
         }
         .padding(.vertical, 12)
     }
 }
 
-/// Enflasyon etkisi — bilişsel yükü düşüren, taranabilir görsel sunum (saf kırmızı yok)
+/// Enflasyon etkisi — dinamik veri alır, Apple tipografi standartları (monospacedDigit, rounded), erişilebilir metin
 struct InflationImpactCard: View {
-    let todayValue: Double
-    let futureValue: Double
     let inflationRate: Int
+    let currentSalary: Double
+    let futureSalary: Double
     
     private func formatCurrency(_ value: Double) -> String {
         let formatter = NumberFormatter()
@@ -150,42 +137,59 @@ struct InflationImpactCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 8) {
-                Image(systemName: "chart.line.downtrend.xyaxis")
+                Image(systemName: "arrow.down.right.circle.fill")
                     .font(.title3)
-                    .foregroundColor(Color.orange.opacity(0.9))
+                    .foregroundColor(Color(UIColor.systemOrange))
                 Text("Enflasyon Projeksiyonu")
                     .font(.headline)
                     .foregroundColor(Color(UIColor.label))
             }
             
-            HStack(alignment: .bottom) {
-                Text("Bugünkü Değer:")
-                    .font(.subheadline)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                Spacer()
-                Text(formatCurrency(todayValue))
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .monospacedDigit()
-                    .strikethrough(true, color: Color.orange.opacity(0.6))
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
+            VStack(spacing: 8) {
+                HStack(alignment: .bottom) {
+                    Text("Bugünkü Değer")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .lineLimit(1)
+                    Spacer(minLength: 16)
+                    Text(formatCurrency(currentSalary))
+                        .font(.system(.title3, design: .rounded))
+                        .fontWeight(.semibold)
+                        .strikethrough(true, color: Color(UIColor.systemOrange).opacity(0.8))
+                        .foregroundColor(Color(UIColor.tertiaryLabel))
+                        .monospacedDigit()
+                }
+                
+                HStack(alignment: .bottom) {
+                    Text("12 Ay Sonra")
+                        .font(.subheadline)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                        .lineLimit(1)
+                    Spacer(minLength: 16)
+                    Text(formatCurrency(futureSalary))
+                        .font(.system(.title2, design: .rounded))
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(UIColor.label))
+                        .monospacedDigit()
+                }
             }
+            .padding(.vertical, 4)
             
-            HStack(alignment: .bottom) {
-                Text("12 Ay Sonra Alım Gücü:")
-                    .font(.subheadline)
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                Spacer()
-                Text(formatCurrency(futureValue))
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .monospacedDigit()
-                    .foregroundColor(Color(UIColor.label))
+            // Kaybedilen miktar rozeti
+            if currentSalary > futureSalary {
+                Text("- \(formatCurrency(currentSalary - futureSalary)) Kayıp")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(UIColor.systemOrange).opacity(0.15))
+                    .foregroundColor(Color(UIColor.systemOrange))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             
             Text("Beklenen %\(inflationRate) enflasyon ile alım gücünüzdeki tahmini erime.")
-                .font(.caption2)
+                .font(.caption)
                 .foregroundColor(Color(UIColor.secondaryLabel))
+                .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(24)
@@ -216,14 +220,14 @@ struct JobOfferDashboardView: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 16) {
                     // Maaş Karşılaştırması
                     SalaryComparisonRow(
                         companyA: mockCompanyA,
                         salaryA: mockSalaryA,
                         companyB: mockCompanyB,
                         salaryB: mockSalaryB,
-                        winnerText: "%15 Daha İyi"
+                        winnerIsB: true
                     )
                     .modifier(PremiumCardModifier())
                     
@@ -264,22 +268,23 @@ struct JobOfferDashboardView: View {
                     }
                     .modifier(PremiumCardModifier())
                     
-                    // Enflasyon Kartı
+                    // Enflasyon Kartı — dinamik: currentSalary, futureSalary dışarıdan verilir
                     InflationImpactCard(
-                        todayValue: mockTodayValue,
-                        futureValue: mockFutureValue,
-                        inflationRate: mockInflationRate
+                        inflationRate: mockInflationRate,
+                        currentSalary: mockTodayValue,
+                        futureSalary: mockFutureValue
                     )
                     .modifier(PremiumCardModifier())
                     
                     Spacer(minLength: 32)
                     
-                    // CTA Butonu — premium gradient, sparkles ikonu, yumuşak gölge
+                    // CTA Butonu — premium gradient, haptic feedback, yumuşak gölge
                     Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         // Yeni karşılaştırma aksiyonu
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
+                            Image(systemName: "wand.and.stars")
                             Text("Yapay Zeka ile Analiz Et")
                                 .fontWeight(.bold)
                         }
@@ -289,13 +294,13 @@ struct JobOfferDashboardView: View {
                         .padding(.vertical, 16)
                         .background(
                             LinearGradient(
-                                colors: [Color(hex: "007AFF"), Color(hex: "005BB5")],
+                                colors: [Color.accentColor, Color.accentColor.opacity(0.85)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: Color(hex: "007AFF").opacity(0.3), radius: 10, x: 0, y: 6)
+                        .shadow(color: Color.accentColor.opacity(0.3), radius: 10, x: 0, y: 6)
                     }
                     .buttonStyle(.plain)
                 }
