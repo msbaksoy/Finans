@@ -3,6 +3,7 @@ import SwiftUI
 struct AddExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     
     @State private var amount: String = ""
     @State private var selectedCategory: String = "Market"
@@ -22,31 +23,31 @@ struct AddExpenseView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: AppSpacing.xxl) {
                         // Tutar
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Tutar")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
-                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 32, fontWeight: .semibold)
-                                .foregroundColor(.white)
-                                .padding(20)
+                                .foregroundColor(appTheme.textSecondary)
+                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 24, fontWeight: .semibold, isLightMode: appTheme.isLight)
+                                .foregroundColor(appTheme.textPrimary)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                         }
                         .contentShape(Rectangle())
                         .onTapGesture { triggerAmountFocus = true }
                         
                         // Kategori
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Kategori")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             
                             Menu {
                                 ForEach(displayCategories, id: \.self) { category in
@@ -60,25 +61,25 @@ struct AddExpenseView: View {
                             } label: {
                                 HStack {
                                     Text(selectedCategory)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(appTheme.textPrimary)
                                     Spacer()
                                     Image(systemName: "chevron.down")
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(appTheme.textSecondary)
                                 }
-                                .padding(20)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                             }
                             
                             if isOtherSelected {
                                 TextField("Kategori adını girin (örn: Hobi)", text: $customCategory)
-                                    .foregroundColor(.white)
-                                    .padding(16)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.lg)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.white.opacity(0.06))
+                                        RoundedRectangle(cornerRadius: AppSpacing.md)
+                                            .fill(appTheme.formInputSecondary)
                                     )
                                     .focused($customCategoryFocused)
                             }
@@ -86,36 +87,36 @@ struct AddExpenseView: View {
                         .tappableToFocus($customCategoryFocused)
                         
                         // Harcama detayı / açıklama
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Harcama Detayı")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             TextField("Açıklama veya detay girin (örn: Migros alışverişi)", text: $detail, axis: .vertical)
                                 .lineLimit(3...6)
-                                .foregroundColor(.white)
-                                .padding(16)
+                                .foregroundColor(appTheme.textPrimary)
+                                .padding(AppSpacing.lg)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                                 .focused($detailFocused)
                         }
                         .tappableToFocus($detailFocused)
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Gider Ekle")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("İptal") {
                         dismiss()
                     }
-                    .foregroundColor(Color(hex: "94A3B8"))
+                    .foregroundColor(appTheme.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") {
@@ -159,6 +160,7 @@ struct EditExpenseView: View {
     let expense: Expense
     let onDismiss: () -> Void
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     
     @State private var amount: String = ""
     @State private var selectedCategory: String = "Market"
@@ -177,59 +179,59 @@ struct EditExpenseView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 ScrollView {
-                    VStack(spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Tutar").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
-                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 32, fontWeight: .semibold)
-                                .foregroundColor(.white).padding(20)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                    VStack(spacing: AppSpacing.xxl) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Tutar").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
+                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 24, fontWeight: .semibold, isLightMode: appTheme.isLight)
+                                .foregroundColor(appTheme.textPrimary).padding(AppSpacing.xl)
+                                .background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                         }
                         .contentShape(Rectangle()).onTapGesture { triggerAmountFocus = true }
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Kategori").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Kategori").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
                             Menu {
                                 ForEach(displayCategories, id: \.self) { category in
                                     Button(category) { selectedCategory = category; if category != "Diğer" { customCategory = "" } }
                                 }
                             } label: {
                                 HStack {
-                                    Text(selectedCategory).foregroundColor(.white)
+                                    Text(selectedCategory).foregroundColor(appTheme.textPrimary)
                                     Spacer()
-                                    Image(systemName: "chevron.down").foregroundColor(.white.opacity(0.6))
+                                    Image(systemName: "chevron.down").foregroundColor(appTheme.textSecondary)
                                 }
-                                .padding(20).background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                                .padding(AppSpacing.xl).background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                             }
                             if isOtherSelected {
                                 TextField("Kategori adını girin", text: $customCategory)
-                                    .foregroundColor(.white).padding(16)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
+                                    .foregroundColor(appTheme.textPrimary).padding(AppSpacing.lg)
+                                    .background(RoundedRectangle(cornerRadius: AppSpacing.md).fill(appTheme.formInputSecondary))
                                     .focused($customCategoryFocused)
                             }
                         }
                         .tappableToFocus($customCategoryFocused)
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Harcama Detayı").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Harcama Detayı").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
                             TextField("Açıklama veya detay", text: $detail, axis: .vertical)
-                                .lineLimit(3...6).foregroundColor(.white).padding(16)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                                .lineLimit(3...6).foregroundColor(appTheme.textPrimary).padding(AppSpacing.lg)
+                                .background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                                 .focused($detailFocused)
                         }
                         .tappableToFocus($detailFocused)
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Gider Düzenle")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("İptal") { onDismiss() }.foregroundColor(Color(hex: "94A3B8"))
+                    Button("İptal") { onDismiss() }.foregroundColor(appTheme.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") { saveExpense() }.fontWeight(.semibold).foregroundColor(Color(hex: "F87171"))
@@ -266,4 +268,5 @@ struct EditExpenseView: View {
 #Preview {
     AddExpenseView()
         .environmentObject(DataManager.shared)
+        .environmentObject(AppTheme())
 }

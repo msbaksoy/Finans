@@ -10,6 +10,7 @@ struct BrutNetView: View {
     @State private var showPdfShare = false
     @State private var pdfData: Data?
     @State private var yil: Int = Calendar.current.component(.year, from: Date())
+    @State private var detayTablosuAcik = false
     
     private var yilMaaslar: [AylikMaas] {
         dataManager.aylikMaaslar.filter { $0.yil == yil }.sorted { $0.ay < $1.ay }
@@ -82,6 +83,35 @@ struct BrutNetView: View {
                             ozetKartlari
                             aylikNetListesi
                             
+                            // Detay tablosu (katlanabilir)
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.3)) { detayTablosuAcik.toggle() }
+                                } label: {
+                                    HStack {
+                                        Text("Aylık Detay Tablosu")
+                                            .font(AppTypography.headline)
+                                            .foregroundColor(appTheme.textPrimary)
+                                        Spacer()
+                                        Image(systemName: detayTablosuAcik ? "chevron.up" : "chevron.down")
+                                            .font(AppTypography.footnote.weight(.semibold))
+                                            .foregroundColor(Color(hex: "F59E0B"))
+                                    }
+                                    .padding(AppSpacing.lg)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(appTheme.listRowBackground)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                                
+                                if detayTablosuAcik {
+                                    BrutNetDetayTablosu(detaylar: detayliSonuclar, yil: yil)
+                                        .frame(maxHeight: 400)
+                                        .transition(.opacity.combined(with: .move(edge: .top)))
+                                }
+                            }
+                            
                             Button {
                                 pdfData = BrutNetPdfOlusturucu.olustur(detaylar: detayliSonuclar, yil: yil)
                                 showPdfShare = true
@@ -98,7 +128,7 @@ struct BrutNetView: View {
                             .padding(.top, 8)
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
         }
@@ -144,12 +174,12 @@ struct BrutNetView: View {
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "doc.text.fill")
-                            .font(.system(size: 24))
+                            .font(AppTypography.title2)
                             .foregroundColor(Color(hex: "F59E0B"))
                     )
                 VStack(alignment: .leading, spacing: 4) {
                     Text("CV Oluştur")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(AppTypography.headline)
                         .foregroundColor(appTheme.textPrimary)
                     Text("cv.docx formatında özgeçmiş hazırla")
                         .font(.subheadline)
@@ -157,10 +187,10 @@ struct BrutNetView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 28))
+                    .font(AppTypography.title1)
                     .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
             }
-            .padding(24)
+            .padding(AppSpacing.xxl)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
@@ -168,7 +198,7 @@ struct BrutNetView: View {
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
                 }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -184,12 +214,12 @@ struct BrutNetView: View {
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "square.and.pencil")
-                            .font(.system(size: 24))
+                            .font(AppTypography.title2)
                             .foregroundColor(Color(hex: "F59E0B"))
                     )
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Maaş Girişi")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(AppTypography.headline)
                         .foregroundColor(appTheme.textPrimary)
                     Text("Brüt maaş ve prim girişi (aylık bazda)")
                         .font(.subheadline)
@@ -197,10 +227,10 @@ struct BrutNetView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 28))
+                    .font(AppTypography.title1)
                     .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
             }
-            .padding(24)
+            .padding(AppSpacing.xxl)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
@@ -208,7 +238,7 @@ struct BrutNetView: View {
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
                 }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -222,12 +252,12 @@ struct BrutNetView: View {
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "chart.bar.doc.horizontal")
-                            .font(.system(size: 24))
+                            .font(AppTypography.title2)
                             .foregroundColor(Color(hex: "F59E0B"))
                     )
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Yan Hak Analizi")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(AppTypography.headline)
                         .foregroundColor(appTheme.textPrimary)
                     Text("Mevcut iş vs teklif karşılaştırması")
                         .font(.subheadline)
@@ -235,10 +265,10 @@ struct BrutNetView: View {
                 }
                 Spacer()
                 Image(systemName: "chevron.right.circle.fill")
-                    .font(.system(size: 28))
+                    .font(AppTypography.title1)
                     .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
             }
-            .padding(24)
+            .padding(AppSpacing.xxl)
             .background(
                 ZStack {
                     RoundedRectangle(cornerRadius: 24)
@@ -246,7 +276,7 @@ struct BrutNetView: View {
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
                 }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -268,7 +298,7 @@ struct BrutNetView: View {
                                     .frame(width: 44, height: 44)
                                     .overlay(
                                         Image(systemName: "doc.text.magnifyingglass")
-                                            .font(.system(size: 18))
+                                            .font(AppTypography.headline)
                                             .foregroundColor(Color(hex: "F59E0B"))
                                     )
                                 VStack(alignment: .leading, spacing: 2) {
@@ -346,14 +376,14 @@ struct BrutNetView: View {
             // Yıllık toplam net
             HStack {
                 Image(systemName: "sum")
-                    .font(.system(size: 24))
+                    .font(AppTypography.title2)
                     .foregroundColor(Color(hex: "60A5FA"))
                 Text("Yıllık Toplam Net")
                     .font(.headline)
                     .foregroundColor(appTheme.textPrimary)
                 Spacer()
                 Text(formatCurrency(toplamNet))
-                    .font(.system(size: 22, weight: .bold))
+                    .font(AppTypography.amountMedium)
                     .monospacedDigit()
                     .foregroundColor(Color(hex: "60A5FA"))
             }
@@ -361,7 +391,7 @@ struct BrutNetView: View {
             .background(
                 RoundedRectangle(cornerRadius: 20)
                     .fill(appTheme.listRowBackground)
-                    .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                    .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
             )
         }
     }
@@ -393,14 +423,14 @@ struct OzetKart: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
+                    .font(AppTypography.headline)
                     .foregroundColor(color)
                 Text(title)
                     .font(.subheadline)
                     .foregroundColor(appTheme.textSecondary)
             }
             Text(value)
-                .font(.system(size: 20, weight: .bold))
+                .font(AppTypography.amountMedium)
                 .monospacedDigit()
                 .foregroundColor(color)
         }
@@ -413,7 +443,7 @@ struct OzetKart: View {
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(color.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -426,7 +456,7 @@ struct AylikNetRow: View {
     var body: some View {
         HStack(spacing: 16) {
             Text(ayIsimleri[maas.ay - 1])
-                .font(.system(size: 16, weight: .semibold))
+                .font(AppTypography.headline)
                 .foregroundColor(appTheme.textPrimary)
                 .frame(width: 70, alignment: .leading)
             
@@ -438,7 +468,7 @@ struct AylikNetRow: View {
             Spacer()
             
             Text(formatCurrency(maas.netTutar))
-                .font(.system(size: 16, weight: .bold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .foregroundColor(Color(hex: "34D399"))
         }
@@ -446,7 +476,7 @@ struct AylikNetRow: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(appTheme.listRowBackground)
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.04 : 0), radius: appTheme.isLight ? 3 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -546,7 +576,7 @@ struct MaasGirisSheetView: View {
                             .padding(.horizontal, 4)
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Maaş Girişi")
@@ -626,6 +656,7 @@ struct MaasGirisSheetView: View {
 struct BrutNetDetayTablosu: View {
     let detaylar: [AylikBrutNetDetay]
     let yil: Int
+    @EnvironmentObject var appTheme: AppTheme
     
     private let colWidth: CGFloat = 88
     private let firstColWidth: CGFloat = 64
@@ -656,22 +687,22 @@ struct BrutNetDetayTablosu: View {
                     Text("Ay")
                         .frame(width: firstColWidth, alignment: .leading)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(.white.opacity(0.9))
+                        .foregroundColor(appTheme.textPrimary)
                     ForEach(Array(sutunlar.enumerated()), id: \.offset) { _, sutun in
                         Text(sutun.baslik)
                             .frame(minWidth: colWidth, alignment: .trailing)
                             .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white.opacity(0.9))
+                            .foregroundColor(appTheme.textPrimary)
                             .lineLimit(2)
                             .multilineTextAlignment(.trailing)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(Color.white.opacity(0.1))
+                .background(appTheme.backgroundSecondary)
                 .frame(minHeight: rowHeight + 16)
                 
-                Divider().background(Color.white.opacity(0.25))
+                Divider().background(appTheme.cardStroke)
                 
                 // Veri satırları
                 ForEach(detaylar.filter { $0.brutToplam > 0 }) { d in
@@ -679,7 +710,7 @@ struct BrutNetDetayTablosu: View {
                         Text(ayIsimleri[d.ay - 1])
                             .frame(width: firstColWidth, alignment: .leading)
                             .font(.subheadline.weight(.medium))
-                            .foregroundColor(.white)
+                            .foregroundColor(appTheme.textPrimary)
                         Group {
                             Text(formatCurrency(d.brut))
                             Text(formatCurrency(d.sgkIsci))
@@ -698,7 +729,7 @@ struct BrutNetDetayTablosu: View {
                         }
                         .frame(minWidth: colWidth, alignment: .trailing)
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.95))
+                        .foregroundColor(appTheme.textPrimary)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -707,7 +738,7 @@ struct BrutNetDetayTablosu: View {
                 
                 // TOPLAM satırı
                 if !detaylar.filter({ $0.brutToplam > 0 }).isEmpty {
-                    Divider().background(Color.white.opacity(0.3))
+                    Divider().background(appTheme.cardStroke)
                     HStack(alignment: .center, spacing: 0) {
                         Text("TOPLAM")
                             .frame(width: firstColWidth, alignment: .leading)

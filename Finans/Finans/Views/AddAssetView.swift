@@ -3,6 +3,7 @@ import SwiftUI
 struct AddAssetView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     
     @State private var selectedType: String = "Hisse Senedi"
     @State private var customTypeName: String = ""
@@ -25,15 +26,15 @@ struct AddAssetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: AppSpacing.xxl) {
                         // Varlık türü
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Varlık Türü")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             
                             Menu {
                                 ForEach(dataManager.allAssetTypes, id: \.self) { type in
@@ -45,25 +46,25 @@ struct AddAssetView: View {
                             } label: {
                                 HStack {
                                     Text(selectedType)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(appTheme.textPrimary)
                                     Spacer()
                                     Image(systemName: "chevron.down")
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(appTheme.textSecondary)
                                 }
-                                .padding(20)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                             }
                             
                             if isOtherSelected {
                                 TextField("Varlık türünü girin (örn: Vadeli işlem)", text: $customTypeName)
-                                    .foregroundColor(.white)
-                                    .padding(16)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.lg)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.white.opacity(0.06))
+                                        RoundedRectangle(cornerRadius: AppSpacing.md)
+                                            .fill(appTheme.formInputSecondary)
                                     )
                                     .focused($customTypeFocused)
                             }
@@ -71,16 +72,16 @@ struct AddAssetView: View {
                         .tappableToFocus($customTypeFocused)
                         
                         // Ad / İsim
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text(isQuantityBased ? "Hisse / Varlık Adı" : "Hesap / Varlık Adı")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             TextField(isQuantityBased ? "Örn: THYAO, AAPL" : "Örn: Ziraat Vadeli Hesap", text: $name)
-                                .foregroundColor(.white)
-                                .padding(20)
+                                .foregroundColor(appTheme.textPrimary)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                                 .focused($nameFocused)
                         }
@@ -88,68 +89,68 @@ struct AddAssetView: View {
                         
                         if isQuantityBased {
                             // Adet
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Adet")
                                     .font(.subheadline.weight(.medium))
-                                    .foregroundColor(.white.opacity(0.8))
-                                FormattedNumberField(text: $quantity, placeholder: "0", allowDecimals: false, focusTrigger: $triggerQuantityFocus)
-                                    .foregroundColor(.white)
-                                    .padding(20)
+                                    .foregroundColor(appTheme.textSecondary)
+                                FormattedNumberField(text: $quantity, placeholder: "0", allowDecimals: false, focusTrigger: $triggerQuantityFocus, isLightMode: appTheme.isLight)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.xl)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Color.white.opacity(0.08))
+                                        RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                            .fill(appTheme.formInputBackground)
                                     )
                             }
                             .contentShape(Rectangle())
                             .onTapGesture { triggerQuantityFocus = true }
                             
                             // Birim fiyat
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Güncel Birim Fiyat (₺)")
                                     .font(.subheadline.weight(.medium))
-                                    .foregroundColor(.white.opacity(0.8))
-                                FormattedNumberField(text: $pricePerUnit, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerPriceFocus)
-                                    .foregroundColor(.white)
-                                    .padding(20)
+                                    .foregroundColor(appTheme.textSecondary)
+                                FormattedNumberField(text: $pricePerUnit, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerPriceFocus, isLightMode: appTheme.isLight)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.xl)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Color.white.opacity(0.08))
+                                        RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                            .fill(appTheme.formInputBackground)
                                     )
                             }
                             .contentShape(Rectangle())
                             .onTapGesture { triggerPriceFocus = true }
                         } else {
                             // Toplam tutar
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: AppSpacing.sm) {
                                 Text("Toplam Değer (₺)")
                                     .font(.subheadline.weight(.medium))
-                                    .foregroundColor(.white.opacity(0.8))
-                                FormattedNumberField(text: $totalAmount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerTotalFocus)
-                                    .foregroundColor(.white)
-                                    .padding(20)
+                                    .foregroundColor(appTheme.textSecondary)
+                                FormattedNumberField(text: $totalAmount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerTotalFocus, isLightMode: appTheme.isLight)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.xl)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Color.white.opacity(0.08))
+                                        RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                            .fill(appTheme.formInputBackground)
                                     )
                             }
                             .contentShape(Rectangle())
                             .onTapGesture { triggerTotalFocus = true }
                         }
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Varlık Ekle")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("İptal") {
                         dismiss()
                     }
-                    .foregroundColor(Color(hex: "94A3B8"))
+                    .foregroundColor(appTheme.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") {
@@ -207,4 +208,5 @@ struct AddAssetView: View {
 #Preview {
     AddAssetView()
         .environmentObject(DataManager.shared)
+        .environmentObject(AppTheme())
 }

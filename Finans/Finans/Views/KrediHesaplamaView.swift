@@ -15,12 +15,12 @@ struct KrediHesaplamaView: View {
             appTheme.background.ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: AppSpacing.xl) {
                     Text("Kredi Türü Seçin")
-                        .font(.title2.weight(.bold))
+                        .font(AppTypography.title2)
                         .foregroundColor(appTheme.textPrimary)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 4)
+                        .padding(.horizontal, AppSpacing.xs)
                     
                     ForEach(KrediTuru.allCases, id: \.self) { tur in
                         NavigationLink(destination: krediDetayView(tur)) {
@@ -46,21 +46,21 @@ struct KrediHesaplamaView: View {
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(appTheme.textSecondary)
                             }
-                            .padding(20)
+                            .padding(AppSpacing.xl)
                             .background(
                                 RoundedRectangle(cornerRadius: 20)
                                     .fill(appTheme.cardBackgroundSecondary)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 20)
-                                            .stroke(krediTuruRengi(tur).opacity(0.3), lineWidth: 1)
+                                            .stroke(krediTuruRengi(tur).opacity(0.25), lineWidth: 0.5)
                                     )
-                                    .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                                    .shadow(color: .black.opacity(appTheme.isLight ? 0.04 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
                             )
                         }
                         .buttonStyle(ScaleButtonStyle())
                     }
                 }
-                .padding(24)
+                .padding(AppSpacing.xxl)
             }
         }
         .navigationTitle("Kredi Hesaplama")

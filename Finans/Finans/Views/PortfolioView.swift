@@ -12,45 +12,45 @@ struct PortfolioView: View {
             appTheme.background.ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: AppSpacing.xxl) {
                     // Toplam portföy değeri
                     PortfolioTotalCard(amount: dataManager.totalPortfolioValue)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, AppSpacing.xxl)
                     
                     // Pasta grafiği
                     if !dataManager.assets.isEmpty {
                         PortfolioChartView(assets: dataManager.assets)
                             .frame(height: 220)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, AppSpacing.xxl)
                     }
                     
                     // Varlık ekle butonu
                     Button {
                         showAddAsset = true
                     } label: {
-                        HStack(spacing: 10) {
+                        HStack(spacing: AppSpacing.sm) {
                             Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 22))
+                                .font(AppTypography.headline)
                             Text("Varlık Ekle")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(AppTypography.headline)
                         }
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 18)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Color(hex: "60A5FA"))
                         )
                     }
                     .buttonStyle(ScaleButtonStyle())
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, AppSpacing.xxl)
                     
                     // Varlık listesi
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: AppSpacing.md) {
                         Text("Varlıklarım")
-                            .font(.headline)
+                            .font(AppTypography.headline)
                             .foregroundColor(appTheme.textPrimary)
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, AppSpacing.xs)
                         
                         if dataManager.assets.isEmpty {
                             EmptyStateView(
@@ -80,9 +80,9 @@ struct PortfolioView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, AppSpacing.xxl)
                 }
-                .padding(.vertical, 24)
+                .padding(.vertical, AppSpacing.xxl)
             }
         }
         .navigationTitle("Portföy")
@@ -91,10 +91,10 @@ struct PortfolioView: View {
         .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .sheet(isPresented: $showAddAsset) {
-            AddAssetView()
+            AddAssetView().environmentObject(appTheme)
         }
         .sheet(item: $assetToEdit) { asset in
-            EditAssetView(asset: asset)
+            EditAssetView(asset: asset).environmentObject(appTheme)
         }
     }
 }
@@ -109,12 +109,12 @@ struct PortfolioTotalCard: View {
                 .font(.subheadline)
                 .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(amount))
-                .font(.system(size: 32, weight: .bold))
+                .font(AppTypography.amountLarge)
                 .monospacedDigit()
                 .foregroundColor(Color(hex: "60A5FA"))
         }
         .frame(maxWidth: .infinity)
-        .padding(28)
+        .padding(AppSpacing.xxl)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(
@@ -127,13 +127,13 @@ struct PortfolioTotalCard: View {
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color(hex: "60A5FA").opacity(0.5),
-                                    Color(hex: "3B82F6").opacity(0.2)
+                                    Color(hex: "60A5FA").opacity(0.4),
+                                    Color(hex: "3B82F6").opacity(0.15)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
-                            lineWidth: 1
+                            lineWidth: 0.5
                         )
                 )
         )
@@ -203,7 +203,7 @@ struct PortfolioChartView: View {
                                 .lineLimit(1)
                             Spacer()
                             Text(formatCurrency(item.value))
-                                .font(.caption)
+                                .font(AppTypography.amountSmall)
                                 .monospacedDigit()
                                 .foregroundColor(appTheme.textSecondary)
                         }
@@ -211,15 +211,15 @@ struct PortfolioChartView: View {
                 }
             }
         }
-        .padding(20)
+        .padding(AppSpacing.xl)
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(appTheme.listRowBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(appTheme.cardStroke.opacity(appTheme.isLight ? 1 : 0.5), lineWidth: 1)
+                        .stroke(appTheme.cardStroke.opacity(0.6), lineWidth: 0.5)
                 )
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -246,13 +246,13 @@ struct AssetRowView: View {
                 .frame(width: 44, height: 44)
                 .overlay(
                     Image(systemName: assetIcon)
-                        .font(.system(size: 20))
+                        .font(AppTypography.headline)
                         .foregroundColor(assetColor)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(asset.name)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(AppTypography.headline)
                     .foregroundColor(appTheme.textPrimary)
                 Text(asset.displayType)
                     .font(.caption)
@@ -269,7 +269,7 @@ struct AssetRowView: View {
             
             VStack(alignment: .trailing, spacing: 2) {
                 Text(formatCurrency(asset.totalValue))
-                    .font(.system(size: 16, weight: .bold))
+                    .font(AppTypography.amountSmall)
                     .monospacedDigit()
                     .foregroundColor(Color(hex: "60A5FA"))
                 Image(systemName: "chevron.right")
@@ -277,11 +277,12 @@ struct AssetRowView: View {
                     .foregroundColor(appTheme.textSecondary.opacity(0.8))
             }
         }
-        .padding(16)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.vertical, AppSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(appTheme.cardBackgroundSecondary)
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
     

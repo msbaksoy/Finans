@@ -3,6 +3,7 @@ import SwiftUI
 struct AddIncomeView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     
     @State private var amount: String = ""
     @State private var selectedSource: String = "Maaş"
@@ -23,31 +24,31 @@ struct AddIncomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: AppSpacing.xxl) {
                         // Tutar
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Tutar")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
-                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 32, fontWeight: .semibold)
-                                .foregroundColor(.white)
-                                .padding(20)
+                                .foregroundColor(appTheme.textSecondary)
+                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 24, fontWeight: .semibold, isLightMode: appTheme.isLight)
+                                .foregroundColor(appTheme.textPrimary)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                         }
                         .contentShape(Rectangle())
                         .onTapGesture { triggerAmountFocus = true }
                         
                         // Kaynak seçimi
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Gelir Kaynağı")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             
                             Menu {
                                 ForEach(displaySources, id: \.self) { source in
@@ -61,25 +62,25 @@ struct AddIncomeView: View {
                             } label: {
                                 HStack {
                                     Text(selectedSource)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(appTheme.textPrimary)
                                     Spacer()
                                     Image(systemName: "chevron.down")
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(appTheme.textSecondary)
                                 }
-                                .padding(20)
+                                .padding(AppSpacing.xl)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                             }
                             
                             if isOtherSelected {
                                 TextField("Kaynak adını girin (örn: Ek iş)", text: $customSource)
-                                    .foregroundColor(.white)
-                                    .padding(16)
+                                    .foregroundColor(appTheme.textPrimary)
+                                    .padding(AppSpacing.lg)
                                     .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color.white.opacity(0.06))
+                                        RoundedRectangle(cornerRadius: AppSpacing.md)
+                                            .fill(appTheme.formInputSecondary)
                                     )
                                     .focused($customSourceFocused)
                             }
@@ -87,36 +88,36 @@ struct AddIncomeView: View {
                         .tappableToFocus($customSourceFocused)
                         
                         // Not (opsiyonel)
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
                             Text("Not (opsiyonel)")
                                 .font(.subheadline.weight(.medium))
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(appTheme.textSecondary)
                             TextField("Açıklama...", text: $note, axis: .vertical)
                                 .lineLimit(3...6)
-                                .foregroundColor(.white)
-                                .padding(16)
+                                .foregroundColor(appTheme.textPrimary)
+                                .padding(AppSpacing.lg)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.08))
+                                    RoundedRectangle(cornerRadius: AppSpacing.lg)
+                                        .fill(appTheme.formInputBackground)
                                 )
                                 .focused($noteFocused)
                         }
                         .tappableToFocus($noteFocused)
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Gelir Ekle")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("İptal") {
                         dismiss()
                     }
-                    .foregroundColor(Color(hex: "94A3B8"))
+                    .foregroundColor(appTheme.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") {
@@ -158,6 +159,7 @@ struct EditIncomeView: View {
     let income: Income
     let onDismiss: () -> Void
     @EnvironmentObject var dataManager: DataManager
+    @EnvironmentObject var appTheme: AppTheme
     
     @State private var amount: String = ""
     @State private var selectedSource: String = "Maaş"
@@ -177,59 +179,59 @@ struct EditIncomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "0F172A").ignoresSafeArea()
+                appTheme.background.ignoresSafeArea()
                 ScrollView {
-                    VStack(spacing: 24) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Tutar").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
-                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 32, fontWeight: .semibold)
-                                .foregroundColor(.white).padding(20)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                    VStack(spacing: AppSpacing.xxl) {
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Tutar").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
+                            FormattedNumberField(text: $amount, placeholder: "0,00", allowDecimals: true, focusTrigger: $triggerAmountFocus, fontSize: 24, fontWeight: .semibold, isLightMode: appTheme.isLight)
+                                .foregroundColor(appTheme.textPrimary).padding(AppSpacing.xl)
+                                .background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                         }
                         .contentShape(Rectangle()).onTapGesture { triggerAmountFocus = true }
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Gelir Kaynağı").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Gelir Kaynağı").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
                             Menu {
                                 ForEach(displaySources, id: \.self) { source in
                                     Button(source) { selectedSource = source; if source != "Diğer" { customSource = "" } }
                                 }
                             } label: {
                                 HStack {
-                                    Text(selectedSource).foregroundColor(.white)
+                                    Text(selectedSource).foregroundColor(appTheme.textPrimary)
                                     Spacer()
-                                    Image(systemName: "chevron.down").foregroundColor(.white.opacity(0.6))
+                                    Image(systemName: "chevron.down").foregroundColor(appTheme.textSecondary)
                                 }
-                                .padding(20).background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                                .padding(AppSpacing.xl).background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                             }
                             if isOtherSelected {
                                 TextField("Kaynak adını girin", text: $customSource)
-                                    .foregroundColor(.white).padding(16)
-                                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
+                                    .foregroundColor(appTheme.textPrimary).padding(AppSpacing.lg)
+                                    .background(RoundedRectangle(cornerRadius: AppSpacing.md).fill(appTheme.formInputSecondary))
                                     .focused($customSourceFocused)
                             }
                         }
                         .tappableToFocus($customSourceFocused)
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Not (opsiyonel)").font(.subheadline.weight(.medium)).foregroundColor(.white.opacity(0.8))
+                        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+                            Text("Not (opsiyonel)").font(.subheadline.weight(.medium)).foregroundColor(appTheme.textSecondary)
                             TextField("Açıklama...", text: $note, axis: .vertical)
-                                .lineLimit(3...6).foregroundColor(.white).padding(16)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.white.opacity(0.08)))
+                                .lineLimit(3...6).foregroundColor(appTheme.textPrimary).padding(AppSpacing.lg)
+                                .background(RoundedRectangle(cornerRadius: AppSpacing.lg).fill(appTheme.formInputBackground))
                                 .focused($noteFocused)
                         }
                         .tappableToFocus($noteFocused)
                     }
-                    .padding(24)
+                    .padding(AppSpacing.xxl)
                 }
             }
             .navigationTitle("Gelir Düzenle")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
-            .toolbarBackground(Color(hex: "0F172A"), for: .navigationBar)
+            .toolbarColorScheme(appTheme.isLight ? .light : .dark, for: .navigationBar)
+            .toolbarBackground(appTheme.background, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("İptal") { onDismiss() }.foregroundColor(Color(hex: "94A3B8"))
+                    Button("İptal") { onDismiss() }.foregroundColor(appTheme.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Kaydet") { saveIncome() }.fontWeight(.semibold).foregroundColor(Color(hex: "34D399"))
@@ -268,4 +270,5 @@ struct EditIncomeView: View {
 #Preview {
     AddIncomeView()
         .environmentObject(DataManager.shared)
+        .environmentObject(AppTheme())
 }

@@ -137,7 +137,7 @@ struct MevduatFaiziView: View {
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: birlesikFaiz ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 22))
+                            .font(AppTypography.title2)
                             .foregroundColor(birlesikFaiz ? temaRengi : .white.opacity(0.5))
                         Text("Birleşik Faiz")
                             .font(.subheadline.weight(.medium))
@@ -161,7 +161,7 @@ struct MevduatFaiziView: View {
                 RoundedRectangle(cornerRadius: 20)
                     .fill(appTheme.listRowBackground)
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(temaRengi.opacity(0.25), lineWidth: 1))
-                    .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                    .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
             )
             
             HStack(spacing: 6) {
@@ -241,7 +241,7 @@ struct MevduatFaiziView: View {
             Label("PDF Olarak Dışa Aktar", systemImage: "square.and.arrow.up")
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .padding(12)
+                .padding(.vertical, 18)
                 .background(temaRengi.opacity(0.2))
                 .foregroundColor(temaRengi)
                 .cornerRadius(14)
@@ -308,7 +308,7 @@ struct MevduatBasitOzetView: View {
                 .foregroundColor(appTheme.textSecondary)
             Spacer()
             Text(formatCurrency(value))
-                .fontWeight(.semibold)
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .foregroundColor(renk ?? appTheme.textPrimary)
         }
@@ -319,6 +319,15 @@ struct MevduatBirlesikTablo: View {
     let tablo: [MevduatAylikSatir]
     var temaRengi: Color = Color(hex: "06B6D4")
     @EnvironmentObject var appTheme: AppTheme
+    @State private var tumunuGoster = false
+    private let ilkGosterim = 5
+    
+    private var gosterilecekSatirlar: [MevduatAylikSatir] {
+        if tumunuGoster || tablo.count <= ilkGosterim {
+            return tablo
+        }
+        return Array(tablo.prefix(ilkGosterim))
+    }
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
@@ -339,8 +348,24 @@ struct MevduatBirlesikTablo: View {
                     )
                 )
                 Divider().background(Color.white.opacity(0.2))
-                ForEach(tablo) { satir in
+                ForEach(gosterilecekSatirlar) { satir in
                     MevduatTabloSatir(satir: satir, temaRengi: temaRengi)
+                }
+                if tablo.count > ilkGosterim {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) { tumunuGoster.toggle() }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(tumunuGoster ? "Daha Az Göster" : "Tümünü Göster (\(tablo.count) ay)")
+                                .font(AppTypography.footnote.weight(.semibold))
+                            Image(systemName: tumunuGoster ? "chevron.up" : "chevron.down")
+                                .font(AppTypography.caption1.weight(.semibold))
+                        }
+                        .foregroundColor(temaRengi)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(12)
@@ -366,17 +391,17 @@ struct MevduatTabloSatir: View {
                 .foregroundColor(appTheme.textPrimary)
             Text(formatCurrency(satir.oncekiBakiye))
                 .frame(width: 100, alignment: .trailing)
-                .font(.subheadline)
+                .font(AppTypography.footnote)
                 .monospacedDigit()
                 .foregroundColor(appTheme.textSecondary)
             Text(formatCurrency(satir.kazanilanFaiz))
                 .frame(width: 90, alignment: .trailing)
-                .font(.subheadline)
+                .font(AppTypography.footnote)
                 .monospacedDigit()
                 .foregroundColor(temaRengi)
             Text(formatCurrency(satir.yeniBakiye))
                 .frame(width: 100, alignment: .trailing)
-                .font(.subheadline.weight(.semibold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .foregroundColor(Color(hex: "34D399"))
         }

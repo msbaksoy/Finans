@@ -130,7 +130,7 @@ struct TuketiciKredisiView: View {
             RoundedRectangle(cornerRadius: 20)
                 .fill(appTheme.listRowBackground)
                 .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "8B5CF6").opacity(0.25), lineWidth: 1))
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
     
@@ -156,7 +156,7 @@ struct TuketiciKredisiView: View {
             Label("PDF Olarak Dışa Aktar", systemImage: "square.and.arrow.up")
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
-                .padding(12)
+                .padding(.vertical, 18)
                 .background(Color(hex: "8B5CF6").opacity(0.2))
                 .foregroundColor(Color(hex: "8B5CF6"))
                 .cornerRadius(14)
@@ -297,7 +297,7 @@ struct OzetKrediKart: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.system(size: 12))
+                    .font(AppTypography.caption1)
                     .foregroundColor(color)
                 Text(title)
                     .font(.caption2)
@@ -305,7 +305,7 @@ struct OzetKrediKart: View {
                     .lineLimit(1)
             }
             Text(formatCurrency(value))
-                .font(.system(size: 13, weight: .bold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .foregroundColor(color)
                 .lineLimit(1)
@@ -317,7 +317,7 @@ struct OzetKrediKart: View {
             RoundedRectangle(cornerRadius: 14)
                 .fill(color.opacity(0.12))
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.25), lineWidth: 1))
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -326,6 +326,15 @@ struct TuketiciKredisiTablo: View {
     let odemePlani: [KrediCalculator.OdemeSatiri]
     var temaRengi: Color = Color(hex: "8B5CF6")
     @EnvironmentObject var appTheme: AppTheme
+    @State private var tumunuGoster = false
+    private let ilkGosterim = 5
+    
+    private var gosterilecekPlani: [KrediCalculator.OdemeSatiri] {
+        if tumunuGoster || odemePlani.count <= ilkGosterim {
+            return odemePlani
+        }
+        return Array(odemePlani.prefix(ilkGosterim))
+    }
     
     var body: some View {
         ScrollView([.horizontal, .vertical]) {
@@ -349,8 +358,24 @@ struct TuketiciKredisiTablo: View {
                     )
                 )
                 Divider().background(Color.white.opacity(0.2))
-                ForEach(odemePlani) { satir in
+                ForEach(gosterilecekPlani) { satir in
                     TaksitSatirView(satir: satir)
+                }
+                if odemePlani.count > ilkGosterim {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) { tumunuGoster.toggle() }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(tumunuGoster ? "Daha Az Göster" : "Tümünü Göster (\(odemePlani.count) taksit)")
+                                .font(AppTypography.footnote.weight(.semibold))
+                            Image(systemName: tumunuGoster ? "chevron.up" : "chevron.down")
+                                .font(AppTypography.caption1.weight(.semibold))
+                        }
+                        .foregroundColor(temaRengi)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(12)

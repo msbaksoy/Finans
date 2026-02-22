@@ -34,6 +34,7 @@ struct YanHakAnaliziView: View {
     @State private var aiYorumHata: String? = nil
     @State private var raporGosteriliyor = false
     @State private var kaydetBasarili = false
+    @State private var detayAccordionAcik = false
     
     private let temaRengi = Color(hex: "F59E0B")
     private let toplamAdim = 12
@@ -980,23 +981,62 @@ struct YanHakAnaliziView: View {
                     .padding(.bottom, 16)
                 }
                 
-                karsilastirmaSatir("Ücret (₺/ay)", mevcut: "\(formatNumberGoster(mevcutIs.brutMaas)) (\(mevcutIs.ucretBrutMu ? "Brüt" : "Net"))", teklif: "\(formatNumberGoster(teklif.brutMaas)) (\(teklif.ucretBrutMu ? "Brüt" : "Net"))")
-                karsilastirmaSatir("Yıllık net maaş (₺)", mevcut: mevcutIs.yillikNetMaas > 0 ? formatNumberGoster(mevcutIs.yillikNetMaas) : "—", teklif: teklif.yillikNetMaas > 0 ? formatNumberGoster(teklif.yillikNetMaas) : "—")
-                karsilastirmaSatir("Mevcut işte çalışma süresi", mevcut: mevcutIs.mevcutIsYil.map { "\($0) yıl" } ?? "—", teklif: "—")
-                karsilastirmaSatir("Terfi / Aynı ünvan", mevcut: "—", teklif: teklif.terfiIleMi == true ? "Terfi alarak" : (teklif.terfiIleMi == false ? "Aynı ünvanda" : "—"))
-                karsilastirmaSatir("Yılda kaç maaş", mevcut: "\(mevcutIs.maasPeriyodu)", teklif: "\(teklif.maasPeriyodu)")
-                karsilastirmaSatir("Çalışma modeli", mevcut: mevcutIs.calismaModeli?.rawValue ?? "—", teklif: teklif.calismaModeli?.rawValue ?? "—")
-                karsilastirmaSatir("Hibrit gün (haftalık)", mevcut: mevcutIs.hibritGunSayisi.map { "\($0) gün" } ?? "—", teklif: teklif.hibritGunSayisi.map { "\($0) gün" } ?? "—")
-                karsilastirmaSatir("Yıllık izin", mevcut: mevcutIs.yillikIzinGunu.map { "\($0) gün" } ?? "—", teklif: teklif.yillikIzinGunu.map { "\($0) gün" } ?? "—")
-                karsilastirmaSatir("Telefon", mevcut: mevcutIs.telefonVeriliyor ? "Evet\(mevcutIs.telefonFaturaKarsilaniyor == true ? ", fatura karşılanıyor" : (mevcutIs.telefonFaturaKarsilaniyor == false ? ", fatura karşılanmıyor" : ""))" : "Hayır", teklif: teklif.telefonVeriliyor ? "Evet\(teklif.telefonFaturaKarsilaniyor == true ? ", fatura karşılanıyor" : (teklif.telefonFaturaKarsilaniyor == false ? ", fatura karşılanmıyor" : ""))" : "Hayır")
-                karsilastirmaSatir("Yıllık prim/bonus (₺)", mevcut: mevcutIs.yillikPrimBonusTutar.map { formatNumberGoster($0) } ?? "—", teklif: teklif.yillikPrimBonusTutar.map { formatNumberGoster($0) } ?? "—")
-                karsilastirmaSatir("Tamamlayıcı sağlık", mevcut: formatSigorta(mevcutIs.tamamlayiciSaglikVar, aile: mevcutIs.tamamlayiciSaglikAileKapsami), teklif: formatSigorta(teklif.tamamlayiciSaglikVar, aile: teklif.tamamlayiciSaglikAileKapsami))
-                karsilastirmaSatir("Özel sağlık", mevcut: formatSigorta(mevcutIs.ozelSaglikVar, aile: mevcutIs.ozelSaglikAileKapsami), teklif: formatSigorta(teklif.ozelSaglikVar, aile: teklif.ozelSaglikAileKapsami))
-                karsilastirmaSatir("Göz, Diş vb. Teminatlar (₺/yıl)", mevcut: mevcutIs.gozDisDestegiVar ? (mevcutIs.gozDisDestekTutar.map { formatNumberGoster($0) } ?? "—") : "—", teklif: teklif.gozDisDestegiVar ? (teklif.gozDisDestekTutar.map { formatNumberGoster($0) } ?? "—") : "—")
-                karsilastirmaSatir("Yemek", mevcut: formatYemek(mevcutIs), teklif: formatYemek(teklif))
-                karsilastirmaSatir("Ulaşım", mevcut: formatUlasim(mevcutIs), teklif: formatUlasim(teklif))
-                karsilastirmaSatir("Yolda geçen süre", mevcut: formatYoldaSure(mevcutIs), teklif: formatYoldaSure(teklif))
-                karsilastirmaSatir("İnternet, elektrik vb.", mevcut: mevcutIs.internetElektrikDestekVar ? "\(formatNumberGoster(mevcutIs.internetElektrikToplamTutar ?? 0)) ₺/ay" : "Yok", teklif: teklif.internetElektrikDestekVar ? "\(formatNumberGoster(teklif.internetElektrikToplamTutar ?? 0)) ₺/ay" : "Yok")
+                // Özet kartı (ön planda)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Özet")
+                        .font(AppTypography.headline)
+                        .foregroundColor(appTheme.textPrimary)
+                    karsilastirmaSatir("Ücret (₺/ay)", mevcut: "\(formatNumberGoster(mevcutIs.brutMaas)) (\(mevcutIs.ucretBrutMu ? "Brüt" : "Net"))", teklif: "\(formatNumberGoster(teklif.brutMaas)) (\(teklif.ucretBrutMu ? "Brüt" : "Net"))")
+                    karsilastirmaSatir("Yıllık net maaş (₺)", mevcut: mevcutIs.yillikNetMaas > 0 ? formatNumberGoster(mevcutIs.yillikNetMaas) : "—", teklif: teklif.yillikNetMaas > 0 ? formatNumberGoster(teklif.yillikNetMaas) : "—")
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 20).fill(appTheme.listRowBackground).overlay(RoundedRectangle(cornerRadius: 20).stroke(temaRengi.opacity(0.3), lineWidth: 1)))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+                
+                // Detay accordion
+                VStack(alignment: .leading, spacing: 0) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.3)) { detayAccordionAcik.toggle() }
+                    } label: {
+                        HStack {
+                            Text("Tüm Detaylar")
+                                .font(AppTypography.headline)
+                                .foregroundColor(appTheme.textPrimary)
+                            Spacer()
+                            Image(systemName: detayAccordionAcik ? "chevron.up" : "chevron.down")
+                                .font(AppTypography.footnote.weight(.semibold))
+                                .foregroundColor(temaRengi)
+                        }
+                        .padding(20)
+                        .background(RoundedRectangle(cornerRadius: 16).fill(appTheme.listRowBackground))
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if detayAccordionAcik {
+                        VStack(spacing: 0) {
+                            karsilastirmaSatir("Mevcut işte çalışma süresi", mevcut: mevcutIs.mevcutIsYil.map { "\($0) yıl" } ?? "—", teklif: "—")
+                            karsilastirmaSatir("Terfi / Aynı ünvan", mevcut: "—", teklif: teklif.terfiIleMi == true ? "Terfi alarak" : (teklif.terfiIleMi == false ? "Aynı ünvanda" : "—"))
+                            karsilastirmaSatir("Yılda kaç maaş", mevcut: "\(mevcutIs.maasPeriyodu)", teklif: "\(teklif.maasPeriyodu)")
+                            karsilastirmaSatir("Çalışma modeli", mevcut: mevcutIs.calismaModeli?.rawValue ?? "—", teklif: teklif.calismaModeli?.rawValue ?? "—")
+                            karsilastirmaSatir("Hibrit gün (haftalık)", mevcut: mevcutIs.hibritGunSayisi.map { "\($0) gün" } ?? "—", teklif: teklif.hibritGunSayisi.map { "\($0) gün" } ?? "—")
+                            karsilastirmaSatir("Yıllık izin", mevcut: mevcutIs.yillikIzinGunu.map { "\($0) gün" } ?? "—", teklif: teklif.yillikIzinGunu.map { "\($0) gün" } ?? "—")
+                            karsilastirmaSatir("Telefon", mevcut: mevcutIs.telefonVeriliyor ? "Evet\(mevcutIs.telefonFaturaKarsilaniyor == true ? ", fatura karşılanıyor" : (mevcutIs.telefonFaturaKarsilaniyor == false ? ", fatura karşılanmıyor" : ""))" : "Hayır", teklif: teklif.telefonVeriliyor ? "Evet\(teklif.telefonFaturaKarsilaniyor == true ? ", fatura karşılanıyor" : (teklif.telefonFaturaKarsilaniyor == false ? ", fatura karşılanmıyor" : ""))" : "Hayır")
+                            karsilastirmaSatir("Yıllık prim/bonus (₺)", mevcut: mevcutIs.yillikPrimBonusTutar.map { formatNumberGoster($0) } ?? "—", teklif: teklif.yillikPrimBonusTutar.map { formatNumberGoster($0) } ?? "—")
+                            karsilastirmaSatir("Tamamlayıcı sağlık", mevcut: formatSigorta(mevcutIs.tamamlayiciSaglikVar, aile: mevcutIs.tamamlayiciSaglikAileKapsami), teklif: formatSigorta(teklif.tamamlayiciSaglikVar, aile: teklif.tamamlayiciSaglikAileKapsami))
+                            karsilastirmaSatir("Özel sağlık", mevcut: formatSigorta(mevcutIs.ozelSaglikVar, aile: mevcutIs.ozelSaglikAileKapsami), teklif: formatSigorta(teklif.ozelSaglikVar, aile: teklif.ozelSaglikAileKapsami))
+                            karsilastirmaSatir("Göz, Diş vb. Teminatlar (₺/yıl)", mevcut: mevcutIs.gozDisDestegiVar ? (mevcutIs.gozDisDestekTutar.map { formatNumberGoster($0) } ?? "—") : "—", teklif: teklif.gozDisDestegiVar ? (teklif.gozDisDestekTutar.map { formatNumberGoster($0) } ?? "—") : "—")
+                            karsilastirmaSatir("Yemek", mevcut: formatYemek(mevcutIs), teklif: formatYemek(teklif))
+                            karsilastirmaSatir("Ulaşım", mevcut: formatUlasim(mevcutIs), teklif: formatUlasim(teklif))
+                            karsilastirmaSatir("Yolda geçen süre", mevcut: formatYoldaSure(mevcutIs), teklif: formatYoldaSure(teklif))
+                            karsilastirmaSatir("İnternet, elektrik vb.", mevcut: mevcutIs.internetElektrikDestekVar ? "\(formatNumberGoster(mevcutIs.internetElektrikToplamTutar ?? 0)) ₺/ay" : "Yok", teklif: teklif.internetElektrikDestekVar ? "\(formatNumberGoster(teklif.internetElektrikToplamTutar ?? 0)) ₺/ay" : "Yok")
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
                 
                 // Gömülü dashboard (AI Desteği Al tıklanınca)
                 if raporGosteriliyor {

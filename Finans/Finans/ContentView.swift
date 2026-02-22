@@ -19,11 +19,11 @@ struct ContentView: View {
                     VStack(spacing: 0) {
                         // Hero bölümü
                         heroSection
-                            .padding(.top, 8)
-                            .padding(.bottom, 40)
+                            .padding(.top, AppSpacing.xxl)
+                            .padding(.bottom, AppSpacing.xxl * 2)
                         
                         // Özellik kartları
-                        VStack(spacing: 12) {
+                        VStack(spacing: AppSpacing.lg) {
                             PremiumMenuCard(
                                 icon: "banknote.fill",
                                 title: "Bütçe",
@@ -56,8 +56,8 @@ struct ContentView: View {
                                 accentSecondary: Color(hex: "8B5CF6")
                             ) { navPath.append(NavTarget.kredi) }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 40)
+                        .padding(.horizontal, AppSpacing.xxl)
+                        .padding(.bottom, AppSpacing.xxl * 2)
                     }
                 }
             }
@@ -89,18 +89,16 @@ struct ContentView: View {
                 LinearGradient(
                     colors: [
                         Color(hex: "F8FAFC"),
-                        Color(hex: "F1F5F9"),
-                        Color(hex: "E2E8F0").opacity(0.5)
+                        Color(hex: "F1F5F9")
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
-                // Yumuşak dekoratif orb
                 Circle()
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color(hex: "34D399").opacity(0.08),
+                                Color(hex: "34D399").opacity(0.04),
                                 Color.clear
                             ],
                             center: .center,
@@ -108,28 +106,13 @@ struct ContentView: View {
                             endRadius: 200
                         )
                     )
-                    .frame(width: 400, height: 400)
-                    .offset(x: 120, y: -180)
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(hex: "8B5CF6").opacity(0.06),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 150
-                        )
-                    )
                     .frame(width: 300, height: 300)
-                    .offset(x: -100, y: 120)
+                    .offset(x: 80, y: -100)
             } else {
                 LinearGradient(
                     colors: [
                         Color(hex: "0F172A"),
-                        Color(hex: "0c1220"),
-                        Color(hex: "020617")
+                        Color(hex: "0c1220")
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -138,33 +121,17 @@ struct ContentView: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color(hex: "34D399").opacity(0.12),
-                                Color(hex: "34D399").opacity(0.04),
+                                Color(hex: "34D399").opacity(0.06),
                                 Color.clear
                             ],
                             center: .center,
                             startRadius: 0,
-                            endRadius: 220
+                            endRadius: 200
                         )
                     )
-                    .frame(width: 440, height: 440)
-                    .blur(radius: 60)
-                    .offset(x: 100, y: -200)
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(hex: "6366F1").opacity(0.08),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 180
-                        )
-                    )
-                    .frame(width: 360, height: 360)
-                    .blur(radius: 50)
-                    .offset(x: -120, y: 280)
+                    .frame(width: 320, height: 320)
+                    .blur(radius: 40)
+                    .offset(x: 80, y: -80)
             }
         }
         .ignoresSafeArea()
@@ -197,22 +164,12 @@ struct ContentView: View {
                     .frame(width: 88, height: 88)
                     .overlay(
                         Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: "34D399").opacity(0.6),
-                                        Color(hex: "10B981").opacity(0.3)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.5
-                            )
+                            .stroke(Color(hex: "34D399").opacity(0.3), lineWidth: 0.5)
                     )
-                    .shadow(color: Color(hex: "34D399").opacity(appTheme.isLight ? 0.2 : 0.3), radius: 20, y: 8)
+                    .shadow(color: Color(hex: "34D399").opacity(appTheme.isLight ? 0.1 : 0.2), radius: 12, y: 4)
                 
                 Image(systemName: "chart.pie.fill")
-                    .font(.system(size: 38, weight: .medium))
+                    .font(AppTypography.title1)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Color(hex: "34D399"), Color(hex: "10B981")],
@@ -223,12 +180,11 @@ struct ContentView: View {
             }
             
             Text("Finans")
-                .font(.system(size: 34, weight: .bold))
-                .tracking(-0.8)
+                .font(AppTypography.largeTitle)
                 .foregroundColor(appTheme.textPrimary)
             
             Text("Finansal yolculuğunuza hoş geldiniz")
-                .font(.system(size: 16, weight: .medium))
+                .font(AppTypography.callout)
                 .foregroundColor(appTheme.textSecondary)
         }
     }
@@ -245,16 +201,15 @@ struct ThemeToggleButton: View {
             }
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(appTheme.isLight ? Color.white : Color(hex: "1E293B").opacity(0.8))
-                    .frame(width: 44, height: 44)
-                    .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0.2), radius: 8, y: 2)
+                RoundedRectangle(cornerRadius: 18)
+                    .fill(appTheme.isLight ? Color.white.opacity(0.9) : Color(hex: "1E293B").opacity(0.5))
+                    .frame(width: 40, height: 40)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(appTheme.cardStroke.opacity(0.6), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(appTheme.cardStroke.opacity(0.3), lineWidth: 0.5)
                     )
                 Image(systemName: appTheme.isLight ? "moon.fill" : "sun.max.fill")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(AppTypography.callout)
                     .foregroundStyle(
                         appTheme.isLight
                             ? LinearGradient(colors: [Color(hex: "475569"), Color(hex: "64748B")], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -279,28 +234,13 @@ struct PremiumMenuCard: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 20) {
-                // İkon — gradient arka plan, hafif glow
+            HStack(spacing: AppSpacing.xl) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    accentColor.opacity(appTheme.isLight ? 0.25 : 0.35),
-                                    accentSecondary.opacity(appTheme.isLight ? 0.15 : 0.2)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 56, height: 56)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 18)
-                                .stroke(accentColor.opacity(0.4), lineWidth: 1)
-                        )
-                    
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(accentColor.opacity(appTheme.isLight ? 0.15 : 0.25))
+                        .frame(width: 48, height: 48)
                     Image(systemName: icon)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(AppTypography.title2)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [accentColor, accentSecondary],
@@ -309,43 +249,43 @@ struct PremiumMenuCard: View {
                             )
                         )
                 }
-                .shadow(color: accentColor.opacity(appTheme.isLight ? 0.15 : 0.25), radius: 12, y: 4)
+                .shadow(color: accentColor.opacity(appTheme.isLight ? 0.06 : 0.12), radius: 12, y: 4)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: AppSpacing.xs) {
                     Text(title)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(AppTypography.headline)
                         .foregroundColor(appTheme.textPrimary)
                     Text(subtitle)
-                        .font(.system(size: 13, weight: .regular))
+                        .font(AppTypography.footnote)
                         .foregroundColor(appTheme.textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(AppTypography.footnote.weight(.semibold))
                     .foregroundColor(appTheme.textSecondary.opacity(0.7))
             }
-            .padding(20)
+            .padding(AppSpacing.lg)
             .background(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 20)
                     .fill(
                         appTheme.isLight
                             ? Color.white
                             : Color(hex: "1E293B").opacity(0.6)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: 24)
+                        RoundedRectangle(cornerRadius: 20)
                             .stroke(
                                 appTheme.isLight
-                                    ? Color(hex: "E2E8F0")
+                                    ? Color(hex: "E2E8F0").opacity(0.8)
                                     : Color.white.opacity(0.06),
-                                lineWidth: 1
+                                lineWidth: 0.5
                             )
                     )
                     .shadow(
-                        color: .black.opacity(appTheme.isLight ? 0.06 : 0.2),
-                        radius: 16,
-                        y: 6
+                        color: .black.opacity(appTheme.isLight ? 0.03 : 0.12),
+                        radius: 12,
+                        y: 4
                     )
             )
         }

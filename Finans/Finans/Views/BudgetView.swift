@@ -18,23 +18,23 @@ struct BudgetView: View {
             
             VStack(spacing: 0) {
                 // Kompakt özet
-                HStack(spacing: 10) {
+                HStack(spacing: AppSpacing.sm) {
                     SummaryCard(title: "Gelir", amount: dataManager.totalIncome, icon: "arrow.down.circle.fill", color: Color(hex: "34D399"))
                     SummaryCard(title: "Gider", amount: dataManager.totalExpense, icon: "arrow.up.circle.fill", color: Color(hex: "F87171"))
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                .padding(.horizontal, AppSpacing.xxl)
+                .padding(.top, AppSpacing.md)
                 BalanceCard(amount: dataManager.balance)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, AppSpacing.xxl)
+                    .padding(.vertical, AppSpacing.sm)
                 
                 // Ekle butonları + Segment
-                HStack(spacing: 10) {
-                    ActionButton(title: "Gelir Ekle", icon: "plus.circle.fill", color: Color(hex: "34D399")) { showAddIncome = true }
-                    ActionButton(title: "Gider Ekle", icon: "minus.circle.fill", color: Color(hex: "F87171")) { showAddExpense = true }
+                HStack(spacing: AppSpacing.sm) {
+                    ActionButton(title: "Gelir Ekle", icon: "plus.circle.fill", color: Color(hex: "34D399"), style: .primary) { showAddIncome = true }
+                    ActionButton(title: "Gider Ekle", icon: "minus.circle.fill", color: Color(hex: "F87171"), style: .secondary) { showAddExpense = true }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                .padding(.horizontal, AppSpacing.xxl)
+                .padding(.bottom, AppSpacing.md)
                 
                 HStack(spacing: 0) {
                     BudgetSegmentButton(title: "Gelirler", isSelected: selectedTab == 0) {
@@ -44,23 +44,25 @@ struct BudgetView: View {
                         selectedTab = 1
                     }
                 }
-                .padding(4)
+                .padding(AppSpacing.xs)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(appTheme.isLight ? Color(hex: "E2E8F0") : Color(hex: "334155"))
                 )
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                .padding(.horizontal, AppSpacing.xxl)
+                .padding(.bottom, AppSpacing.md)
                 
                 // Liste – kalan alanı doldur
                 Group {
                     if selectedTab == 0 {
                         IncomeListView(editingIncome: $editingIncome)
+                            .transition(.opacity.combined(with: .move(edge: .leading)))
                     } else {
                         ExpenseListView(editingExpense: $editingExpense)
+                            .transition(.opacity.combined(with: .move(edge: .trailing)))
                     }
                 }
-                .animation(.easeInOut(duration: 0.25), value: selectedTab)
+                .animation(.easeInOut(duration: 0.3), value: selectedTab)
             }
         }
         .navigationTitle("Bütçe")
@@ -69,20 +71,22 @@ struct BudgetView: View {
         .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .sheet(isPresented: $showAddIncome) {
-            AddIncomeView()
+            AddIncomeView().environmentObject(appTheme)
         }
         .sheet(isPresented: $showAddExpense) {
-            AddExpenseView()
+            AddExpenseView().environmentObject(appTheme)
         }
         .sheet(item: $editingIncome) { income in
             EditIncomeView(income: income) {
                 editingIncome = nil
             }
+            .environmentObject(appTheme)
         }
         .sheet(item: $editingExpense) { expense in
             EditExpenseView(expense: expense) {
                 editingExpense = nil
             }
+            .environmentObject(appTheme)
         }
         .sheet(isPresented: $showPdfShare) {
             if let data = pdfData {
@@ -111,16 +115,22 @@ struct BudgetSegmentButton: View {
     @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
-        Button(action: action) {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.25)) {
+                action()
+            }
+        }) {
             Text(title)
-                .font(.system(size: 15, weight: .semibold))
+                .font(AppTypography.subheadline)
+                .fontWeight(.semibold)
                 .foregroundColor(isSelected ? .white : appTheme.textSecondary)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .padding(.vertical, AppSpacing.md)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(isSelected ? Color(hex: "34D399") : Color.clear)
                 )
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -134,28 +144,28 @@ struct SummaryCard: View {
     @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: AppSpacing.sm) {
+            HStack(spacing: AppSpacing.sm) {
                 Image(systemName: icon)
-                    .font(.system(size: 16))
+                    .font(.system(size: 14))
                     .foregroundColor(color)
                 Text(title)
-                    .font(.caption)
+                    .font(AppTypography.subheadline)
                     .foregroundColor(appTheme.textSecondary)
             }
             Text(formatCurrency(amount))
-                .font(.system(size: 16, weight: .bold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .foregroundColor(appTheme.textPrimary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
+        .padding(AppSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(appTheme.listRowBackground)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.3), lineWidth: 1))
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.25), lineWidth: 0.5))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -167,45 +177,62 @@ struct BalanceCard: View {
     var body: some View {
         HStack {
             Text("Bakiye")
-                .font(.caption)
+                .font(AppTypography.subheadline)
                 .foregroundColor(appTheme.textSecondary)
             Spacer()
             Text(formatCurrency(amount))
-                .font(.system(size: 18, weight: .bold))
+                .font(AppTypography.amountMedium)
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .foregroundColor(amount >= 0 ? Color(hex: "34D399") : Color(hex: "F87171"))
         }
-        .padding(14)
+        .padding(AppSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(appTheme.listRowBackground)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "34D399").opacity(0.3), lineWidth: 1))
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.06 : 0), radius: appTheme.isLight ? 6 : 0, y: 2)
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "34D399").opacity(0.25), lineWidth: 0.5))
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
+}
+
+enum ActionButtonStyle {
+    case primary
+    case secondary
 }
 
 struct ActionButton: View {
     let title: String
     let icon: String
     let color: Color
+    var style: ActionButtonStyle = .primary
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack(spacing: AppSpacing.sm) {
                 Image(systemName: icon)
-                    .font(.system(size: 22))
+                    .font(.system(size: 18))
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(AppTypography.headline)
             }
-            .foregroundColor(.white)
+            .foregroundColor(style == .primary ? .white : color)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .padding(.vertical, 18)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(color)
+                Group {
+                    if style == .primary {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(color)
+                    } else {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.clear)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(color, lineWidth: 2)
+                            )
+                    }
+                }
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -255,7 +282,7 @@ struct IncomeListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, AppSpacing.xxl)
     }
 }
 
@@ -285,16 +312,17 @@ struct IncomeRowView: View {
             Spacer()
             
             Text(formatCurrency(income.amount))
-                .font(.system(size: 16, weight: .bold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .foregroundColor(Color(hex: "34D399"))
         }
-        .padding(16)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.vertical, AppSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(appTheme.cardBackgroundSecondary)
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -342,7 +370,7 @@ struct ExpenseListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, AppSpacing.xxl)
     }
 }
 
@@ -376,16 +404,17 @@ struct ExpenseRowView: View {
             Spacer()
             
             Text("-\(formatCurrency(expense.amount))")
-                .font(.system(size: 16, weight: .bold))
+                .font(AppTypography.amountSmall)
                 .monospacedDigit()
                 .contentTransition(.numericText())
                 .foregroundColor(Color(hex: "F87171"))
         }
-        .padding(16)
+        .padding(.horizontal, AppSpacing.lg)
+        .padding(.vertical, AppSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(appTheme.cardBackgroundSecondary)
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.05 : 0), radius: appTheme.isLight ? 4 : 0, y: 1)
+                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
 }
@@ -395,20 +424,48 @@ struct EmptyStateView: View {
     let message: String
     let submessage: String
     @EnvironmentObject var appTheme: AppTheme
+    @State private var appeared = false
     
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 48))
-                .foregroundColor(appTheme.textSecondary.opacity(0.6))
-            Text(message)
-                .font(.headline)
-                .foregroundColor(appTheme.textPrimary)
-            Text(submessage)
-                .font(.subheadline)
-                .foregroundColor(appTheme.textSecondary)
+        VStack(spacing: AppSpacing.lg) {
+            ZStack {
+                Circle()
+                    .fill(appTheme.listRowBackground)
+                    .frame(width: 88, height: 88)
+                Image(systemName: icon)
+                    .font(AppTypography.title1)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [
+                                appTheme.textSecondary.opacity(0.8),
+                                appTheme.textSecondary.opacity(0.5)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            .scaleEffect(appeared ? 1 : 0.9)
+            .opacity(appeared ? 1 : 0)
+            VStack(spacing: AppSpacing.sm) {
+                Text(message)
+                    .font(AppTypography.headline)
+                    .foregroundColor(appTheme.textPrimary)
+                Text(submessage)
+                    .font(.subheadline)
+                    .foregroundColor(appTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
+        .padding(AppSpacing.xxl)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(message). \(submessage)")
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.35)) {
+                appeared = true
+            }
+        }
     }
 }
 
