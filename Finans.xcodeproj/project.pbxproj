@@ -297,6 +297,7 @@
 				A1000040 /* CVOlusturView.swift in Sources */,
 				A1000041 /* CVTemplateView.swift in Sources */,
 				A1000042 /* JobOfferDashboardView.swift in Sources */,
+				A1000043 /* MonthlySalaryProjectionChart.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
