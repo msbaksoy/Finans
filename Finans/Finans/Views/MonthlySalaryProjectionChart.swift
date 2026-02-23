@@ -8,6 +8,9 @@ private struct SalaryData: Identifiable {
     let type: String
 }
 
+// fixed-size months array to avoid ForEach overload ambiguity
+fileprivate let MonthlySalaryMonths: [Int] = Array(0..<12)
+
 struct MonthlySalaryProjectionChart: View {
     let comparison: JobComparison
     @State private var selectedMonth: Int? = nil
@@ -30,93 +33,56 @@ struct MonthlySalaryProjectionChart: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Chart {
-                ForEach(offerSeries) { p in
-                    AreaMark(x: .value("Ay", p.month), y: .value("Miktar", p.amount))
-                        .foregroundStyle(LinearGradient(colors: [Color.accentColor.opacity(0.22), Color.accentColor.opacity(0.05)], startPoint: .top, endPoint: .bottom))
-                }
-                ForEach(offerSeries) { p in
-                    LineMark(x: .value("Ay", p.month), y: .value("Miktar", p.amount))
-                        .interpolationMethod(.cardinal)
-                        .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                        .foregroundStyle(LinearGradient(colors: [Color(hex: "3B82F6"), Color(hex: "4F46E5")], startPoint: .leading, endPoint: .trailing))
-                }
-                ForEach(currentSeries) { p in
-                    AreaMark(x: .value("Ay", p.month), y: .value("Miktar", p.amount))
-                        .foregroundStyle(Color.secondary.opacity(0.06))
-                }
-                ForEach(currentSeries) { p in
-                    LineMark(x: .value("Ay", p.month), y: .value("Miktar", p.amount))
-                        .interpolationMethod(.cardinal)
-                        .lineStyle(StrokeStyle(lineWidth: 1.25, dash: [6,4], lineCap: .round))
-                        .foregroundStyle(Color.secondary)
-                }
-            }
-            .chartYScale(domain: yDomain)
-            .chartXAxis {
-                AxisMarks(values: Array(1...12)) { idx in
-                    AxisValueLabel {
-                        if let v = idx.as(Int.self), v >= 1 && v <= 12 {
-                            Text(monthLabels[v-1]).font(AppTypography.caption).foregroundColor(appTheme.textSecondary)
-                        }
-                    }
-                }
-            }
-            .chartYAxis {
-                AxisMarks(position: .leading) { mark in
-                    AxisValueLabel {
-                        if let value = mark.as(Double.self) {
-                            Text(FinanceFormatter.currencyString(value)).font(AppTypography.caption).foregroundColor(appTheme.textSecondary)
-                        }
-                    }
-                }
+        // compute once to simplify view-builder complexity
+        let maxVal = (comparison.currentMonthlyNet + comparison.offerMonthlyNet).max() ?? 1
+        return VStack(alignment: .leading, spacing: 12) {
+            // Simplified and performant monthly bar projection (two bars per month)
+            HStack(alignment: .bottom, spacing: 6) {
+                // explicit 12 bars to avoid ForEach overload ambiguity on some toolchains
+                barView(0, maxVal: maxVal); barView(1, maxVal: maxVal); barView(2, maxVal: maxVal); barView(3, maxVal: maxVal)
+                barView(4, maxVal: maxVal); barView(5, maxVal: maxVal); barView(6, maxVal: maxVal); barView(7, maxVal: maxVal)
+                barView(8, maxVal: maxVal); barView(9, maxVal: maxVal); barView(10, maxVal: maxVal); barView(11, maxVal: maxVal)
             }
             .frame(height: 220)
-            .chartOverlay { proxy in
-                GeometryReader { geo in
-                    Rectangle().fill(Color.clear).contentShape(Rectangle())
-                        .gesture(DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                let location = value.location
-                                if let monthValue: Int = proxy.value(atX: location.x) as? Int {
-                                    selectedMonth = min(max(monthValue, 1), 12)
-                                }
-                            }
-                            .onEnded { _ in
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                    withAnimation(.easeOut) { selectedMonth = nil }
-                                }
-                            }
-                        )
-
-                    if let month = selectedMonth, let xPos = proxy.position(forX: month) {
-                        let idx = month - 1
-                        let cur = comparison.currentMonthlyNet.indices.contains(idx) ? comparison.currentMonthlyNet[idx] : 0
-                        let off = comparison.offerMonthlyNet.indices.contains(idx) ? comparison.offerMonthlyNet[idx] : 0
-                        VStack(spacing: 6) {
-                            Text(monthLabels[idx]).font(AppTypography.subheadline).foregroundColor(appTheme.textPrimary)
-                            HStack(spacing: 12) {
-                                HStack(spacing:6) {
-                                    Circle().stroke(Color.secondary, lineWidth: 1).frame(width:10, height:10)
-                                    Text("Mevcut:").font(AppTypography.caption).foregroundColor(appTheme.textSecondary)
-                                    Text(FinanceFormatter.currencyString(cur)).font(AppTypography.subheadline).monospacedDigit()
-                                }
-                                HStack(spacing:6) {
-                                    Circle().fill(Color.accentColor).frame(width:10, height:10)
-                                    Text("Teklif:").font(AppTypography.caption).foregroundColor(appTheme.textSecondary)
-                                    Text(FinanceFormatter.currencyString(off)).font(AppTypography.subheadline).monospacedDigit()
-                                }
-                            }
-                            .padding(8)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(appTheme.cardBackgroundSecondary))
-                            .shadow(radius: 6, y: 4)
-                        }
-                        .position(x: xPos, y: 40)
-                    }
+            
+            // Consolidated net salary summary + AI-like comment card
+            let currentMonthly = comparison.currentYearlyNetWithBonus / 12.0
+            let offerMonthly = comparison.offerYearlyNetWithBonus / 12.0
+            let delta = offerMonthly - currentMonthly
+            HStack {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Mevcut (Net / ay)").font(AppTypography.subheadline).foregroundColor(appTheme.textSecondary)
+                    Text(FinanceFormatter.currencyString(currentMonthly)).font(AppTypography.amountMedium).monospacedDigit()
+                }
+                Spacer()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Teklif (Net / ay)").font(AppTypography.subheadline).foregroundColor(appTheme.textSecondary)
+                    Text(FinanceFormatter.currencyString(offerMonthly)).font(AppTypography.amountMedium).monospacedDigit()
+                }
+                Spacer()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Aylık Fark").font(AppTypography.subheadline).foregroundColor(appTheme.textSecondary)
+                    Text("\(delta >= 0 ? "+" : "")\(FinanceFormatter.currencyString(delta))")
+                        .font(AppTypography.amountMedium)
+                        .foregroundColor(delta >= 0 ? Color.green : Color.red)
+                        .monospacedDigit()
                 }
             }
-            .animation(.easeOut(duration: 1.0), value: currentSeries)
+            .padding(.top, 6)
+            
+            // AI-like comment consolidated in a card (reuses PremiumCardModifier)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Yorum").font(AppTypography.headline).foregroundColor(appTheme.textPrimary)
+                Text(comparison.raiseAnalysisString())
+                    .font(AppTypography.footnote)
+                    .foregroundColor(appTheme.textPrimary)
+                Text(comparison.careerImpactString())
+                    .font(AppTypography.caption1)
+                    .foregroundColor(appTheme.textSecondary)
+            }
+            .padding(12)
+            .modifier(PremiumCardModifier())
+            .background(appTheme.listRowBackground)
 
             HStack(spacing: 16) {
                 HStack(spacing: 8) {
@@ -134,6 +100,55 @@ struct MonthlySalaryProjectionChart: View {
         .modifier(PremiumCardModifier())
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(14)
+    }
+}
+
+fileprivate extension MonthlySalaryProjectionChart {
+    @ViewBuilder
+    func barView(_ idx: Int, maxVal: Double) -> some View {
+        let cur = idx < comparison.currentMonthlyNet.count ? comparison.currentMonthlyNet[idx] : 0
+        let off = idx < comparison.offerMonthlyNet.count ? comparison.offerMonthlyNet[idx] : 0
+        VStack(spacing: 6) {
+            if selectedMonth == idx + 1 {
+                            VStack(spacing: 4) {
+                    Text(shortKString(off))
+                        .font(AppTypography.caption1)
+                        .monospacedDigit()
+                        .italic()
+                        .rotationEffect(.degrees(-8))
+                    Text(shortKString(cur))
+                        .font(AppTypography.caption1)
+                        .monospacedDigit()
+                        .italic()
+                        .rotationEffect(.degrees(-8))
+                            }
+            }
+            HStack(alignment: .bottom, spacing: 4) {
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.6))
+                    .frame(width: 10, height: CGFloat(cur / maxVal) * 140)
+                    .cornerRadius(4)
+                Rectangle()
+                    .fill(Color.accentColor)
+                    .frame(width: 10, height: CGFloat(off / maxVal) * 160)
+                    .cornerRadius(4)
+            }
+            .onTapGesture {
+                withAnimation { selectedMonth = (selectedMonth == idx + 1) ? nil : (idx + 1) }
+            }
+            Text(monthLabels[idx])
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
+                .rotationEffect(.degrees(-12))
+                .italic()
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    // Shorten currency to K (thousands), rounding to nearest thousand
+    func shortKString(_ value: Double) -> String {
+        let k = Int((value / 1000.0).rounded())
+        return "\(k)K"
     }
 }
 
