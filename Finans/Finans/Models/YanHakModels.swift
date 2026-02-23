@@ -7,6 +7,135 @@ enum CalismaModeli: String, Codable, CaseIterable {
     case remote = "Remote"
 }
 
+// MARK: - JobComparison (embedded for build inclusion)
+struct JobComparison {
+    let current: YanHakVerisi
+    let offer: YanHakVerisi
+
+    var currentMonthlyNet: [Double] { current.aylikNetMaaslar }
+    var offerMonthlyNet: [Double] { offer.aylikNetMaaslar }
+
+    var currentYearlyNet: Double { current.yillikNetMaas }
+    var offerYearlyNet: Double { offer.yillikNetMaas }
+
+    var currentYearlyNetWithBonus: Double { current.primDahilYillikToplam }
+    var offerYearlyNetWithBonus: Double { offer.primDahilYillikToplam }
+
+    func annualBenefitsValue(for v: YanHakVerisi) -> Double {
+        var total: Double = 0
+        if let t = v.tamamlayiciSaglikTutar { total += max(0, t) }
+        if let t = v.ozelSaglikTutar { total += max(0, t) }
+        if let t = v.gozDisDestekTutar { total += max(0, t) }
+        if v.yemekTipi == .yemekKarti, let daily = v.yemekKartiGunlukTutar {
+            let workDaysPerYear = Double(v.officeDaysPerWeek) * 52.0
+            total += daily * workDaysPerYear
+        }
+        if v.yemekTipi == .yemekhane {
+            let workDaysPerYear = Double(v.officeDaysPerWeek) * 52.0
+            total += 60.0 * workDaysPerYear
+        }
+        if let aylik = v.yolUcretiAylik { total += aylik * 12.0 }
+        if let aylik = v.sirketAraciYakitAylik { total += aylik * 12.0 }
+        if v.internetElektrikDestekVar, let tutar = v.internetElektrikToplamTutar { total += tutar }
+        if let egitim = v.egitimButcesi { total += egitim }
+        if v.telefonVeriliyor || (v.telefonFaturaKarsilaniyor ?? false) { total += 60.0 * 12.0 }
+        if v.bankaPromosyonu { total += 300.0 }
+        if v.bayramYardimiVar { total += 500.0 }
+        return max(0, total)
+    }
+
+    var currentAnnualBenefits: Double { annualBenefitsValue(for: current) }
+    var offerAnnualBenefits: Double { annualBenefitsValue(for: offer) }
+
+    var currentTotalCompensation: Double { currentYearlyNetWithBonus + currentAnnualBenefits }
+    var offerTotalCompensation: Double { offerYearlyNetWithBonus + offerAnnualBenefits }
+
+    func weeklyCommuteMinutes(for v: YanHakVerisi) -> Int {
+        let oneWay = v.commuteTimeInMinutes ?? 0
+        return (oneWay * 2) * v.officeDaysPerWeek
+    }
+
+    var currentWeeklyCommuteMinutes: Int { weeklyCommuteMinutes(for: current) }
+    var offerWeeklyCommuteMinutes: Int { weeklyCommuteMinutes(for: offer) }
+
+    func annualLostDays(for v: YanHakVerisi) -> Double {
+        let weeklyHours = Double(weeklyCommuteMinutes(for: v)) / 60.0
+        return (weeklyHours * 52.0) / 24.0
+    }
+
+    var currentAnnualLostDays: Double { annualLostDays(for: current) }
+    var offerAnnualLostDays: Double { annualLostDays(for: offer) }
+
+    var percentChangeTotalCompensation: Double {
+        let base = max(1.0, currentTotalCompensation)
+        return (offerTotalCompensation - currentTotalCompensation) / base * 100.0
+    }
+
+    var monthlyDelta: Double { (offerYearlyNetWithBonus/12.0) - (currentYearlyNetWithBonus/12.0) }
+
+    var lifeQualityScore: Int {
+        let pct = percentChangeTotalCompensation
+        let financialScore = min(max(pct, -50), 50) / 50.0 * 50.0
+        let savedMinutes = Double(currentWeeklyCommuteMinutes - offerWeeklyCommuteMinutes)
+        let commuteScore = min(max(savedMinutes / (60.0 * 2.0) * 10.0, -20.0), 30.0)
+        let benefitRatio = (offerAnnualBenefits - currentAnnualBenefits) / max(1.0, currentAnnualBenefits + 1.0)
+        let benefitScore = min(max(benefitRatio * 25.0, -10.0), 20.0)
+        let workModelBonus: Double = {
+            func rank(_ v: YanHakVerisi) -> Int {
+                switch v.calismaModeli {
+                case .remote: return 3
+                case .hibrit: return 2
+                case .ofis: return 1
+                default: return 0
+                }
+            }
+            return Double(rank(offer) - rank(current)) * 4.0
+        }()
+        let raw = 50.0 + financialScore * 0.5 + commuteScore + benefitScore + workModelBonus
+        let clamped = min(max(raw, 0.0), 100.0)
+        return Int(round(clamped))
+    }
+
+    func raiseAnalysisString() -> String {
+        let pct = percentChangeTotalCompensation
+        switch pct {
+        case ..<5: return "Finansal olarak önemsiz bir değişim."
+        case 5..<10: return "Küçük ancak dikkat çekmesi gereken bir artış; pazarlık için bazı yan haklar değerlendirilebilir."
+        case 10..<20: return "Makul ve kabul edilebilir bir artış."
+        case 20..<30: return "Güçlü bir finansal sıçrama."
+        default: return "Mükemmel! Hayat kalitenizi değiştirecek bir artış."
+        }
+    }
+
+    func careerImpactString() -> String {
+        guard let terfi = offer.terfiIleMi, terfi == true else { return "" }
+        let x = min(40.0, 10.0 + percentChangeTotalCompensation / 2.0)
+        return "Ünvan yükselişi, uzun vadeli kariyer değerinizi yaklaşık %\(Int(round(x))) oranında artıracaktır."
+    }
+
+    func commuteInsightString() -> String {
+        let diff = currentWeeklyCommuteMinutes - offerWeeklyCommuteMinutes
+        if diff >= 180 {
+            let days = Int(round((Double(diff) / 60.0 * 52.0) / 24.0))
+            return "Yılda fazladan \(days) günü kendinize ayırabileceksiniz."
+        } else if diff > 60 {
+            return "Yeni iş haftalık anlamlı süre kazandırıyor; ayda yaklaşık bir gün kazanabilirsiniz."
+        } else if diff > 0 {
+            return "Yeni iş küçük ama faydalı zaman tasarrufu sağlıyor."
+        } else if diff == 0 {
+            return "Yol süresi benzer; zaman tasarrufu beklenmiyor."
+        } else {
+            return "Yeni işte daha fazla zaman yolculuğunda geçireceksiniz; yaşam kalitesi etkilenebilir."
+        }
+    }
+
+    func shortSummary() -> String {
+        let pct = Int(round(percentChangeTotalCompensation))
+        let money = FinanceFormatter.currencyString(monthlyDelta)
+        return "\(raiseAnalysisString()) Net aylık fark: \(money) (%\(pct)) — Yaşam Kalitesi: \(lifeQualityScore)/100"
+    }
+}
+
 enum UlasimTipi: String, Codable, CaseIterable {
     case sirketAraci = "Şirket Araçı"
     case servis = "Servis İmkanı"

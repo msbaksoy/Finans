@@ -45,6 +45,7 @@
 		A1000040 /* CVOlusturView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000040 /* CVOlusturView.swift */; };
 		A1000041 /* CVTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000041 /* CVTemplateView.swift */; };
 		A1000042 /* JobOfferDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000042 /* JobOfferDashboardView.swift */; };
+		A1000043 /* MonthlySalaryProjectionChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000043 /* MonthlySalaryProjectionChart.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +88,7 @@
 		A2000040 /* CVOlusturView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVOlusturView.swift; sourceTree = "<group>"; };
 		A2000041 /* CVTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVTemplateView.swift; sourceTree = "<group>"; };
 		A2000042 /* JobOfferDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobOfferDashboardView.swift; sourceTree = "<group>"; };
+		A2000043 /* MonthlySalaryProjectionChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthlySalaryProjectionChart.swift; sourceTree = "<group>"; };
 		A3000001 /* Finans.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Finans.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -180,6 +182,7 @@
 				A2000029 /* MevduatFaiziView.swift */,
 				A2000033 /* YanHakAnaliziView.swift */,
 				A2000037 /* YanHakRaporView.swift */,
+				A2000043 /* MonthlySalaryProjectionChart.swift */,
 				A2000040 /* CVOlusturView.swift */,
 				A2000041 /* CVTemplateView.swift */,
 				A2000042 /* JobOfferDashboardView.swift */,
