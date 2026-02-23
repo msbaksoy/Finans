@@ -982,6 +982,74 @@ struct YanHakAnaliziView: View {
                     .padding(.bottom, 16)
                 }
                 
+                // Tüm Detaylar — hızlı erişim butonu (özetin üstünde)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) { detayAccordionAcik.toggle() }
+                } label: {
+                    HStack {
+                        Text("Tüm Detaylar")
+                            .font(AppTypography.headline)
+                            .foregroundColor(appTheme.textPrimary)
+                        Spacer()
+                        Image(systemName: detayAccordionAcik ? "chevron.up" : "chevron.down")
+                            .foregroundColor(temaRengi)
+                    }
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+
+                // Aylık net maaş karşılaştırması (çizgi grafik, büyütülmüş, ince çizgi)
+                InlineMonthlyNetChart(current: mevcutIs.aylikNetMaaslar, offer: teklif.aylikNetMaaslar)
+                    .environmentObject(appTheme)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+
+                // Prim dahil yıllık toplam alanı
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Prim Dahil Yıllık Toplam (Net)")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Mevcut")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(mevcutIs.primDahilYillikToplam))
+                                .font(AppTypography.amountMedium)
+                                .monospacedDigit()
+                                .foregroundColor(appTheme.textPrimary)
+                        }
+                        Spacer()
+                        VStack(alignment: .leading) {
+                            Text("Teklif")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(teklif.primDahilYillikToplam))
+                                .font(AppTypography.amountMedium)
+                                .monospacedDigit()
+                                .foregroundColor(appTheme.textPrimary)
+                        }
+                        Spacer()
+                        let deltaPrim = teklif.primDahilYillikToplam - mevcutIs.primDahilYillikToplam
+                        VStack(alignment: .leading) {
+                            Text("Fark")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text("\(deltaPrim >= 0 ? "+" : "")\(FinanceFormatter.currencyString(deltaPrim))")
+                                .font(AppTypography.amountMedium)
+                                .monospacedDigit()
+                                .foregroundColor(deltaPrim >= 0 ? Color(hex: "16A34A") : Color(hex: "EF4444"))
+                        }
+                    }
+                }
+                .padding(14)
+                .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+
                 // Özet kartı (ön planda)
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Özet")
@@ -1474,6 +1542,73 @@ fileprivate struct CompactDaysLocal: View {
                 .frame(minWidth: 18, minHeight: 18)
             }
         }
+    }
+}
+
+// Inline simple monthly net comparison chart to avoid Swift Charts dependency
+fileprivate struct InlineMonthlyNetChart: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let current: [Double]
+    let offer: [Double]
+    private let months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"]
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h: CGFloat = 200
+            let paddingX: CGFloat = 24
+            let chartW = max(0, w - paddingX * 2)
+            let maxVal = max((current.max() ?? 1), (offer.max() ?? 1), 1)
+
+            ZStack {
+                // horizontal grid lines
+                VStack(spacing: 0) {
+                    ForEach(0..<3) { _ in
+                        Rectangle()
+                            .fill(appTheme.cardStroke.opacity(0.06))
+                            .frame(height: 1)
+                        Spacer()
+                    }
+                }
+                .padding(.vertical, 20)
+
+                // current line
+                Path { path in
+                    for (i, val) in current.enumerated() {
+                        let x = paddingX + (chartW) * CGFloat(i) / 11.0
+                        let y = 20 + (h - 40) * (1 - CGFloat(val / maxVal))
+                        if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(appTheme.cardBackgroundSecondary.opacity(0.95), lineWidth: 1.0)
+
+                // offer line
+                Path { path in
+                    for (i, val) in offer.enumerated() {
+                        let x = paddingX + (chartW) * CGFloat(i) / 11.0
+                        let y = 20 + (h - 40) * (1 - CGFloat(val / maxVal))
+                        if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 1.0, lineCap: .round, lineJoin: .round))
+                .shadow(color: Color.accentColor.opacity(0.12), radius: 6, x: 0, y: 4)
+
+                // month labels
+                HStack(spacing: 0) {
+                    ForEach(0..<12, id: \.self) { i in
+                        Text(months[i])
+                            .font(AppTypography.caption1.italic())
+                            .foregroundColor(appTheme.textSecondary)
+                            .rotationEffect(.degrees(-20))
+                            .frame(width: chartW/12, alignment: .center)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 4)
+            }
+            .frame(height: h)
+        }
+        .frame(height: 200)
     }
 }
 
