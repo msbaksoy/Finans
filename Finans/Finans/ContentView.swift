@@ -183,20 +183,23 @@ fileprivate struct WorkModelButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack {
-                Text(model.icon).font(.largeTitle)
-                Text(model.displayName).font(AppTypography.caption1)
-            }
-            .padding(8)
-            .frame(minWidth: 72)
-            .background(appTheme.cardBackgroundSecondary)
-            .overlay(
+            ZStack {
+                // base background
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(LinearGradient(colors: selectedColors, startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .opacity(selected ? 1 : 0)
-            )
-            .foregroundColor(selected ? .white : appTheme.textPrimary)
-            .cornerRadius(10)
+                    .fill(appTheme.cardBackgroundSecondary)
+                // selected gradient overlay
+                if selected {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(LinearGradient(colors: selectedColors, startPoint: .topLeading, endPoint: .bottomTrailing))
+                }
+                VStack(spacing: 4) {
+                    Text(model.icon).font(.title)
+                    Text(model.displayName).font(AppTypography.caption2)
+                }
+                .foregroundColor(selected ? .white : appTheme.textPrimary)
+            }
+            .frame(minWidth: 64, minHeight: 64)
+            .padding(4)
         }
         .buttonStyle(.plain)
     }
@@ -807,30 +810,31 @@ fileprivate struct WorkCommuteInputView: View {
                 }
             }
 
+            // If hybrid, show stepper below as a separate row (not inline)
             if currentWorkModel == .hybrid {
                 HStack {
                     Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                     Spacer()
-                    Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5).labelsHidden()
                 }
+                Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
-                    HStack(spacing: 6) {
-                        TextField("Saat", value: $currentCommuteHours, formatter: NumberFormatter(), prompt: Text("0"))
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 56, height: 36)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
-                        Text(":")
-                        TextField("Dakika", value: $currentCommuteMinutes, formatter: NumberFormatter(), prompt: Text("0"))
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 56, height: 36)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
-                    }
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                HStack(spacing: 8) {
+                    TextField("Saat", value: $currentCommuteHours, formatter: NumberFormatter())
+                        .keyboardType(.numberPad)
+                        .frame(width: 64, height: 40)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        .multilineTextAlignment(.center)
+                    Text(":")
+                    TextField("Dakika", value: $currentCommuteMinutes, formatter: NumberFormatter())
+                        .keyboardType(.numberPad)
+                        .frame(width: 64, height: 40)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        .multilineTextAlignment(.center)
                 }
             }
 
@@ -867,26 +871,26 @@ fileprivate struct WorkCommuteInputView: View {
                 HStack {
                     Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                     Spacer()
-                    Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5).labelsHidden()
                 }
+                Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5)
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
-                    HStack(spacing: 6) {
-                        TextField("Saat", value: $offerCommuteHours, formatter: NumberFormatter(), prompt: Text("0"))
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 56, height: 36)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
-                        Text(":")
-                        TextField("Dakika", value: $offerCommuteMinutes, formatter: NumberFormatter(), prompt: Text("0"))
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.center)
-                            .frame(width: 56, height: 36)
-                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
-                    }
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                HStack(spacing: 8) {
+                    TextField("Saat", value: $offerCommuteHours, formatter: NumberFormatter())
+                        .keyboardType(.numberPad)
+                        .frame(width: 64, height: 40)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        .multilineTextAlignment(.center)
+                    Text(":")
+                    TextField("Dakika", value: $offerCommuteMinutes, formatter: NumberFormatter())
+                        .keyboardType(.numberPad)
+                        .frame(width: 64, height: 40)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        .multilineTextAlignment(.center)
                 }
             }
 
@@ -981,6 +985,11 @@ fileprivate struct KiyaslamaCommuteView: View {
                 }
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                // ensure tapping outside fields dismisses keyboard
+                .onTapGesture {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
 
                 // Teklif işyeri kart
                 VStack(alignment: .leading, spacing: 10) {
