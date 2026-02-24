@@ -199,6 +199,14 @@ struct YanHakAnaliziView: View {
                     }
                     .buttonStyle(.plain)
                 }
+                // Yılda kaç maaş (inline — artık ayrı adımda sormuyoruz)
+                HStack(spacing: 12) {
+                    Text("Yılda")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    Stepper("\(mevcutIs.maasPeriyodu) maaş", value: $mevcutIs.maasPeriyodu, in: 1...24)
+                        .labelsHidden()
+                }
             }
             .padding(20)
             .background(
@@ -243,6 +251,14 @@ struct YanHakAnaliziView: View {
                             .cornerRadius(12)
                     }
                     .buttonStyle(.plain)
+                }
+                // Yılda kaç maaş (inline — artık ayrı adımda sormuyoruz)
+                HStack(spacing: 12) {
+                    Text("Yılda")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    Stepper("\(teklif.maasPeriyodu) maaş", value: $teklif.maasPeriyodu, in: 1...24)
+                        .labelsHidden()
                 }
             }
             .padding(20)
@@ -314,43 +330,8 @@ struct YanHakAnaliziView: View {
     
     // Soru 4: Yılda kaç maaş — hem mevcut iş hem teklif için, 1–24 arası
     private var soru4MaasPeriyodu: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            Text("Yılda kaç maaş alınıyor?")
-                .font(.title2.weight(.bold))
-                .foregroundColor(appTheme.textPrimary)
-            
-            Text("Varsayılan 12. İstenirse 1–24 arası değiştirilebilir.")
-                .font(.subheadline)
-                .foregroundColor(appTheme.textSecondary)
-            
-            // Mevcut İş Yeri
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Mevcut İş Yeri")
-                    .font(.headline)
-                    .foregroundColor(appTheme.textPrimary)
-                maasPeriyoduAlani(value: $mevcutIs.maasPeriyodu)
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(appTheme.listRowBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(temaRengi.opacity(0.3), lineWidth: 1))
-            )
-            
-            // Teklifte Bulunan İş Yeri
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Teklifte Bulunan İş Yeri")
-                    .font(.headline)
-                    .foregroundColor(appTheme.textPrimary)
-                maasPeriyoduAlani(value: $teklif.maasPeriyodu)
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(appTheme.listRowBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(temaRengi.opacity(0.3), lineWidth: 1))
-            )
-        }
+        // Now handled inline in Soru 1 — keep placeholder to preserve step indexing
+        EmptyView()
     }
     
     private func maasPeriyoduAlani(value: Binding<Int>) -> some View {
@@ -913,6 +894,63 @@ struct YanHakAnaliziView: View {
                 .padding(.bottom, 16)
                 
                 // API Anahtarı (boşsa göster)
+                
+                // Aylık bazda maaş karşılaştırma grafiği (Formu Düzenle butonunun hemen altında)
+                InlineMonthlyNetChart(current: mevcutIs.aylikNetMaaslar, offer: teklif.aylikNetMaaslar)
+                    .environmentObject(appTheme)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+
+                // Yılda kaç maaş bilgilerini göster (şık, küçük)
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading) {
+                        Text("Mevcut — Yılda")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text("\(mevcutIs.maasPeriyodu) maaş")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                    Spacer()
+                    VStack(alignment: .leading) {
+                        Text("Teklif — Yılda")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text("\(teklif.maasPeriyodu) maaş")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
+
+                // Aylık ortalama net maaşlar kartı
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading) {
+                        Text("Mevcut (Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(mevcutIs.yillikNetMaas / 12.0))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                    Spacer()
+                    VStack(alignment: .leading) {
+                        Text("Teklif (Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(teklif.yillikNetMaas / 12.0))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
+
                 if groqAPIKey.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Groq API Anahtarı")
