@@ -282,15 +282,19 @@ fileprivate struct KiyaslamaView: View {
     @State private var currentIsBrut: Bool = true
     @State private var currentMaasPeriyodu: Int = 12
     @State private var currentPrimText: String = ""
+    @State private var currentPrimIsBrut: Bool = true
 
     @State private var offerText: String = ""
     @State private var offerIsBrut: Bool = true
     @State private var offerMaasPeriyodu: Int = 12
     @State private var offerPrimText: String = ""
+    @State private var offerPrimIsBrut: Bool = true
 
     @State private var showResults: Bool = false
     @State private var currentMonthlyNets: [Double] = Array(repeating: 0, count: 12)
     @State private var offerMonthlyNets: [Double] = Array(repeating: 0, count: 12)
+    @State private var currentSalaryOnlyMonthlyNets: [Double] = Array(repeating: 0, count: 12)
+    @State private var offerSalaryOnlyMonthlyNets: [Double] = Array(repeating: 0, count: 12)
     @State private var navigateToAnalysis: Bool = false
 
     var body: some View {
@@ -365,9 +369,40 @@ fileprivate struct KiyaslamaView: View {
                         }
                     }
                     // Yıllık prim / bonus (mevcut) - inline in same card
-                    KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $currentPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
-                        .environmentObject(appTheme)
-                        .padding(.top, 8)
+                    VStack(spacing: 8) {
+                        KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $currentPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                            .environmentObject(appTheme)
+                        HStack(spacing: 8) {
+                            Text("Prim türü:")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Button {
+                                currentPrimIsBrut = true
+                            } label: {
+                                Text("Brüt")
+                                    .font(.caption1)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .background(currentPrimIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(currentPrimIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                currentPrimIsBrut = false
+                            } label: {
+                                Text("Net")
+                                    .font(.caption1)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .background(!currentPrimIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(!currentPrimIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
@@ -434,16 +469,52 @@ fileprivate struct KiyaslamaView: View {
                         }
                     }
                     // Yıllık prim / bonus (teklif) - inline in same card
-                    KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $offerPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
-                        .environmentObject(appTheme)
-                        .padding(.top, 8)
+                    VStack(spacing: 8) {
+                        KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $offerPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                            .environmentObject(appTheme)
+                        HStack(spacing: 8) {
+                            Text("Prim türü:")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Button {
+                                offerPrimIsBrut = true
+                            } label: {
+                                Text("Brüt")
+                                    .font(.caption1)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .background(offerPrimIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(offerPrimIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                offerPrimIsBrut = false
+                            } label: {
+                                Text("Net")
+                                    .font(.caption1)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .background(!offerPrimIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(!offerPrimIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
 
                 // Devam button — hesaplamayı yapıp analiz ekranına gider
                 NavigationLink(destination:
-                                KiyaslamaAnalysisView(currentMonthlyNets: currentMonthlyNets, offerMonthlyNets: offerMonthlyNets)
+                                KiyaslamaAnalysisView(
+                                    currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                                    offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                                    currentWithPrimMonthlyNets: currentMonthlyNets,
+                                    offerWithPrimMonthlyNets: offerMonthlyNets
+                                )
                                 .environmentObject(appTheme),
                                isActive: $navigateToAnalysis) {
                     EmptyView()
@@ -482,24 +553,49 @@ fileprivate struct KiyaslamaView: View {
         let currentPrim = parseFormattedNumber(currentPrimText) ?? 0
         let offerPrim = parseFormattedNumber(offerPrimText) ?? 0
 
-        currentMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu, annualPrim: currentPrim)
-        offerMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu, annualPrim: offerPrim)
+        // Salary-only (prim=0)
+        currentSalaryOnlyMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu, annualPrim: 0)
+        offerSalaryOnlyMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu, annualPrim: 0)
+
+        // With prim handling (if prim is brut, add as jan brut; if prim is net, add as annual net)
+        currentMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu, annualPrim: currentPrim, primIsBrut: currentPrimIsBrut)
+        offerMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu, annualPrim: offerPrim, primIsBrut: offerPrimIsBrut)
     }
 
-    private func computeMonthlyNet(value: Double, isBrut: Bool, periyod: Int, annualPrim: Double = 0) -> [Double] {
+    private func computeMonthlyNet(value: Double, isBrut: Bool, periyod: Int, annualPrim: Double = 0, primIsBrut: Bool = false) -> [Double] {
         guard value > 0 else { return Array(repeating: 0, count: 12) }
+
         if isBrut {
             // effective monthly brut: if periyod > 12, distribute extra months into monthly equivalent
             let efektif = periyod > 12 ? (Double(periyod) * value / 12.0) : value
             let brutlar = Array(repeating: efektif, count: 12)
-            let primler = Array(repeating: annualPrim / 12.0, count: 12)
+            let primler: [Double]
+            if primIsBrut && annualPrim > 0 {
+                // add entire brut prim into January (index 0)
+                var p = Array(repeating: 0.0, count: 12)
+                p[0] = annualPrim
+                primler = p
+            } else {
+                primler = Array(repeating: annualPrim / 12.0, count: 12)
+            }
             let sonuc = BrutNetCalculator.hesaplaYillik(brutlar: brutlar, primler: primler)
             return sonuc.map { $0.net }
         } else {
-            // net provided: annual net = periyod * value + annualPrim; monthly average = annual/12
-            let annualNet = Double(periyod) * value + annualPrim
-            let aylik = annualNet / 12.0
-            return Array(repeating: aylik, count: 12)
+            // net provided: if prim is brut, convert brut prim to net by adding it into January brut and running calculator
+            if primIsBrut && annualPrim > 0 {
+                // compute net equivalent of brut prim by running calculator with first month brut = annualPrim
+                let primBrutArray = [annualPrim] + Array(repeating: 0.0, count: 11)
+                let primSonuc = BrutNetCalculator.hesaplaYillik(brutlar: primBrutArray)
+                let primNetAnnual = primSonuc.map { $0.net }.reduce(0, +)
+                let annualNet = Double(periyod) * value + primNetAnnual
+                let aylik = annualNet / 12.0
+                return Array(repeating: aylik, count: 12)
+            } else {
+                // prim is net or zero
+                let annualNet = Double(periyod) * value + annualPrim
+                let aylik = annualNet / 12.0
+                return Array(repeating: aylik, count: 12)
+            }
         }
     }
 }
@@ -562,36 +658,52 @@ fileprivate struct SimpleInlineChart: View {
 // Analysis view shown after Devam — displays chart and monthly averages
 fileprivate struct KiyaslamaAnalysisView: View {
     @EnvironmentObject var appTheme: AppTheme
-    let currentMonthlyNets: [Double]
-    let offerMonthlyNets: [Double]
+    let currentSalaryOnlyMonthlyNets: [Double]
+    let offerSalaryOnlyMonthlyNets: [Double]
+    let currentWithPrimMonthlyNets: [Double]
+    let offerWithPrimMonthlyNets: [Double]
 
-    private var currentAvg: Double {
-        guard !currentMonthlyNets.isEmpty else { return 0 }
-        return currentMonthlyNets.reduce(0, +) / Double(currentMonthlyNets.count)
+    private var currentSalaryOnlyAvg: Double {
+        guard !currentSalaryOnlyMonthlyNets.isEmpty else { return 0 }
+        return currentSalaryOnlyMonthlyNets.reduce(0, +) / Double(currentSalaryOnlyMonthlyNets.count)
     }
-    private var offerAvg: Double {
-        guard !offerMonthlyNets.isEmpty else { return 0 }
-        return offerMonthlyNets.reduce(0, +) / Double(offerMonthlyNets.count)
+    private var offerSalaryOnlyAvg: Double {
+        guard !offerSalaryOnlyMonthlyNets.isEmpty else { return 0 }
+        return offerSalaryOnlyMonthlyNets.reduce(0, +) / Double(offerSalaryOnlyMonthlyNets.count)
+    }
+    private var currentWithPrimAvg: Double {
+        guard !currentWithPrimMonthlyNets.isEmpty else { return 0 }
+        return currentWithPrimMonthlyNets.reduce(0, +) / Double(currentWithPrimMonthlyNets.count)
+    }
+    private var offerWithPrimAvg: Double {
+        guard !offerWithPrimMonthlyNets.isEmpty else { return 0 }
+        return offerWithPrimMonthlyNets.reduce(0, +) / Double(offerWithPrimMonthlyNets.count)
     }
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 18) {
                 Text("Teklif Analizi - Sonuç")
                     .font(AppTypography.title2)
                     .bold()
                     .foregroundColor(appTheme.textPrimary)
 
-                SimpleInlineChart(current: currentMonthlyNets, offer: offerMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
-                    .frame(height: 220)
-                    .padding(.horizontal, 16)
+                // Salary-only chart
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Maaş (Prim hariç)")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                    SimpleInlineChart(current: currentSalaryOnlyMonthlyNets, offer: offerSalaryOnlyMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
+                        .frame(height: 200)
+                }
+                .padding(.horizontal, 16)
 
                 HStack(spacing: 12) {
                     VStack(alignment: .leading) {
                         Text("Mevcut (Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
-                        Text(FinanceFormatter.currencyString(currentAvg))
+                        Text(FinanceFormatter.currencyString(currentSalaryOnlyAvg))
                             .font(AppTypography.amountMedium)
                             .foregroundColor(Color(hex: "3B82F6"))
                     }
@@ -603,7 +715,44 @@ fileprivate struct KiyaslamaAnalysisView: View {
                         Text("Teklif (Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
-                        Text(FinanceFormatter.currencyString(offerAvg))
+                        Text(FinanceFormatter.currencyString(offerSalaryOnlyAvg))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(Color(hex: "8B5CF6"))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                }
+                .padding(.horizontal, 16)
+
+                // Prim dahil hesap
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Prim Dahil")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                    SimpleInlineChart(current: currentWithPrimMonthlyNets, offer: offerWithPrimMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
+                        .frame(height: 200)
+                }
+                .padding(.horizontal, 16)
+
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading) {
+                        Text("Mevcut (Prim dahil, Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(currentWithPrimAvg))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(Color(hex: "3B82F6"))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                    VStack(alignment: .leading) {
+                        Text("Teklif (Prim dahil, Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(offerWithPrimAvg))
                             .font(AppTypography.amountMedium)
                             .foregroundColor(Color(hex: "8B5CF6"))
                     }
