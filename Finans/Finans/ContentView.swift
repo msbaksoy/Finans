@@ -289,6 +289,7 @@ fileprivate struct KiyaslamaView: View {
     @State private var showResults: Bool = false
     @State private var currentMonthlyNets: [Double] = Array(repeating: 0, count: 12)
     @State private var offerMonthlyNets: [Double] = Array(repeating: 0, count: 12)
+    @State private var navigateToAnalysis: Bool = false
 
     var body: some View {
         ScrollView {
@@ -308,10 +309,32 @@ fileprivate struct KiyaslamaView: View {
                         .onChange(of: currentText) { _, v in /* value parsed on Kıyasla */ }
 
                     HStack(spacing: 12) {
-                        Toggle(isOn: $currentIsBrut) {
-                            Text(currentIsBrut ? "Brüt" : "Net").font(.subheadline)
+                        HStack(spacing: 8) {
+                            Button {
+                                currentIsBrut = true
+                            } label: {
+                                Text("Brüt")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(currentIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(currentIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                currentIsBrut = false
+                            } label: {
+                                Text("Net")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(!currentIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(!currentIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .toggleStyle(.button)
 
                         Spacer()
 
@@ -345,10 +368,32 @@ fileprivate struct KiyaslamaView: View {
                         .onChange(of: offerText) { _, v in }
 
                     HStack(spacing: 12) {
-                        Toggle(isOn: $offerIsBrut) {
-                            Text(offerIsBrut ? "Brüt" : "Net").font(.subheadline)
+                        HStack(spacing: 8) {
+                            Button {
+                                offerIsBrut = true
+                            } label: {
+                                Text("Brüt")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(offerIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(offerIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
+                            Button {
+                                offerIsBrut = false
+                            } label: {
+                                Text("Net")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(!offerIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
+                                    .foregroundColor(!offerIsBrut ? .white : appTheme.textPrimary)
+                                    .cornerRadius(10)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .toggleStyle(.button)
 
                         Spacer()
                         HStack(spacing: 8) {
@@ -370,12 +415,19 @@ fileprivate struct KiyaslamaView: View {
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
 
-                // Compare button
+                // Devam button — hesaplamayı yapıp analiz ekranına gider
+                NavigationLink(destination:
+                                KiyaslamaAnalysisView(currentMonthlyNets: currentMonthlyNets, offerMonthlyNets: offerMonthlyNets)
+                                .environmentObject(appTheme),
+                               isActive: $navigateToAnalysis) {
+                    EmptyView()
+                }
+
                 Button {
                     computeComparison()
-                    withAnimation { showResults = true }
+                    withAnimation { navigateToAnalysis = true }
                 } label: {
-                    Text("Kıyasla")
+                    Text("Devam")
                         .font(AppTypography.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -385,40 +437,7 @@ fileprivate struct KiyaslamaView: View {
                 }
                 .padding(.top, 6)
 
-                if showResults {
-                    // Chart (stylish, simple, no numbers)
-                    SimpleInlineChart(current: currentMonthlyNets, offer: offerMonthlyNets)
-                        .frame(height: 200)
-                        .padding(.horizontal, 16)
-
-                    // Monthly average net buttons (side by side)
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Mevcut (Net / ay)")
-                                .font(AppTypography.caption1)
-                                .foregroundColor(appTheme.textSecondary)
-                            Text(FinanceFormatter.currencyString(currentMonthlyNets.first.map { $0 } ?? 0.0))
-                                .font(AppTypography.amountMedium)
-                                .foregroundColor(appTheme.textPrimary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
-
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("Teklif (Net / ay)")
-                                .font(AppTypography.caption1)
-                                .foregroundColor(appTheme.textSecondary)
-                            Text(FinanceFormatter.currencyString(offerMonthlyNets.first.map { $0 } ?? 0.0))
-                                .font(AppTypography.amountMedium)
-                                .foregroundColor(appTheme.textPrimary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
-                    }
-                    .padding(.horizontal, 16)
-                }
+                // Results are shown on the analysis screen (Devam)
 
                 Spacer(minLength: 40)
             }
@@ -457,6 +476,8 @@ fileprivate struct SimpleInlineChart: View {
     @EnvironmentObject var appTheme: AppTheme
     let current: [Double]
     let offer: [Double]
+    let currentColor: Color
+    let offerColor: Color
     private let months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"]
 
     var body: some View {
@@ -468,7 +489,7 @@ fileprivate struct SimpleInlineChart: View {
             let maxVal = max((current.max() ?? 1), (offer.max() ?? 1), 1)
 
             ZStack {
-                // offer line
+                // offer line (new offer = purple)
                 Path { path in
                     for (i, val) in offer.enumerated() {
                         let x = paddingX + (chartW) * CGFloat(i) / 11.0
@@ -476,9 +497,9 @@ fileprivate struct SimpleInlineChart: View {
                         if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
                     }
                 }
-                .stroke(Color.accentColor, lineWidth: 1.0)
+                .stroke(offerColor, lineWidth: 1.0)
 
-                // current line
+                // current line (existing job = blue)
                 Path { path in
                     for (i, val) in current.enumerated() {
                         let x = paddingX + (chartW) * CGFloat(i) / 11.0
@@ -486,7 +507,7 @@ fileprivate struct SimpleInlineChart: View {
                         if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
                     }
                 }
-                .stroke(appTheme.cardBackgroundSecondary.opacity(0.95), lineWidth: 1.0)
+                .stroke(currentColor, lineWidth: 1.0)
 
                 // month labels
                 HStack(spacing: 0) {
@@ -502,6 +523,62 @@ fileprivate struct SimpleInlineChart: View {
                 .padding(.bottom, 4)
             }
         }
+    }
+}
+
+// Analysis view shown after Devam — displays chart and monthly averages
+fileprivate struct KiyaslamaAnalysisView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let currentMonthlyNets: [Double]
+    let offerMonthlyNets: [Double]
+
+    private var currentAvg: Double { currentMonthlyNets.first ?? 0 }
+    private var offerAvg: Double { offerMonthlyNets.first ?? 0 }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                Text("Teklif Analizi - Sonuç")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+
+                SimpleInlineChart(current: currentMonthlyNets, offer: offerMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
+                    .frame(height: 220)
+                    .padding(.horizontal, 16)
+
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading) {
+                        Text("Mevcut (Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(currentAvg))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                    VStack(alignment: .leading) {
+                        Text("Teklif (Net / ay)")
+                            .font(AppTypography.caption1)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text(FinanceFormatter.currencyString(offerAvg))
+                            .font(AppTypography.amountMedium)
+                            .foregroundColor(appTheme.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                }
+                .padding(.horizontal, 16)
+
+                Spacer(minLength: 40)
+            }
+            .padding()
+        }
+        .navigationTitle("Analiz")
     }
 }
 
