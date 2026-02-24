@@ -821,7 +821,8 @@ fileprivate struct KiyaslamaAnalysisView: View {
                 var scenarioText = ""
                 if !anyPrim {
                     if salaryIncrease > 0 {
-                        scenarioText = "Yeni teklif, aylık net kazancınızı \(FinanceFormatter.currencyString(salaryIncrease)) artırıyor. Bu, yıllık bazda \(FinanceFormatter.currencyString(salaryIncreaseAnnual)) ek gelir ve %\(String(format: \"%.1f\", percentChange)) büyüme demek."
+                        let percentStr = String(format: "%.1f", percentChange)
+                        scenarioText = "Yeni teklif, aylık net kazancınızı \(FinanceFormatter.currencyString(salaryIncrease)) artırıyor. Bu, yıllık bazda \(FinanceFormatter.currencyString(salaryIncreaseAnnual)) ek gelir ve %\(percentStr) büyüme demek."
                     } else if salaryIncrease < 0 {
                         scenarioText = "Yeni teklif aylık net kazancınızı \(FinanceFormatter.currencyString(abs(salaryIncrease))) azaltıyor."
                     } else {
