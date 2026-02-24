@@ -774,7 +774,7 @@ fileprivate struct WorkCommuteInputView: View {
     @Binding var offerCommuteMinutes: Int
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             HStack {
                 Text("Çalışma Modeli ve Yol Süresi")
                     .font(AppTypography.subheadline)
@@ -782,12 +782,13 @@ fileprivate struct WorkCommuteInputView: View {
                 Spacer()
             }
 
-            HStack(spacing: 12) {
+            // Stack the two company cards vertically for small screens
+            VStack(spacing: 10) {
                 currentColumn
                 offerColumn
             }
         }
-        .padding(12)
+        .padding(8)
     }
 
     private var currentColumn: some View {
@@ -835,11 +836,16 @@ fileprivate struct WorkCommuteInputView: View {
 
             let currentCommuteDays = currentWorkModel == .office ? 5 : (currentWorkModel == .remote ? 0 : currentHibritGunSayisi)
             let currentWeeklyHours = (Double(currentCommuteHours) + Double(currentCommuteMinutes)/60.0) * Double(currentCommuteDays)
-            let currentWeeklyStr = String(format: "%.1f", currentWeeklyHours)
-            Text("Haftalık toplam \(currentWeeklyStr) saat yolda").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+            var currentWeeklyDisplay: String {
+                if currentCommuteHours == 0 && currentCommuteMinutes == 0 { return "—" }
+                return String(format: "%.1f", currentWeeklyHours)
+            }
+            Text("Haftalık toplam \(currentWeeklyDisplay) saat yolda")
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(12)
+        .padding(8)
         .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
     }
 
@@ -886,11 +892,14 @@ fileprivate struct WorkCommuteInputView: View {
 
             let offerCommuteDays = offerWorkModel == .office ? 5 : (offerWorkModel == .remote ? 0 : offerHibritGunSayisi)
             let offerWeeklyHours = (Double(offerCommuteHours) + Double(offerCommuteMinutes)/60.0) * Double(offerCommuteDays)
-            let offerWeeklyStr = String(format: "%.1f", offerWeeklyHours)
-            Text("Haftalık toplam \(offerWeeklyStr) saat yolda").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+            var offerWeeklyDisplay: String {
+                if offerCommuteHours == 0 && offerCommuteMinutes == 0 { return "—" }
+                return String(format: "%.1f", offerWeeklyHours)
+            }
+            Text("Haftalık toplam \(offerWeeklyDisplay) saat yolda").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(12)
+        .padding(8)
         .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
     }
 }
@@ -907,12 +916,12 @@ fileprivate struct KiyaslamaCommuteView: View {
 
     @State private var currentWorkModel: WorkModel = .office
     @State private var currentHibritGunSayisi: Int = 2
-    @State private var currentCommuteHours: Int = 1
+    @State private var currentCommuteHours: Int = 0
     @State private var currentCommuteMinutes: Int = 0
 
     @State private var offerWorkModel: WorkModel = .office
     @State private var offerHibritGunSayisi: Int = 2
-    @State private var offerCommuteHours: Int = 1
+    @State private var offerCommuteHours: Int = 0
     @State private var offerCommuteMinutes: Int = 0
 
     @State private var navigateToAnalysis: Bool = false
@@ -920,16 +929,7 @@ fileprivate struct KiyaslamaCommuteView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                WorkCommuteInputView(
-                    currentWorkModel: $currentWorkModel,
-                    currentHibritGunSayisi: $currentHibritGunSayisi,
-                    currentCommuteHours: $currentCommuteHours,
-                    currentCommuteMinutes: $currentCommuteMinutes,
-                    offerWorkModel: $offerWorkModel,
-                    offerHibritGunSayisi: $offerHibritGunSayisi,
-                    offerCommuteHours: $offerCommuteHours,
-                    offerCommuteMinutes: $offerCommuteMinutes
-                )
+                // Commute input moved to next screen (KiyaslamaCommuteView)
 
                 NavigationLink(destination:
                                 KiyaslamaAnalysisView(
