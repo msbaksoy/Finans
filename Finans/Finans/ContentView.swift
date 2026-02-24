@@ -767,8 +767,52 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
                 }
                 .padding(.horizontal, 16)
+                // Prim dahil hesap (gizle eğer her iki tarafta da prim yok)
+                let currentSalarySum = currentSalaryOnlyMonthlyNets.reduce(0, +)
+                let currentWithPrimSum = currentWithPrimMonthlyNets.reduce(0, +)
+                let offerSalarySum = offerSalaryOnlyMonthlyNets.reduce(0, +)
+                let offerWithPrimSum = offerWithPrimMonthlyNets.reduce(0, +)
+                let currentHasPrim = abs(currentWithPrimSum - currentSalarySum) > 1.0
+                let offerHasPrim = abs(offerWithPrimSum - offerSalarySum) > 1.0
+                let anyPrim = currentHasPrim || offerHasPrim
 
-                // Prim dahil hesap
+                if anyPrim {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Prim Dahil")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(appTheme.textSecondary)
+                        SimpleInlineChart(current: currentWithPrimMonthlyNets, offer: offerWithPrimMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
+                            .frame(height: 200)
+                    }
+                    .padding(.horizontal, 16)
+
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading) {
+                            Text(currentCompany.isEmpty ? "Mevcut (Prim dahil, Net / ay)" : "\(currentCompany) (Prim dahil, Net / ay)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(currentWithPrimAvg))
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "3B82F6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                        VStack(alignment: .leading) {
+                            Text(offerCompany.isEmpty ? "Teklif (Prim dahil, Net / ay)" : "\(offerCompany) (Prim dahil, Net / ay)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(offerWithPrimAvg))
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "8B5CF6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    }
+                    .padding(.horizontal, 16)
+                }
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Prim Dahil")
                         .font(AppTypography.subheadline)
