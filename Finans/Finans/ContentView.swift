@@ -274,6 +274,22 @@ struct ScaleButtonStyle: ButtonStyle {
     }
 }
 
+// Placeholder view for future Kıyaslama development
+fileprivate struct KiyaslamaView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Kıyaslama")
+                .font(AppTypography.title2)
+                .bold()
+            Text("Bu alan geliştirmeleriniz için ayrıldı. Buraya özellikleri ekleyebiliriz.")
+                .font(AppTypography.callout)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .navigationTitle("Kıyaslama")
+    }
+}
+
 // MARK: - Color Extension
 extension Color {
     init(hex: String) {
@@ -335,6 +351,10 @@ fileprivate struct DashboardView: View {
                     SectionHeader(title: "Kariyer Stratejisi", subtitle: "Tekliflerini ve gelişimini yönet")
                     NavigationLink(destination: YanHakAnaliziView().environmentObject(yanHakKayitStore)) {
                         FeaturedCard(title: "İş Teklifi Analizi", description: "Yeni teklifleri yaşam kalitesi ve kariyer etkisiyle kıyasla.", icon: "briefcase.fill", color: Color(hex: "3B82F6"))
+                    }
+                    // Yeni buton: Kıyaslama (aynı boyut ve yapı)
+                    NavigationLink(destination: KiyaslamaView()) {
+                        FeaturedCard(title: "Kıyaslama", description: "Geliştirmeleri buraya ekleyeceğiz.", icon: "arrow.left.and.right", color: Color(hex: "8B5CF6"))
                     }
                 }
                 .padding(.horizontal)
