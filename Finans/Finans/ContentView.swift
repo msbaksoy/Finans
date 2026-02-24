@@ -338,7 +338,7 @@ fileprivate struct KiyaslamaView: View {
 
                         Spacer()
 
-                        // Maas periyodu — only increment (+) allowed
+                        // Maas periyodu — increment (+) and decrement (-)
                         HStack(spacing: 8) {
                             Text("Yılda")
                                 .font(AppTypography.caption1)
@@ -346,12 +346,20 @@ fileprivate struct KiyaslamaView: View {
                             Text("\(currentMaasPeriyodu) maaş")
                                 .font(AppTypography.subheadline)
                                 .foregroundColor(appTheme.textPrimary)
-                            Button {
-                                currentMaasPeriyodu = min(24, currentMaasPeriyodu + 1)
-                            } label: {
-                                Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "3B82F6"))
+                            HStack(spacing: 8) {
+                                Button {
+                                    currentMaasPeriyodu = max(1, currentMaasPeriyodu - 1)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill").font(.title3).foregroundColor(appTheme.textPrimary.opacity(0.6))
+                                }
+                                .buttonStyle(.plain)
+                                Button {
+                                    currentMaasPeriyodu = min(24, currentMaasPeriyodu + 1)
+                                } label: {
+                                    Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "3B82F6"))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -403,12 +411,20 @@ fileprivate struct KiyaslamaView: View {
                             Text("\(offerMaasPeriyodu) maaş")
                                 .font(AppTypography.subheadline)
                                 .foregroundColor(appTheme.textPrimary)
-                            Button {
-                                offerMaasPeriyodu = min(24, offerMaasPeriyodu + 1)
-                            } label: {
-                                Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "8B5CF6"))
+                            HStack(spacing: 8) {
+                                Button {
+                                    offerMaasPeriyodu = max(1, offerMaasPeriyodu - 1)
+                                } label: {
+                                    Image(systemName: "minus.circle.fill").font(.title3).foregroundColor(appTheme.textPrimary.opacity(0.6))
+                                }
+                                .buttonStyle(.plain)
+                                Button {
+                                    offerMaasPeriyodu = min(24, offerMaasPeriyodu + 1)
+                                } label: {
+                                    Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "8B5CF6"))
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -442,6 +458,9 @@ fileprivate struct KiyaslamaView: View {
                 Spacer(minLength: 40)
             }
             .padding()
+        }
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         }
         .navigationTitle("Kıyaslama")
     }
@@ -554,7 +573,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(currentAvg))
                             .font(AppTypography.amountMedium)
-                            .foregroundColor(appTheme.textPrimary)
+                            .foregroundColor(Color(hex: "3B82F6"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(12)
@@ -566,7 +585,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(offerAvg))
                             .font(AppTypography.amountMedium)
-                            .foregroundColor(appTheme.textPrimary)
+                            .foregroundColor(Color(hex: "8B5CF6"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(12)
