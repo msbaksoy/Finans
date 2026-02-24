@@ -792,6 +792,9 @@ fileprivate struct WorkCommuteInputView: View {
             }
         }
         .padding(8)
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 
     private var currentColumn: some View {
@@ -851,6 +854,9 @@ fileprivate struct WorkCommuteInputView: View {
         .frame(maxWidth: .infinity)
         .padding(8)
         .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
     }
 
     private var offerColumn: some View {
