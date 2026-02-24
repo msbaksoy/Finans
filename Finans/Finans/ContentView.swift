@@ -533,7 +533,9 @@ fileprivate struct KiyaslamaView: View {
                                     currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
                                     offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
                                     currentWithPrimMonthlyNets: currentMonthlyNets,
-                                    offerWithPrimMonthlyNets: offerMonthlyNets
+                                    offerWithPrimMonthlyNets: offerMonthlyNets,
+                                    currentCompany: currentCompany,
+                                    offerCompany: offerCompany
                                 )
                                 .environmentObject(appTheme),
                                isActive: $navigateToAnalysis) {
@@ -701,6 +703,8 @@ fileprivate struct KiyaslamaAnalysisView: View {
     let offerSalaryOnlyMonthlyNets: [Double]
     let currentWithPrimMonthlyNets: [Double]
     let offerWithPrimMonthlyNets: [Double]
+    let currentCompany: String
+    let offerCompany: String
 
     private var currentSalaryOnlyAvg: Double {
         guard !currentSalaryOnlyMonthlyNets.isEmpty else { return 0 }
@@ -739,7 +743,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
 
                 HStack(spacing: 12) {
                     VStack(alignment: .leading) {
-                        Text("Mevcut (Net / ay)")
+                        Text(currentCompany.isEmpty ? "Mevcut (Net / ay)" : "\(currentCompany) (Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(currentSalaryOnlyAvg))
@@ -751,7 +755,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
 
                     VStack(alignment: .leading) {
-                        Text("Teklif (Net / ay)")
+                        Text(offerCompany.isEmpty ? "Teklif (Net / ay)" : "\(offerCompany) (Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(offerSalaryOnlyAvg))
@@ -776,7 +780,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
 
                 HStack(spacing: 12) {
                     VStack(alignment: .leading) {
-                        Text("Mevcut (Prim dahil, Net / ay)")
+                        Text(currentCompany.isEmpty ? "Mevcut (Prim dahil, Net / ay)" : "\(currentCompany) (Prim dahil, Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(currentWithPrimAvg))
@@ -788,7 +792,7 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
 
                     VStack(alignment: .leading) {
-                        Text("Teklif (Prim dahil, Net / ay)")
+                        Text(offerCompany.isEmpty ? "Teklif (Prim dahil, Net / ay)" : "\(offerCompany) (Prim dahil, Net / ay)")
                             .font(AppTypography.caption1)
                             .foregroundColor(appTheme.textSecondary)
                         Text(FinanceFormatter.currencyString(offerWithPrimAvg))
