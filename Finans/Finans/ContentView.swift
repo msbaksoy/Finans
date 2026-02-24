@@ -929,8 +929,107 @@ fileprivate struct KiyaslamaCommuteView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                // Commute input moved to next screen (KiyaslamaCommuteView)
+                Text("Yol Süresi")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+                    .padding(.top, 8)
 
+                // Mevcut iş yeri kart
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(currentCompany.isEmpty ? "Mevcut İş Yeri" : currentCompany)
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+
+                    HStack(spacing: 8) {
+                        ForEach(WorkModel.allCases, id: \.self) { m in
+                            WorkModelButton(model: m, selected: currentWorkModel == m, selectedColors: [Color(hex: "3B82F6"), Color(hex: "6366F1")]) {
+                                currentWorkModel = m
+                            }
+                            .environmentObject(appTheme)
+                        }
+                    }
+
+                    if currentWorkModel == .hybrid {
+                        HStack {
+                            Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                            Spacer()
+                            Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5).labelsHidden()
+                        }
+                    }
+
+                    HStack(spacing: 8) {
+                        TextField("Saat", value: $currentCommuteHours, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(width: 72, height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .multilineTextAlignment(.center)
+                        Text(":")
+                        TextField("Dakika", value: $currentCommuteMinutes, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(width: 72, height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .multilineTextAlignment(.center)
+                    }
+
+                    let currentCommuteDays = currentWorkModel == .office ? 5 : (currentWorkModel == .remote ? 0 : currentHibritGunSayisi)
+                    let currentWeekly = (Double(currentCommuteHours) + Double(currentCommuteMinutes)/60.0) * Double(currentCommuteDays)
+                    let currentDisplay = (currentCommuteHours == 0 && currentCommuteMinutes == 0) ? "—" : String(format: "%.1f", currentWeekly)
+                    Text("Haftalık toplam \(currentDisplay) saat yolda")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                // Teklif işyeri kart
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(offerCompany.isEmpty ? "Teklif Edilen İş" : offerCompany)
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+
+                    HStack(spacing: 8) {
+                        ForEach(WorkModel.allCases, id: \.self) { m in
+                            WorkModelButton(model: m, selected: offerWorkModel == m, selectedColors: [Color(hex: "8B5CF6"), Color(hex: "A78BFA")]) {
+                                offerWorkModel = m
+                            }
+                            .environmentObject(appTheme)
+                        }
+                    }
+
+                    if offerWorkModel == .hybrid {
+                        HStack {
+                            Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                            Spacer()
+                            Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5).labelsHidden()
+                        }
+                    }
+
+                    HStack(spacing: 8) {
+                        TextField("Saat", value: $offerCommuteHours, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(width: 72, height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .multilineTextAlignment(.center)
+                        Text(":")
+                        TextField("Dakika", value: $offerCommuteMinutes, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(width: 72, height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .multilineTextAlignment(.center)
+                    }
+
+                    let offerCommuteDays = offerWorkModel == .office ? 5 : (offerWorkModel == .remote ? 0 : offerHibritGunSayisi)
+                    let offerWeekly = (Double(offerCommuteHours) + Double(offerCommuteMinutes)/60.0) * Double(offerCommuteDays)
+                    let offerDisplay = (offerCommuteHours == 0 && offerCommuteMinutes == 0) ? "—" : String(format: "%.1f", offerWeekly)
+                    Text("Haftalık toplam \(offerDisplay) saat yolda")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                .padding(12)
+                .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                // Navigation to analysis
                 NavigationLink(destination:
                                 KiyaslamaAnalysisView(
                                     currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
@@ -948,10 +1047,9 @@ fileprivate struct KiyaslamaCommuteView: View {
                 }
 
                 Button {
-                    // validate minimal inputs if needed
                     navigateToAnalysis = true
                 } label: {
-                    Text("Devam")
+                    Text("Analizi Gör")
                         .font(AppTypography.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
