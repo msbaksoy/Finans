@@ -813,39 +813,43 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     }
                     .padding(.horizontal, 16)
                 }
+
+                // Scenario note (dynamic)
+                let salaryIncrease = offerSalaryOnlyAvg - currentSalaryOnlyAvg
+                let salaryIncreaseAnnual = (offerSalaryOnlyAvg - currentSalaryOnlyAvg) * 12
+                let percentChange = currentSalaryOnlyAvg > 0 ? (salaryIncrease / currentSalaryOnlyAvg * 100) : 0
+                var scenarioText = ""
+                if !anyPrim {
+                    if salaryIncrease > 0 {
+                        scenarioText = "Yeni teklif, aylık net kazancınızı \(FinanceFormatter.currencyString(salaryIncrease)) artırıyor. Bu, yıllık bazda \(FinanceFormatter.currencyString(salaryIncreaseAnnual)) ek gelir ve %\(String(format: \"%.1f\", percentChange)) büyüme demek."
+                    } else if salaryIncrease < 0 {
+                        scenarioText = "Yeni teklif aylık net kazancınızı \(FinanceFormatter.currencyString(abs(salaryIncrease))) azaltıyor."
+                    } else {
+                        scenarioText = "Yeni teklif ve mevcut işte aylık net kazanç eşit."
+                    }
+                } else {
+                    // prim-included scenarios
+                    if (offerSalaryOnlyAvg > currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
+                        scenarioText = "Yeni teklif hem maaş hem prim açısından daha avantajlı; toplamda net kazancınız artıyor."
+                    } else if (offerSalaryOnlyAvg < currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
+                        scenarioText = "Dikkat: Yeni teklif ana maaşta düşük olsa da prim sayesinde yıllık toplamda avantajlı hale geliyor."
+                    } else if (currentHasPrim != offerHasPrim) {
+                        scenarioText = "Bir iş yerinde prim var diğerinde yok; prim garantisi ile ana maaş yapısını karşılaştırın."
+                    } else {
+                        scenarioText = "Prim dahil karşılaştırma analizi gösteriliyor."
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Prim Dahil")
+                    Text("Durum Analizi")
                         .font(AppTypography.subheadline)
                         .foregroundColor(appTheme.textSecondary)
-                    SimpleInlineChart(current: currentWithPrimMonthlyNets, offer: offerWithPrimMonthlyNets, currentColor: Color(hex: "3B82F6"), offerColor: Color(hex: "8B5CF6"))
-                        .frame(height: 200)
-                }
-                .padding(.horizontal, 16)
-
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading) {
-                        Text(currentCompany.isEmpty ? "Mevcut (Prim dahil, Net / ay)" : "\(currentCompany) (Prim dahil, Net / ay)")
-                            .font(AppTypography.caption1)
-                            .foregroundColor(appTheme.textSecondary)
-                        Text(FinanceFormatter.currencyString(currentWithPrimAvg))
-                            .font(AppTypography.amountMedium)
-                            .foregroundColor(Color(hex: "3B82F6"))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
-
-                    VStack(alignment: .leading) {
-                        Text(offerCompany.isEmpty ? "Teklif (Prim dahil, Net / ay)" : "\(offerCompany) (Prim dahil, Net / ay)")
-                            .font(AppTypography.caption1)
-                            .foregroundColor(appTheme.textSecondary)
-                        Text(FinanceFormatter.currencyString(offerWithPrimAvg))
-                            .font(AppTypography.amountMedium)
-                            .foregroundColor(Color(hex: "8B5CF6"))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    Text(scenarioText)
+                        .font(AppTypography.body)
+                        .foregroundColor(appTheme.textPrimary)
+                        .padding(12)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
                 }
                 .padding(.horizontal, 16)
 
