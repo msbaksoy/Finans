@@ -551,8 +551,14 @@ fileprivate struct KiyaslamaAnalysisView: View {
     let currentMonthlyNets: [Double]
     let offerMonthlyNets: [Double]
 
-    private var currentAvg: Double { currentMonthlyNets.first ?? 0 }
-    private var offerAvg: Double { offerMonthlyNets.first ?? 0 }
+    private var currentAvg: Double {
+        guard !currentMonthlyNets.isEmpty else { return 0 }
+        return currentMonthlyNets.reduce(0, +) / Double(currentMonthlyNets.count)
+    }
+    private var offerAvg: Double {
+        guard !offerMonthlyNets.isEmpty else { return 0 }
+        return offerMonthlyNets.reduce(0, +) / Double(offerMonthlyNets.count)
+    }
 
     var body: some View {
         ScrollView {
