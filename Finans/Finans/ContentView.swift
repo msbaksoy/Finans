@@ -276,17 +276,232 @@ struct ScaleButtonStyle: ButtonStyle {
 
 // Placeholder view for future Kıyaslama development
 fileprivate struct KiyaslamaView: View {
+    @EnvironmentObject var appTheme: AppTheme
+
+    @State private var currentText: String = ""
+    @State private var currentIsBrut: Bool = true
+    @State private var currentMaasPeriyodu: Int = 12
+
+    @State private var offerText: String = ""
+    @State private var offerIsBrut: Bool = true
+    @State private var offerMaasPeriyodu: Int = 12
+
+    @State private var showResults: Bool = false
+    @State private var currentMonthlyNets: [Double] = Array(repeating: 0, count: 12)
+    @State private var offerMonthlyNets: [Double] = Array(repeating: 0, count: 12)
+
     var body: some View {
-        VStack(spacing: 16) {
-            Text("Kıyaslama")
-                .font(AppTypography.title2)
-                .bold()
-            Text("Bu alan geliştirmeleriniz için ayrıldı. Buraya özellikleri ekleyebiliriz.")
-                .font(AppTypography.callout)
-                .foregroundColor(.secondary)
+        ScrollView {
+            VStack(spacing: 18) {
+                Text("Teklif Analizi")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+
+                // Current offer input
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Mevcut İş Yeri - Ücret")
+                        .font(AppTypography.headline)
+                        .foregroundColor(appTheme.textPrimary)
+                    KrediTextField(title: "Ücret (₺/ay)", text: $currentText, placeholder: "50.000", keyboardType: .decimalPad, formatThousands: true)
+                        .environmentObject(appTheme)
+                        .onChange(of: currentText) { _, v in /* value parsed on Kıyasla */ }
+
+                    HStack(spacing: 12) {
+                        Toggle(isOn: $currentIsBrut) {
+                            Text(currentIsBrut ? "Brüt" : "Net").font(.subheadline)
+                        }
+                        .toggleStyle(.button)
+
+                        Spacer()
+
+                        // Maas periyodu — only increment (+) allowed
+                        HStack(spacing: 8) {
+                            Text("Yılda")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text("\(currentMaasPeriyodu) maaş")
+                                .font(AppTypography.subheadline)
+                                .foregroundColor(appTheme.textPrimary)
+                            Button {
+                                currentMaasPeriyodu = min(24, currentMaasPeriyodu + 1)
+                            } label: {
+                                Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "3B82F6"))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(16)
+                .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
+
+                // Offer input
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Teklif Edilen İş - Ücret")
+                        .font(AppTypography.headline)
+                        .foregroundColor(appTheme.textPrimary)
+                    KrediTextField(title: "Ücret (₺/ay)", text: $offerText, placeholder: "55.000", keyboardType: .decimalPad, formatThousands: true)
+                        .environmentObject(appTheme)
+                        .onChange(of: offerText) { _, v in }
+
+                    HStack(spacing: 12) {
+                        Toggle(isOn: $offerIsBrut) {
+                            Text(offerIsBrut ? "Brüt" : "Net").font(.subheadline)
+                        }
+                        .toggleStyle(.button)
+
+                        Spacer()
+                        HStack(spacing: 8) {
+                            Text("Yılda")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text("\(offerMaasPeriyodu) maaş")
+                                .font(AppTypography.subheadline)
+                                .foregroundColor(appTheme.textPrimary)
+                            Button {
+                                offerMaasPeriyodu = min(24, offerMaasPeriyodu + 1)
+                            } label: {
+                                Image(systemName: "plus.circle.fill").font(.title3).foregroundColor(Color(hex: "8B5CF6"))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(16)
+                .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
+
+                // Compare button
+                Button {
+                    computeComparison()
+                    withAnimation { showResults = true }
+                } label: {
+                    Text("Kıyasla")
+                        .font(AppTypography.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(hex: "3B82F6"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .padding(.top, 6)
+
+                if showResults {
+                    // Chart (stylish, simple, no numbers)
+                    SimpleInlineChart(current: currentMonthlyNets, offer: offerMonthlyNets)
+                        .frame(height: 200)
+                        .padding(.horizontal, 16)
+
+                    // Monthly average net buttons (side by side)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Mevcut (Net / ay)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(currentMonthlyNets.first.map { $0 } ?? 0.0))
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(appTheme.textPrimary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Teklif (Net / ay)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            Text(FinanceFormatter.currencyString(offerMonthlyNets.first.map { $0 } ?? 0.0))
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(appTheme.textPrimary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    }
+                    .padding(.horizontal, 16)
+                }
+
+                Spacer(minLength: 40)
+            }
+            .padding()
         }
-        .padding()
         .navigationTitle("Kıyaslama")
+    }
+
+    private func computeComparison() {
+        // parse inputs
+        let currentVal = parseFormattedNumber(currentText) ?? 0
+        let offerVal = parseFormattedNumber(offerText) ?? 0
+
+        currentMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu)
+        offerMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu)
+    }
+
+    private func computeMonthlyNet(value: Double, isBrut: Bool, periyod: Int) -> [Double] {
+        guard value > 0 else { return Array(repeating: 0, count: 12) }
+        if isBrut {
+            // effective monthly brut
+            let efektif = periyod > 12 ? (Double(periyod) * value / 12.0) : value
+            let brutlar = Array(repeating: efektif, count: 12)
+            let sonuc = BrutNetCalculator.hesaplaYillik(brutlar: brutlar)
+            return sonuc.map { $0.net }
+        } else {
+            // net provided: annual net = periyod * value; monthly average = annual/12
+            let aylik = (Double(periyod) * value) / 12.0
+            return Array(repeating: aylik, count: 12)
+        }
+    }
+}
+
+// Simple inline chart used in KıyaslamaView
+fileprivate struct SimpleInlineChart: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let current: [Double]
+    let offer: [Double]
+    private let months = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"]
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let paddingX: CGFloat = 20
+            let chartW = max(0, w - paddingX * 2)
+            let maxVal = max((current.max() ?? 1), (offer.max() ?? 1), 1)
+
+            ZStack {
+                // offer line
+                Path { path in
+                    for (i, val) in offer.enumerated() {
+                        let x = paddingX + (chartW) * CGFloat(i) / 11.0
+                        let y = (h - 32) * (1 - CGFloat(val / maxVal)) + 8
+                        if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(Color.accentColor, lineWidth: 1.0)
+
+                // current line
+                Path { path in
+                    for (i, val) in current.enumerated() {
+                        let x = paddingX + (chartW) * CGFloat(i) / 11.0
+                        let y = (h - 32) * (1 - CGFloat(val / maxVal)) + 8
+                        if i == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(appTheme.cardBackgroundSecondary.opacity(0.95), lineWidth: 1.0)
+
+                // month labels
+                HStack(spacing: 0) {
+                    ForEach(0..<12, id: \.self) { i in
+                        Text(months[i])
+                            .font(AppTypography.caption1.italic())
+                            .foregroundColor(appTheme.textSecondary)
+                            .rotationEffect(.degrees(-18))
+                            .frame(width: chartW/12, alignment: .center)
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .padding(.bottom, 4)
+            }
+        }
     }
 }
 
