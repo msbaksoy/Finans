@@ -4,6 +4,20 @@ private enum NavTarget: Hashable {
     case budget, portfolio, brutNet, kredi
 }
 
+enum WorkModel: String, CaseIterable {
+    case remote = "Remote"
+    case office = "Ofis"
+    case hybrid = "Hibrit"
+    var icon: String {
+        switch self {
+        case .remote: return "🏠"
+        case .office: return "🏢"
+        case .hybrid: return "💻"
+        }
+    }
+    var displayName: String { rawValue }
+}
+
 struct ContentView: View {
     @EnvironmentObject var dataManager: DataManager
     @EnvironmentObject var appTheme: AppTheme
@@ -159,6 +173,35 @@ struct ContentView: View {
     }
 }
 
+// Small button view for work model selection to simplify ViewBuilder expressions
+fileprivate struct WorkModelButton: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let model: WorkModel
+    let selected: Bool
+    let selectedColors: [Color]
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack {
+                Text(model.icon).font(.largeTitle)
+                Text(model.displayName).font(AppTypography.caption1)
+            }
+            .padding(8)
+            .frame(minWidth: 72)
+            .background(appTheme.cardBackgroundSecondary)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(LinearGradient(colors: selectedColors, startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .opacity(selected ? 1 : 0)
+            )
+            .foregroundColor(selected ? .white : appTheme.textPrimary)
+            .cornerRadius(10)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Tema Değiştirici — Şık kapsül buton
 struct ThemeToggleButton: View {
     @EnvironmentObject var appTheme: AppTheme
@@ -297,9 +340,30 @@ fileprivate struct KiyaslamaView: View {
     @State private var offerMonthlyNets: [Double] = Array(repeating: 0, count: 12)
     @State private var currentSalaryOnlyMonthlyNets: [Double] = Array(repeating: 0, count: 12)
     @State private var offerSalaryOnlyMonthlyNets: [Double] = Array(repeating: 0, count: 12)
-    @State private var navigateToAnalysis: Bool = false
+    @State private var navigateToCommute: Bool = false
+    
+    // Question 2 (work & commute) moved to a separate step view (KiyaslamaCommuteView)
 
     var body: some View {
+        // Precompute scenario values (must be outside ViewBuilder)
+        let currentSalarySum = currentSalaryOnlyMonthlyNets.reduce(0, +)
+        let currentWithPrimSum = currentMonthlyNets.reduce(0, +)
+        let offerSalarySum = offerSalaryOnlyMonthlyNets.reduce(0, +)
+        let offerWithPrimSum = offerMonthlyNets.reduce(0, +)
+        let currentHasPrim = abs(currentWithPrimSum - currentSalarySum) > 1.0
+        let offerHasPrim = abs(offerWithPrimSum - offerSalarySum) > 1.0
+        let anyPrim = currentHasPrim || offerHasPrim
+        let currentSalaryOnlyAvg = currentSalaryOnlyMonthlyNets.isEmpty ? 0 : currentSalaryOnlyMonthlyNets.reduce(0, +) / Double(currentSalaryOnlyMonthlyNets.count)
+        let offerSalaryOnlyAvg = offerSalaryOnlyMonthlyNets.isEmpty ? 0 : offerSalaryOnlyMonthlyNets.reduce(0, +) / Double(offerSalaryOnlyMonthlyNets.count)
+        let currentWithPrimAvg = currentMonthlyNets.isEmpty ? 0 : currentMonthlyNets.reduce(0, +) / Double(currentMonthlyNets.count)
+        let offerWithPrimAvg = offerMonthlyNets.isEmpty ? 0 : offerMonthlyNets.reduce(0, +) / Double(offerMonthlyNets.count)
+
+        let salaryIncrease = offerSalaryOnlyAvg - currentSalaryOnlyAvg
+        let salaryIncreaseAnnual = salaryIncrease * 12
+        let percentChange = currentSalaryOnlyAvg > 0 ? (salaryIncrease / currentSalaryOnlyAvg * 100) : 0
+
+        // Commute totals are collected on the next step (KiyaslamaCommuteView)
+
         ScrollView {
             VStack(spacing: 18) {
                 Text("Teklif Analizi")
@@ -527,9 +591,9 @@ fileprivate struct KiyaslamaView: View {
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
 
-                // Devam button — hesaplamayı yapıp analiz ekranına gider
+                // Devam button — hesaplamayı yapıp yol süresi adımına gider
                 NavigationLink(destination:
-                                KiyaslamaAnalysisView(
+                                KiyaslamaCommuteView(
                                     currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
                                     offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
                                     currentWithPrimMonthlyNets: currentMonthlyNets,
@@ -538,13 +602,13 @@ fileprivate struct KiyaslamaView: View {
                                     offerCompany: offerCompany
                                 )
                                 .environmentObject(appTheme),
-                               isActive: $navigateToAnalysis) {
+                               isActive: $navigateToCommute) {
                     EmptyView()
                 }
 
                 Button {
                     computeComparison()
-                    withAnimation { navigateToAnalysis = true }
+                    withAnimation { navigateToCommute = true }
                 } label: {
                     Text("Devam")
                         .font(AppTypography.headline)
@@ -696,8 +760,143 @@ fileprivate struct CompactMoneyField: View {
     }
 }
 
-// Analysis view shown after Devam — displays chart and monthly averages
-fileprivate struct KiyaslamaAnalysisView: View {
+// Work & Commute input extracted to reduce body complexity
+fileprivate struct WorkCommuteInputView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    @Binding var currentWorkModel: WorkModel
+    @Binding var currentHibritGunSayisi: Int
+    @Binding var currentCommuteHours: Int
+    @Binding var currentCommuteMinutes: Int
+
+    @Binding var offerWorkModel: WorkModel
+    @Binding var offerHibritGunSayisi: Int
+    @Binding var offerCommuteHours: Int
+    @Binding var offerCommuteMinutes: Int
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Çalışma Modeli ve Yol Süresi")
+                    .font(AppTypography.subheadline)
+                    .foregroundColor(appTheme.textSecondary)
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                currentColumn
+                offerColumn
+            }
+        }
+        .padding(12)
+    }
+
+    private var currentColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Mevcut İş Yeri")
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
+            HStack(spacing: 10) {
+                ForEach(WorkModel.allCases, id: \.self) { m in
+                    WorkModelButton(model: m,
+                                    selected: currentWorkModel == m,
+                                    selectedColors: [Color(hex: "3B82F6"), Color(hex: "6366F1")]) {
+                        currentWorkModel = m
+                    }
+                    .environmentObject(appTheme)
+                }
+            }
+
+            if currentWorkModel == .hybrid {
+                HStack {
+                    Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                    Spacer()
+                    Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5).labelsHidden()
+                }
+            }
+
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                    HStack(spacing: 6) {
+                        TextField("Saat", value: $currentCommuteHours, formatter: NumberFormatter(), prompt: Text("0"))
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 56, height: 36)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        Text(":")
+                        TextField("Dakika", value: $currentCommuteMinutes, formatter: NumberFormatter(), prompt: Text("0"))
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 56, height: 36)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                    }
+                }
+            }
+
+            let currentCommuteDays = currentWorkModel == .office ? 5 : (currentWorkModel == .remote ? 0 : currentHibritGunSayisi)
+            let currentWeeklyHours = (Double(currentCommuteHours) + Double(currentCommuteMinutes)/60.0) * Double(currentCommuteDays)
+            let currentWeeklyStr = String(format: "%.1f", currentWeeklyHours)
+            Text("Haftalık toplam \(currentWeeklyStr) saat yolda").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+    }
+
+    private var offerColumn: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Teklif Edilen İş").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+            HStack(spacing: 10) {
+                ForEach(WorkModel.allCases, id: \.self) { m in
+                    WorkModelButton(model: m,
+                                    selected: offerWorkModel == m,
+                                    selectedColors: [Color(hex: "8B5CF6"), Color(hex: "A78BFA")]) {
+                        offerWorkModel = m
+                    }
+                    .environmentObject(appTheme)
+                }
+            }
+
+            if offerWorkModel == .hybrid {
+                HStack {
+                    Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                    Spacer()
+                    Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5).labelsHidden()
+                }
+            }
+
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                    HStack(spacing: 6) {
+                        TextField("Saat", value: $offerCommuteHours, formatter: NumberFormatter(), prompt: Text("0"))
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 56, height: 36)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        Text(":")
+                        TextField("Dakika", value: $offerCommuteMinutes, formatter: NumberFormatter(), prompt: Text("0"))
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.center)
+                            .frame(width: 56, height: 36)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                    }
+                }
+            }
+
+            let offerCommuteDays = offerWorkModel == .office ? 5 : (offerWorkModel == .remote ? 0 : offerHibritGunSayisi)
+            let offerWeeklyHours = (Double(offerCommuteHours) + Double(offerCommuteMinutes)/60.0) * Double(offerCommuteDays)
+            let offerWeeklyStr = String(format: "%.1f", offerWeeklyHours)
+            Text("Haftalık toplam \(offerWeeklyStr) saat yolda").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+    }
+}
+
+// Second-step view: collect work model & commute, then navigate to analysis
+fileprivate struct KiyaslamaCommuteView: View {
     @EnvironmentObject var appTheme: AppTheme
     let currentSalaryOnlyMonthlyNets: [Double]
     let offerSalaryOnlyMonthlyNets: [Double]
@@ -705,6 +904,104 @@ fileprivate struct KiyaslamaAnalysisView: View {
     let offerWithPrimMonthlyNets: [Double]
     let currentCompany: String
     let offerCompany: String
+
+    @State private var currentWorkModel: WorkModel = .office
+    @State private var currentHibritGunSayisi: Int = 2
+    @State private var currentCommuteHours: Int = 1
+    @State private var currentCommuteMinutes: Int = 0
+
+    @State private var offerWorkModel: WorkModel = .office
+    @State private var offerHibritGunSayisi: Int = 2
+    @State private var offerCommuteHours: Int = 1
+    @State private var offerCommuteMinutes: Int = 0
+
+    @State private var navigateToAnalysis: Bool = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                WorkCommuteInputView(
+                    currentWorkModel: $currentWorkModel,
+                    currentHibritGunSayisi: $currentHibritGunSayisi,
+                    currentCommuteHours: $currentCommuteHours,
+                    currentCommuteMinutes: $currentCommuteMinutes,
+                    offerWorkModel: $offerWorkModel,
+                    offerHibritGunSayisi: $offerHibritGunSayisi,
+                    offerCommuteHours: $offerCommuteHours,
+                    offerCommuteMinutes: $offerCommuteMinutes
+                )
+
+                NavigationLink(destination:
+                                KiyaslamaAnalysisView(
+                                    currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                                    offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                                    currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
+                                    offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
+                                    currentCompany: currentCompany,
+                                    offerCompany: offerCompany,
+                                    currentWeeklyCommuteHours: computeWeekly(currentWorkModel, days: currentHibritGunSayisi, hours: currentCommuteHours, minutes: currentCommuteMinutes),
+                                    offerWeeklyCommuteHours: computeWeekly(offerWorkModel, days: offerHibritGunSayisi, hours: offerCommuteHours, minutes: offerCommuteMinutes)
+                                )
+                                .environmentObject(appTheme),
+                               isActive: $navigateToAnalysis) {
+                    EmptyView()
+                }
+
+                Button {
+                    // validate minimal inputs if needed
+                    navigateToAnalysis = true
+                } label: {
+                    Text("Devam")
+                        .font(AppTypography.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(hex: "3B82F6"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal, 16)
+            }
+            .padding()
+        }
+        .navigationTitle("Yol Süresi")
+    }
+
+    private func computeWeekly(_ model: WorkModel, days: Int, hours: Int, minutes: Int) -> Double {
+        let commuteDays = model == .office ? 5 : (model == .remote ? 0 : days)
+        return (Double(hours) + Double(minutes)/60.0) * Double(commuteDays)
+    }
+}
+
+// Analysis view shown after Devam — displays chart and monthly averages
+fileprivate struct KiyaslamaAnalysisView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let currentSalaryOnlyMonthlyNets: [Double]
+    let offerSalaryOnlyMonthlyNets: [Double]
+    let currentWithPrimMonthlyNets: [Double]
+    let offerWithPrimMonthlyNets: [Double]
+    let currentWeeklyCommuteHours: Double
+    let offerWeeklyCommuteHours: Double
+    let currentCompany: String
+    let offerCompany: String
+    
+    // Provide a custom initializer that excludes the EnvironmentObject (appTheme)
+    init(currentSalaryOnlyMonthlyNets: [Double],
+         offerSalaryOnlyMonthlyNets: [Double],
+         currentWithPrimMonthlyNets: [Double],
+         offerWithPrimMonthlyNets: [Double],
+         currentCompany: String,
+         offerCompany: String,
+         currentWeeklyCommuteHours: Double,
+         offerWeeklyCommuteHours: Double) {
+        self.currentSalaryOnlyMonthlyNets = currentSalaryOnlyMonthlyNets
+        self.offerSalaryOnlyMonthlyNets = offerSalaryOnlyMonthlyNets
+        self.currentWithPrimMonthlyNets = currentWithPrimMonthlyNets
+        self.offerWithPrimMonthlyNets = offerWithPrimMonthlyNets
+        self.currentCompany = currentCompany
+        self.offerCompany = offerCompany
+        self.currentWeeklyCommuteHours = currentWeeklyCommuteHours
+        self.offerWeeklyCommuteHours = offerWeeklyCommuteHours
+    }
 
     private var currentSalaryOnlyAvg: Double {
         guard !currentSalaryOnlyMonthlyNets.isEmpty else { return 0 }
@@ -721,6 +1018,43 @@ fileprivate struct KiyaslamaAnalysisView: View {
     private var offerWithPrimAvg: Double {
         guard !offerWithPrimMonthlyNets.isEmpty else { return 0 }
         return offerWithPrimMonthlyNets.reduce(0, +) / Double(offerWithPrimMonthlyNets.count)
+    }
+    
+    // Prim presence helpers
+    private var currentSalarySum: Double { currentSalaryOnlyMonthlyNets.reduce(0, +) }
+    private var currentWithPrimSum: Double { currentWithPrimMonthlyNets.reduce(0, +) }
+    private var offerSalarySum: Double { offerSalaryOnlyMonthlyNets.reduce(0, +) }
+    private var offerWithPrimSum: Double { offerWithPrimMonthlyNets.reduce(0, +) }
+    private var currentHasPrim: Bool { abs(currentWithPrimSum - currentSalarySum) > 1.0 }
+    private var offerHasPrim: Bool { abs(offerWithPrimSum - offerSalarySum) > 1.0 }
+    private var anyPrim: Bool { currentHasPrim || offerHasPrim }
+
+    // Salary change helpers
+    private var salaryIncrease: Double { offerSalaryOnlyAvg - currentSalaryOnlyAvg }
+    private var salaryIncreaseAnnual: Double { salaryIncrease * 12 }
+    private var percentChange: Double { currentSalaryOnlyAvg > 0 ? (salaryIncrease / currentSalaryOnlyAvg * 100) : 0 }
+
+    private var scenarioTextComputed: String {
+        if !anyPrim {
+            if salaryIncrease > 0 {
+                let percentStr = String(format: "%.1f", percentChange)
+                return "Yeni teklif, aylık net kazancınızı \(FinanceFormatter.currencyString(salaryIncrease)) artırıyor. Bu, yıllık bazda \(FinanceFormatter.currencyString(salaryIncreaseAnnual)) ek gelir ve %\(percentStr) büyüme demek."
+            } else if salaryIncrease < 0 {
+                return "Yeni teklif aylık net kazancınızı \(FinanceFormatter.currencyString(abs(salaryIncrease))) azaltıyor."
+            } else {
+                return "Yeni teklif ve mevcut işte aylık net kazanç eşit."
+            }
+        } else {
+            if (offerSalaryOnlyAvg > currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
+                return "Yeni teklif hem maaş hem prim açısından daha avantajlı; toplamda net kazancınız artıyor."
+            } else if (offerSalaryOnlyAvg < currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
+                return "Dikkat: Yeni teklif ana maaşta düşük olsa da prim sayesinde yıllık toplamda avantajlı hale geliyor."
+            } else if (currentHasPrim != offerHasPrim) {
+                return "Bir iş yerinde prim var diğerinde yok; prim garantisi ile ana maaş yapısını karşılaştırın."
+            } else {
+                return "Prim dahil karşılaştırma analizi gösteriliyor."
+            }
+        }
     }
 
     var body: some View {
@@ -740,7 +1074,41 @@ fileprivate struct KiyaslamaAnalysisView: View {
                         .frame(height: 200)
                 }
                 .padding(.horizontal, 16)
+                
+                // Commute comparison
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Yol Süresi Karşılaştırması")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading) {
+                            Text(currentCompany.isEmpty ? "Mevcut (haftalık)" : "\(currentCompany) (haftalık)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            let currentWeeklyCommuteStr = String(format: "%.1f", currentWeeklyCommuteHours)
+                            Text("\(currentWeeklyCommuteStr) saat")
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "3B82F6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
 
+                        VStack(alignment: .leading) {
+                            Text(offerCompany.isEmpty ? "Teklif (haftalık)" : "\(offerCompany) (haftalık)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            let offerWeeklyCommuteStr = String(format: "%.1f", offerWeeklyCommuteHours)
+                            Text("\(offerWeeklyCommuteStr) saat")
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "8B5CF6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    }
+                }
+                .padding(.horizontal, 16)
                 HStack(spacing: 12) {
                     VStack(alignment: .leading) {
                         Text(currentCompany.isEmpty ? "Mevcut (Net / ay)" : "\(currentCompany) (Net / ay)")
@@ -768,14 +1136,6 @@ fileprivate struct KiyaslamaAnalysisView: View {
                 }
                 .padding(.horizontal, 16)
                 // Prim dahil hesap (gizle eğer her iki tarafta da prim yok)
-                let currentSalarySum = currentSalaryOnlyMonthlyNets.reduce(0, +)
-                let currentWithPrimSum = currentWithPrimMonthlyNets.reduce(0, +)
-                let offerSalarySum = offerSalaryOnlyMonthlyNets.reduce(0, +)
-                let offerWithPrimSum = offerWithPrimMonthlyNets.reduce(0, +)
-                let currentHasPrim = abs(currentWithPrimSum - currentSalarySum) > 1.0
-                let offerHasPrim = abs(offerWithPrimSum - offerSalarySum) > 1.0
-                let anyPrim = currentHasPrim || offerHasPrim
-
                 if anyPrim {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Prim Dahil")
@@ -814,38 +1174,13 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .padding(.horizontal, 16)
                 }
 
-                // Scenario note (dynamic)
-                let salaryIncrease = offerSalaryOnlyAvg - currentSalaryOnlyAvg
-                let salaryIncreaseAnnual = (offerSalaryOnlyAvg - currentSalaryOnlyAvg) * 12
-                let percentChange = currentSalaryOnlyAvg > 0 ? (salaryIncrease / currentSalaryOnlyAvg * 100) : 0
-                var scenarioText = ""
-                if !anyPrim {
-                    if salaryIncrease > 0 {
-                        let percentStr = String(format: "%.1f", percentChange)
-                        scenarioText = "Yeni teklif, aylık net kazancınızı \(FinanceFormatter.currencyString(salaryIncrease)) artırıyor. Bu, yıllık bazda \(FinanceFormatter.currencyString(salaryIncreaseAnnual)) ek gelir ve %\(percentStr) büyüme demek."
-                    } else if salaryIncrease < 0 {
-                        scenarioText = "Yeni teklif aylık net kazancınızı \(FinanceFormatter.currencyString(abs(salaryIncrease))) azaltıyor."
-                    } else {
-                        scenarioText = "Yeni teklif ve mevcut işte aylık net kazanç eşit."
-                    }
-                } else {
-                    // prim-included scenarios
-                    if (offerSalaryOnlyAvg > currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
-                        scenarioText = "Yeni teklif hem maaş hem prim açısından daha avantajlı; toplamda net kazancınız artıyor."
-                    } else if (offerSalaryOnlyAvg < currentSalaryOnlyAvg) && (offerWithPrimAvg > currentWithPrimAvg) {
-                        scenarioText = "Dikkat: Yeni teklif ana maaşta düşük olsa da prim sayesinde yıllık toplamda avantajlı hale geliyor."
-                    } else if (currentHasPrim != offerHasPrim) {
-                        scenarioText = "Bir iş yerinde prim var diğerinde yok; prim garantisi ile ana maaş yapısını karşılaştırın."
-                    } else {
-                        scenarioText = "Prim dahil karşılaştırma analizi gösteriliyor."
-                    }
-                }
+                // Scenario note (dynamic) — computed property used below
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Durum Analizi")
                         .font(AppTypography.subheadline)
                         .foregroundColor(appTheme.textSecondary)
-                    Text(scenarioText)
+                    Text(scenarioTextComputed)
                         .font(AppTypography.body)
                         .foregroundColor(appTheme.textPrimary)
                         .padding(12)
