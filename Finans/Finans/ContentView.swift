@@ -281,10 +281,12 @@ fileprivate struct KiyaslamaView: View {
     @State private var currentText: String = ""
     @State private var currentIsBrut: Bool = true
     @State private var currentMaasPeriyodu: Int = 12
+    @State private var currentPrimText: String = ""
 
     @State private var offerText: String = ""
     @State private var offerIsBrut: Bool = true
     @State private var offerMaasPeriyodu: Int = 12
+    @State private var offerPrimText: String = ""
 
     @State private var showResults: Bool = false
     @State private var currentMonthlyNets: [Double] = Array(repeating: 0, count: 12)
@@ -365,6 +367,10 @@ fileprivate struct KiyaslamaView: View {
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
+                // Yıllık prim / bonus (mevcut)
+                KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $currentPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                    .environmentObject(appTheme)
+                    .padding(.top, 8)
 
                 // Offer input
                 VStack(alignment: .leading, spacing: 10) {
@@ -430,6 +436,10 @@ fileprivate struct KiyaslamaView: View {
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
+                // Yıllık prim / bonus (teklif)
+                KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $offerPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                    .environmentObject(appTheme)
+                    .padding(.top, 8)
 
                 // Devam button — hesaplamayı yapıp analiz ekranına gider
                 NavigationLink(destination:
@@ -469,22 +479,26 @@ fileprivate struct KiyaslamaView: View {
         // parse inputs
         let currentVal = parseFormattedNumber(currentText) ?? 0
         let offerVal = parseFormattedNumber(offerText) ?? 0
+        let currentPrim = parseFormattedNumber(currentPrimText) ?? 0
+        let offerPrim = parseFormattedNumber(offerPrimText) ?? 0
 
-        currentMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu)
-        offerMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu)
+        currentMonthlyNets = computeMonthlyNet(value: currentVal, isBrut: currentIsBrut, periyod: currentMaasPeriyodu, annualPrim: currentPrim)
+        offerMonthlyNets = computeMonthlyNet(value: offerVal, isBrut: offerIsBrut, periyod: offerMaasPeriyodu, annualPrim: offerPrim)
     }
 
-    private func computeMonthlyNet(value: Double, isBrut: Bool, periyod: Int) -> [Double] {
+    private func computeMonthlyNet(value: Double, isBrut: Bool, periyod: Int, annualPrim: Double = 0) -> [Double] {
         guard value > 0 else { return Array(repeating: 0, count: 12) }
         if isBrut {
-            // effective monthly brut
+            // effective monthly brut: if periyod > 12, distribute extra months into monthly equivalent
             let efektif = periyod > 12 ? (Double(periyod) * value / 12.0) : value
             let brutlar = Array(repeating: efektif, count: 12)
-            let sonuc = BrutNetCalculator.hesaplaYillik(brutlar: brutlar)
+            let primler = Array(repeating: annualPrim / 12.0, count: 12)
+            let sonuc = BrutNetCalculator.hesaplaYillik(brutlar: brutlar, primler: primler)
             return sonuc.map { $0.net }
         } else {
-            // net provided: annual net = periyod * value; monthly average = annual/12
-            let aylik = (Double(periyod) * value) / 12.0
+            // net provided: annual net = periyod * value + annualPrim; monthly average = annual/12
+            let annualNet = Double(periyod) * value + annualPrim
+            let aylik = annualNet / 12.0
             return Array(repeating: aylik, count: 12)
         }
     }
