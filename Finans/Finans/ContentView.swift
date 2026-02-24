@@ -283,12 +283,14 @@ fileprivate struct KiyaslamaView: View {
     @State private var currentMaasPeriyodu: Int = 12
     @State private var currentPrimText: String = ""
     @State private var currentPrimIsBrut: Bool = true
+    @State private var currentCompany: String = ""
 
     @State private var offerText: String = ""
     @State private var offerIsBrut: Bool = true
     @State private var offerMaasPeriyodu: Int = 12
     @State private var offerPrimText: String = ""
     @State private var offerPrimIsBrut: Bool = true
+    @State private var offerCompany: String = ""
 
     @State private var showResults: Bool = false
     @State private var currentMonthlyNets: [Double] = Array(repeating: 0, count: 12)
@@ -306,13 +308,23 @@ fileprivate struct KiyaslamaView: View {
                     .foregroundColor(appTheme.textPrimary)
 
                 // Current offer input
+                // Compact current offer input: company + salary on one row
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Mevcut İş Yeri - Ücret")
-                        .font(AppTypography.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                    KrediTextField(title: "Ücret (₺/ay)", text: $currentText, placeholder: "50.000", keyboardType: .decimalPad, formatThousands: true)
-                        .environmentObject(appTheme)
-                        .onChange(of: currentText) { _, v in /* value parsed on Kıyasla */ }
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Mevcut İş Yeri")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            TextField("Şirket adı", text: $currentCompany)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(minWidth: 120)
+                        }
+                        // compact money input placed inline
+                        CompactMoneyField(text: $currentText, placeholder: "Maaş (₺/ay)")
+                            .environmentObject(appTheme)
+                            .frame(minWidth: 140)
+                    }
+                    .frame(maxWidth: .infinity)
 
                     HStack(spacing: 12) {
                         HStack(spacing: 8) {
@@ -407,14 +419,22 @@ fileprivate struct KiyaslamaView: View {
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
 
-                // Offer input
+                // Compact offer input: company + salary on one row
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Teklif Edilen İş - Ücret")
-                        .font(AppTypography.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                    KrediTextField(title: "Ücret (₺/ay)", text: $offerText, placeholder: "55.000", keyboardType: .decimalPad, formatThousands: true)
-                        .environmentObject(appTheme)
-                        .onChange(of: offerText) { _, v in }
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Teklif Eden İş Yeri")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            TextField("Şirket adı", text: $offerCompany)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(minWidth: 120)
+                        }
+                        CompactMoneyField(text: $offerText, placeholder: "Maaş (₺/ay)")
+                            .environmentObject(appTheme)
+                            .frame(minWidth: 140)
+                    }
+                    .frame(maxWidth: .infinity)
 
                     HStack(spacing: 12) {
                         HStack(spacing: 8) {
@@ -651,6 +671,25 @@ fileprivate struct SimpleInlineChart: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
                 .padding(.bottom, 4)
             }
+        }
+    }
+}
+
+// Compact money input without top label — uses existing FormattedNumberField
+fileprivate struct CompactMoneyField: View {
+    @EnvironmentObject var appTheme: AppTheme
+    @Binding var text: String
+    var placeholder: String = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(placeholder)
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
+            FormattedNumberField(text: $text, placeholder: placeholder, allowDecimals: false, focusTrigger: .constant(false), fontSize: 16, fontWeight: .regular, isLightMode: appTheme.isLight)
+                .frame(height: 42)
+                .padding(.horizontal, 8)
+                .background(RoundedRectangle(cornerRadius: 10).fill(appTheme.cardBackgroundSecondary))
         }
     }
 }
