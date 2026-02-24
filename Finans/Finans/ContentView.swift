@@ -364,13 +364,13 @@ fileprivate struct KiyaslamaView: View {
                             }
                         }
                     }
+                    // Yıllık prim / bonus (mevcut) - inline in same card
+                    KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $currentPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                        .environmentObject(appTheme)
+                        .padding(.top, 8)
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
-                // Yıllık prim / bonus (mevcut)
-                KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $currentPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
-                    .environmentObject(appTheme)
-                    .padding(.top, 8)
 
                 // Offer input
                 VStack(alignment: .leading, spacing: 10) {
@@ -433,13 +433,13 @@ fileprivate struct KiyaslamaView: View {
                             }
                         }
                     }
+                    // Yıllık prim / bonus (teklif) - inline in same card
+                    KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $offerPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
+                        .environmentObject(appTheme)
+                        .padding(.top, 8)
                 }
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
-                // Yıllık prim / bonus (teklif)
-                KrediTextField(title: "Yıllık Prim/Bonus (₺)", text: $offerPrimText, placeholder: "0", keyboardType: .decimalPad, formatThousands: true)
-                    .environmentObject(appTheme)
-                    .padding(.top, 8)
 
                 // Devam button — hesaplamayı yapıp analiz ekranına gider
                 NavigationLink(destination:
