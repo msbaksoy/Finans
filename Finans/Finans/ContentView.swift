@@ -380,7 +380,7 @@ fileprivate struct KiyaslamaView: View {
                                 currentPrimIsBrut = true
                             } label: {
                                 Text("Brüt")
-                                    .font(.caption1)
+                                    .font(AppTypography.caption1)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
                                     .background(currentPrimIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
@@ -392,7 +392,7 @@ fileprivate struct KiyaslamaView: View {
                                 currentPrimIsBrut = false
                             } label: {
                                 Text("Net")
-                                    .font(.caption1)
+                                    .font(AppTypography.caption1)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
                                     .background(!currentPrimIsBrut ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
@@ -480,7 +480,7 @@ fileprivate struct KiyaslamaView: View {
                                 offerPrimIsBrut = true
                             } label: {
                                 Text("Brüt")
-                                    .font(.caption1)
+                                    .font(AppTypography.caption1)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
                                     .background(offerPrimIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
@@ -492,7 +492,7 @@ fileprivate struct KiyaslamaView: View {
                                 offerPrimIsBrut = false
                             } label: {
                                 Text("Net")
-                                    .font(.caption1)
+                                    .font(AppTypography.caption1)
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 6)
                                     .background(!offerPrimIsBrut ? Color(hex: "8B5CF6") : appTheme.cardBackgroundSecondary)
