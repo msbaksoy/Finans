@@ -107,7 +107,7 @@ struct PortfolioTotalCard: View {
             Text(formatPortfolioAmount(amount))
                 .font(AppTypography.amountLarge)
                 .monospacedDigit()
-                .foregroundColor(Color(hex: "60A5FA"))
+                .foregroundColor(Color("60A5FA"))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
@@ -116,16 +116,16 @@ struct PortfolioTotalCard: View {
             RoundedRectangle(cornerRadius: 24)
                 .fill(
                     appTheme.isLight
-                        ? LinearGradient(colors: [Color(hex: "E0F2FE"), Color(hex: "F0F9FF")], startPoint: .topLeading, endPoint: .bottomTrailing)
-                        : LinearGradient(colors: [Color(hex: "1E3A5F"), Color(hex: "0F172A")], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    ? LinearGradient(colors: [Color("E0F2FE"), Color("F0F9FF")], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    : LinearGradient(colors: [Color("1E3A5F"), Color("0F172A")], startPoint: .topLeading, endPoint: .bottomTrailing)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    Color(hex: "60A5FA").opacity(0.4),
-                                    Color(hex: "3B82F6").opacity(0.15)
+                                    Color("60A5FA").opacity(0.4),
+                                    Color("3B82F6").opacity(0.15)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -138,12 +138,12 @@ struct PortfolioTotalCard: View {
 }
 
 private let chartColorPalette: [Color] = [
-    Color(hex: "60A5FA"),
-    Color(hex: "34D399"),
-    Color(hex: "F59E0B"),
-    Color(hex: "A78BFA"),
-    Color(hex: "F87171"),
-    Color(hex: "22D3EE")
+    Color("60A5FA"),
+    Color("34D399"),
+    Color("F59E0B"),
+    Color("A78BFA"),
+    Color("F87171"),
+    Color("22D3EE")
 ]
 
 struct ChartDataItem: Identifiable {
@@ -270,7 +270,7 @@ struct AssetRowView: View {
                 Text(formatPortfolioAmount(asset.totalValue))
                     .font(AppTypography.amountSmall)
                     .monospacedDigit()
-                    .foregroundColor(Color(hex: "60A5FA"))
+                    .foregroundColor(Color("60A5FA"))
                 Image(systemName: "chevron.right")
                     .font(.caption2)
                     .foregroundColor(appTheme.textSecondary.opacity(0.8))
@@ -287,13 +287,13 @@ struct AssetRowView: View {
     
     private var assetColor: Color {
         switch asset.type {
-        case .stock, .etf: return Color(hex: "60A5FA")
-        case .bond: return Color(hex: "34D399")
-        case .bankDeposit: return Color(hex: "22D3EE")
-        case .crypto: return Color(hex: "F59E0B")
-        case .gold: return Color(hex: "FBBF24")
-        case .realEstate: return Color(hex: "A78BFA")
-        default: return Color(hex: "94A3B8")
+        case .stock, .etf: return Color("60A5FA")
+        case .bond: return Color("34D399")
+        case .bankDeposit: return Color("22D3EE")
+        case .crypto: return Color("F59E0B")
+        case .gold: return Color("FBBF24")
+        case .realEstate: return Color("A78BFA")
+        default: return Color("94A3B8")
         }
     }
     

@@ -30,7 +30,7 @@ struct BudgetPdfOlusturucu {
         let font = UIFont.systemFont(ofSize: 9)
         let headerFont = UIFont.boldSystemFont(ofSize: 10)
         let bgDark = UIColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 1)
-        let cardBg = UIColor.white.withAlphaComponent(0.08)
+        _ = UIColor.white.withAlphaComponent(0.08)
         let white90 = UIColor.white.withAlphaComponent(0.9)
         let green = UIColor(red: 52/255, green: 211/255, blue: 153/255, alpha: 1)
         let red = UIColor(red: 248/255, green: 113/255, blue: 113/255, alpha: 1)

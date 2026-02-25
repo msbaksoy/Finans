@@ -10,9 +10,125 @@ enum WorkModel: String, CaseIterable {
     case hybrid = "Hibrit"
     var icon: String {
         switch self {
-        case .remote: return "🏠"
-        case .office: return "🏢"
-        case .hybrid: return "💻"
+        case .remote: return "house"
+        case .office: return "building.2"
+        case .hybrid: return "laptopcomputer"
+        }
+    }
+    var displayName: String { rawValue }
+}
+
+// Yan haklar form verisi (Kıyaslama akışında — mevcut ve teklif için)
+fileprivate struct YanHaklarData {
+    var tamamlayiciSaglik = false
+    var tamamlayiciSaglikAile = false
+    var ozelSaglik = false
+    var ozelSaglikAile = false
+    var gozlukDis = false
+    var sirketTelefonu = false
+    var sirketTelefonuFatura = false
+    var internetElektrik = false
+    var internetElektrikAylikMi = true
+    var internetElektrikTutar = ""
+    var bes = false
+    var besAylikTutar = ""
+    var yabanciDil = false
+    var yabanciDilAylikTutar = ""
+    var diger = false
+    var digerAylikMi = true
+    var digerTutar = ""
+}
+
+fileprivate func yanHakBindingBool(_ data: Binding<YanHaklarData>, keyPath: WritableKeyPath<YanHaklarData, Bool>) -> Binding<Bool> {
+    Binding(
+        get: { data.wrappedValue[keyPath: keyPath] },
+        set: { var d = data.wrappedValue; d[keyPath: keyPath] = $0; data.wrappedValue = d }
+    )
+}
+
+fileprivate func yanHakBindingString(_ data: Binding<YanHaklarData>, keyPath: WritableKeyPath<YanHaklarData, String>) -> Binding<String> {
+    Binding(
+        get: { data.wrappedValue[keyPath: keyPath] },
+        set: { var d = data.wrappedValue; d[keyPath: keyPath] = $0; data.wrappedValue = d }
+    )
+}
+
+// Yemek imkanı seçenekleri (Kıyaslama akışında)
+enum YemekImkani: String, CaseIterable {
+    case yemekhane = "Yemekhane"
+    case yemekKarti = "Yemek Kartı"
+    case yok = "Yok"
+    var icon: String {
+        switch self {
+        case .yemekhane: return "fork.knife"
+        case .yemekKarti: return "creditcard.fill"
+        case .yok: return "xmark.circle"
+        }
+    }
+}
+
+// Kıdem grubu (unvan analizi için — rank 1–5)
+enum KademGrubu: String, CaseIterable {
+    case junior = "Junior"
+    case professional = "Professional"
+    case senior = "Senior"
+    case manager = "Manager"
+    case executive = "Executive"
+    var rank: Int {
+        switch self {
+        case .junior: return 1
+        case .professional: return 2
+        case .senior: return 3
+        case .manager: return 4
+        case .executive: return 5
+        }
+    }
+    var displayName: String { rawValue }
+}
+
+// Unvan (tek liste: kurumsal + bankacılık)
+struct UnvanItem: Identifiable {
+    let id: String
+    let ad: String
+    let kademGrubu: KademGrubu
+    var rank: Int { kademGrubu.rank }
+}
+
+fileprivate let unvanListesi: [UnvanItem] = [
+    // Junior (1) — Kurumsal
+    UnvanItem(id: "asistan", ad: "Asistan / Aday", kademGrubu: .junior),
+    UnvanItem(id: "uzman-yard", ad: "Uzman Yardımcısı", kademGrubu: .junior),
+    // Professional (2)
+    UnvanItem(id: "uzman", ad: "Uzman", kademGrubu: .professional),
+    UnvanItem(id: "kıdemli-uzman", ad: "Kıdemli Uzman", kademGrubu: .senior),
+    UnvanItem(id: "bas-uzman", ad: "Baş Uzman / Uzman Müşavir", kademGrubu: .senior),
+    UnvanItem(id: "mudur-yard", ad: "Müdür Yardımcısı", kademGrubu: .manager),
+    UnvanItem(id: "mudur", ad: "Müdür", kademGrubu: .manager),
+    UnvanItem(id: "grup-mudur", ad: "Grup Müdürü / Kıdemli Müdür", kademGrubu: .manager),
+    UnvanItem(id: "direktor", ad: "Direktör", kademGrubu: .executive),
+    UnvanItem(id: "bolum-baskan", ad: "Bölüm Başkanı / Koordinatör", kademGrubu: .executive),
+    UnvanItem(id: "gmy", ad: "Genel Müdür Yardımcısı", kademGrubu: .executive),
+    UnvanItem(id: "gm-ceo", ad: "Genel Müdür / CEO", kademGrubu: .executive),
+    // Bankacılık
+    UnvanItem(id: "mufettis", ad: "Müfettiş / Uzman Yardımcısı", kademGrubu: .junior),
+    UnvanItem(id: "yetkili-yard", ad: "Yetkili Yardımcısı", kademGrubu: .professional),
+    UnvanItem(id: "yetkili", ad: "Yetkili", kademGrubu: .professional),
+    UnvanItem(id: "kıdemli-yetkili", ad: "Kıdemli Yetkili", kademGrubu: .senior),
+    UnvanItem(id: "yonetmen-yard", ad: "Yönetmen Yardımcısı", kademGrubu: .manager),
+    UnvanItem(id: "yonetmen", ad: "Yönetmen", kademGrubu: .manager),
+    UnvanItem(id: "birim-mudur", ad: "Birim Müdürü", kademGrubu: .executive),
+]
+
+// Transport method for commute step
+enum TransportMethod: String, CaseIterable {
+    case companyVehicle = "Şirket Aracı"
+    case shuttle = "Servis"
+    case publicTransport = "Toplu Taşıma"
+    var icon: String {
+        switch self {
+        case .companyVehicle: return "car.fill"
+        case .shuttle: return "bus"
+        case .publicTransport: return "tram.fill"
         }
     }
     var displayName: String { rawValue }
@@ -40,7 +156,7 @@ struct ContentView: View {
                         .environmentObject(dataManager)
                         .environmentObject(appTheme)
                         .environmentObject(YanHakKayitStore.shared)
-                        .padding(.top, AppSpacing.md)
+                        .padding(EdgeInsets(top: AppSpacing.md, leading: 0, bottom: 0, trailing: 0))
 
                     Spacer(minLength: 0)
                 }
@@ -192,14 +308,57 @@ fileprivate struct WorkModelButton: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(LinearGradient(colors: selectedColors, startPoint: .topLeading, endPoint: .bottomTrailing))
                 }
-                VStack(spacing: 4) {
-                    Text(model.icon).font(.title)
-                    Text(model.displayName).font(AppTypography.caption2)
+                VStack(spacing: 6) {
+                    Image(systemName: model.icon)
+                        .font(.title2)
+                        .imageScale(.large)
+                    Text(model.displayName)
+                        .font(AppTypography.caption2)
                 }
                 .foregroundColor(selected ? .white : appTheme.textPrimary)
             }
             .frame(minWidth: 64, minHeight: 64)
             .padding(4)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// Transport option button
+fileprivate struct TransportOptionButton: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let method: TransportMethod
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            ZStack {
+                // temel arka plan renk
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(appTheme.cardBackgroundSecondary)
+                // seçiliyse gradient overlay
+                if selected {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color(hex: "F3F4F6"), Color(hex: "E5E7EB")],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .opacity(0.95)
+                }
+                VStack(spacing: 6) {
+                    Image(systemName: method.icon)
+                        .font(.title2)
+                    Text(method.displayName)
+                        .font(AppTypography.caption2)
+                }
+                .foregroundColor(selected ? Color.white : appTheme.textPrimary)
+                .padding(8)
+            }
+            .frame(minWidth: 78, minHeight: 64)
         }
         .buttonStyle(.plain)
     }
@@ -349,21 +508,7 @@ fileprivate struct KiyaslamaView: View {
 
     var body: some View {
         // Precompute scenario values (must be outside ViewBuilder)
-        let currentSalarySum = currentSalaryOnlyMonthlyNets.reduce(0, +)
-        let currentWithPrimSum = currentMonthlyNets.reduce(0, +)
-        let offerSalarySum = offerSalaryOnlyMonthlyNets.reduce(0, +)
-        let offerWithPrimSum = offerMonthlyNets.reduce(0, +)
-        let currentHasPrim = abs(currentWithPrimSum - currentSalarySum) > 1.0
-        let offerHasPrim = abs(offerWithPrimSum - offerSalarySum) > 1.0
-        let anyPrim = currentHasPrim || offerHasPrim
-        let currentSalaryOnlyAvg = currentSalaryOnlyMonthlyNets.isEmpty ? 0 : currentSalaryOnlyMonthlyNets.reduce(0, +) / Double(currentSalaryOnlyMonthlyNets.count)
-        let offerSalaryOnlyAvg = offerSalaryOnlyMonthlyNets.isEmpty ? 0 : offerSalaryOnlyMonthlyNets.reduce(0, +) / Double(offerSalaryOnlyMonthlyNets.count)
-        let currentWithPrimAvg = currentMonthlyNets.isEmpty ? 0 : currentMonthlyNets.reduce(0, +) / Double(currentMonthlyNets.count)
-        let offerWithPrimAvg = offerMonthlyNets.isEmpty ? 0 : offerMonthlyNets.reduce(0, +) / Double(offerMonthlyNets.count)
-
-        let salaryIncrease = offerSalaryOnlyAvg - currentSalaryOnlyAvg
-        let salaryIncreaseAnnual = salaryIncrease * 12
-        let percentChange = currentSalaryOnlyAvg > 0 ? (salaryIncrease / currentSalaryOnlyAvg * 100) : 0
+        // (detailed averages and scenario analysis computed in the Analysis view)
 
         // Commute totals are collected on the next step (KiyaslamaCommuteView)
 
@@ -595,20 +740,6 @@ fileprivate struct KiyaslamaView: View {
                 .background(RoundedRectangle(cornerRadius: 14).fill(appTheme.listRowBackground))
 
                 // Devam button — hesaplamayı yapıp yol süresi adımına gider
-                NavigationLink(destination:
-                                KiyaslamaCommuteView(
-                                    currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
-                                    offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
-                                    currentWithPrimMonthlyNets: currentMonthlyNets,
-                                    offerWithPrimMonthlyNets: offerMonthlyNets,
-                                    currentCompany: currentCompany,
-                                    offerCompany: offerCompany
-                                )
-                                .environmentObject(appTheme),
-                               isActive: $navigateToCommute) {
-                    EmptyView()
-                }
-
                 Button {
                     computeComparison()
                     withAnimation { navigateToCommute = true }
@@ -631,6 +762,18 @@ fileprivate struct KiyaslamaView: View {
         }
         .onTapGesture {
             UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        // modern navigation API: present commute step when requested
+        .navigationDestination(isPresented: $navigateToCommute) {
+            KiyaslamaCommuteView(
+                currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                currentWithPrimMonthlyNets: currentMonthlyNets,
+                offerWithPrimMonthlyNets: offerMonthlyNets,
+                currentCompany: currentCompany,
+                offerCompany: offerCompany
+            )
+            .environmentObject(appTheme)
         }
         .navigationTitle("Kıyaslama")
     }
@@ -776,6 +919,21 @@ fileprivate struct WorkCommuteInputView: View {
     @Binding var offerCommuteHours: Int
     @Binding var offerCommuteMinutes: Int
 
+    // Yerel ulaşım durumu (bu view şu anda kullanılmıyor ama derleme için gerekli)
+    @State private var currentTransportMethod: TransportMethod = .companyVehicle
+    @State private var currentCompanyProvidesFuel: Bool = false
+    @State private var currentCompanyFuelAmount: Double = 0
+    @State private var currentFuelExpense: Double = 0
+    @State private var currentCompanyCoversFare: Bool = false
+    @State private var currentFareExpense: Double = 0
+
+    @State private var offerTransportMethod: TransportMethod = .companyVehicle
+    @State private var offerCompanyProvidesFuel: Bool = false
+    @State private var offerCompanyFuelAmount: Double = 0
+    @State private var offerFuelExpense: Double = 0
+    @State private var offerCompanyCoversFare: Bool = false
+    @State private var offerFareExpense: Double = 0
+
     var body: some View {
         VStack(spacing: 10) {
             HStack {
@@ -819,9 +977,109 @@ fileprivate struct WorkCommuteInputView: View {
                     Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                     Spacer()
                 }
-                Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5)
-                    .labelsHidden()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Stepper(value: $currentHibritGunSayisi, in: 1...5) {
+                    Text("\(currentHibritGunSayisi) gün")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            // Transport method selection (current)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Ulaşım")
+                    .font(AppTypography.caption1)
+                    .foregroundColor(appTheme.textSecondary)
+                HStack(spacing: 8) {
+                    ForEach(TransportMethod.allCases, id: \.self) { t in
+                        TransportOptionButton(method: t, selected: currentTransportMethod == t) {
+                            currentTransportMethod = t
+                        }
+                        .environmentObject(appTheme)
+                    }
+                }
+
+                if currentTransportMethod == .companyVehicle {
+                    Text("Şirket yakıt desteği var mı?")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack {
+                        Button {
+                            currentCompanyProvidesFuel = true
+                        } label: {
+                            Text("Evet")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(currentCompanyProvidesFuel ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(currentCompanyProvidesFuel ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            currentCompanyProvidesFuel = false
+                        } label: {
+                            Text("Hayır")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(!currentCompanyProvidesFuel ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(!currentCompanyProvidesFuel ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if currentCompanyProvidesFuel {
+                        TextField("Aylık yakıt desteği (₺)", value: $currentCompanyFuelAmount, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    } else {
+                        TextField("Aylık harcanan yakıt tutarı (₺)", value: $currentFuelExpense, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    }
+                } else if currentTransportMethod == .publicTransport {
+                    Text("Şirket yol parasını karşılıyor mu?")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack {
+                        Button {
+                            currentCompanyCoversFare = true
+                        } label: {
+                            Text("Evet")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(currentCompanyCoversFare ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(currentCompanyCoversFare ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            currentCompanyCoversFare = false
+                        } label: {
+                            Text("Hayır")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(!currentCompanyCoversFare ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(!currentCompanyCoversFare ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if !currentCompanyCoversFare {
+                        TextField("Aylık toplu taşıma gideri (₺)", value: $currentFareExpense, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    }
+                }
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -878,10 +1136,108 @@ fileprivate struct WorkCommuteInputView: View {
                     Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                     Spacer()
                 }
-                Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5)
-                    .labelsHidden()
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Stepper(value: $offerHibritGunSayisi, in: 1...5) {
+                    Text("\(offerHibritGunSayisi) gün")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // Transport method selection (offer)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Ulaşım")
+                    .font(AppTypography.caption1)
+                    .foregroundColor(appTheme.textSecondary)
+                HStack(spacing: 8) {
+                    ForEach(TransportMethod.allCases, id: \.self) { t in
+                        TransportOptionButton(method: t, selected: offerTransportMethod == t) {
+                            offerTransportMethod = t
+                        }
+                        .environmentObject(appTheme)
+                    }
+                }
+
+                if offerTransportMethod == .companyVehicle {
+                    Text("Şirket yakıt desteği var mı?")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack {
+                        Button {
+                            offerCompanyProvidesFuel = true
+                        } label: {
+                            Text("Evet")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(offerCompanyProvidesFuel ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(offerCompanyProvidesFuel ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            offerCompanyProvidesFuel = false
+                        } label: {
+                            Text("Hayır")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(!offerCompanyProvidesFuel ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(!offerCompanyProvidesFuel ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if offerCompanyProvidesFuel {
+                        TextField("Aylık yakıt desteği (₺)", value: $offerCompanyFuelAmount, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    } else {
+                        TextField("Aylık harcanan yakıt tutarı (₺)", value: $offerFuelExpense, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    }
+                } else if offerTransportMethod == .publicTransport {
+                    Text("Şirket yol parasını karşılıyor mu?")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack {
+                        Button {
+                            offerCompanyCoversFare = true
+                        } label: {
+                            Text("Evet")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(offerCompanyCoversFare ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(offerCompanyCoversFare ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            offerCompanyCoversFare = false
+                        } label: {
+                            Text("Hayır")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(!offerCompanyCoversFare ? Color(hex: "3B82F6") : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(!offerCompanyCoversFare ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if !offerCompanyCoversFare {
+                        TextField("Aylık toplu taşıma gideri (₺)", value: $offerFareExpense, formatter: NumberFormatter())
+                            .keyboardType(.numberPad)
+                            .frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                            .padding(.top, 6)
+                    }
+                }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Gidiş geliş süre (saat)").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
@@ -913,6 +1269,7 @@ fileprivate struct WorkCommuteInputView: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
     }
 }
+}
 
 // Second-step view: collect work model & commute, then navigate to analysis
 fileprivate struct KiyaslamaCommuteView: View {
@@ -928,13 +1285,27 @@ fileprivate struct KiyaslamaCommuteView: View {
     @State private var currentHibritGunSayisi: Int = 2
     @State private var currentCommuteHours: Int = 0
     @State private var currentCommuteMinutes: Int = 0
+    // Transport-related states for current company
+    @State private var currentTransportMethod: TransportMethod = .companyVehicle
+    @State private var currentCompanyProvidesFuel: Bool = false
+    @State private var currentCompanyFuelAmount: Double = 0
+    @State private var currentFuelExpense: Double = 0
+    @State private var currentCompanyCoversFare: Bool = false
+    @State private var currentFareExpense: Double = 0
 
     @State private var offerWorkModel: WorkModel = .office
     @State private var offerHibritGunSayisi: Int = 2
     @State private var offerCommuteHours: Int = 0
     @State private var offerCommuteMinutes: Int = 0
+    // Transport-related states for offer company
+    @State private var offerTransportMethod: TransportMethod = .companyVehicle
+    @State private var offerCompanyProvidesFuel: Bool = false
+    @State private var offerCompanyFuelAmount: Double = 0
+    @State private var offerFuelExpense: Double = 0
+    @State private var offerCompanyCoversFare: Bool = false
+    @State private var offerFareExpense: Double = 0
 
-    @State private var navigateToAnalysis: Bool = false
+    @State private var navigateToYemek: Bool = false
 
     var body: some View {
         ScrollView {
@@ -964,7 +1335,11 @@ fileprivate struct KiyaslamaCommuteView: View {
                         HStack {
                             Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                             Spacer()
-                            Stepper("\(currentHibritGunSayisi) gün", value: $currentHibritGunSayisi, in: 1...5).labelsHidden()
+                        Stepper(value: $currentHibritGunSayisi, in: 1...5) {
+                            Text("\(currentHibritGunSayisi) gün")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                        }
                         }
                     }
 
@@ -1016,7 +1391,11 @@ fileprivate struct KiyaslamaCommuteView: View {
                         HStack {
                             Text("Haftada ofiste gün").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
                             Spacer()
-                            Stepper("\(offerHibritGunSayisi) gün", value: $offerHibritGunSayisi, in: 1...5).labelsHidden()
+                            Stepper(value: $offerHibritGunSayisi, in: 1...5) {
+                                Text("\(offerHibritGunSayisi) gün")
+                                    .font(AppTypography.caption1)
+                                    .foregroundColor(appTheme.textSecondary)
+                            }
                         }
                     }
 
@@ -1044,27 +1423,10 @@ fileprivate struct KiyaslamaCommuteView: View {
                 .padding(12)
                 .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
 
-                // Navigation to analysis
-                NavigationLink(destination:
-                                KiyaslamaAnalysisView(
-                                    currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
-                                    offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
-                                    currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
-                                    offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
-                                    currentCompany: currentCompany,
-                                    offerCompany: offerCompany,
-                                    currentWeeklyCommuteHours: computeWeekly(currentWorkModel, days: currentHibritGunSayisi, hours: currentCommuteHours, minutes: currentCommuteMinutes),
-                                    offerWeeklyCommuteHours: computeWeekly(offerWorkModel, days: offerHibritGunSayisi, hours: offerCommuteHours, minutes: offerCommuteMinutes)
-                                )
-                                .environmentObject(appTheme),
-                               isActive: $navigateToAnalysis) {
-                    EmptyView()
-                }
-
                 Button {
-                    navigateToAnalysis = true
+                    navigateToYemek = true
                 } label: {
-                    Text("Analizi Gör")
+                    Text("Devam")
                         .font(AppTypography.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -1076,12 +1438,668 @@ fileprivate struct KiyaslamaCommuteView: View {
             }
             .padding()
         }
+        .navigationDestination(isPresented: $navigateToYemek) {
+            KiyaslamaYemekView(
+                currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
+                offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
+                currentCompany: currentCompany,
+                offerCompany: offerCompany,
+                currentWeeklyCommuteHours: computeWeekly(currentWorkModel, days: currentHibritGunSayisi, hours: currentCommuteHours, minutes: currentCommuteMinutes),
+                offerWeeklyCommuteHours: computeWeekly(offerWorkModel, days: offerHibritGunSayisi, hours: offerCommuteHours, minutes: offerCommuteMinutes)
+            )
+            .environmentObject(appTheme)
+        }
         .navigationTitle("Yol Süresi")
     }
 
     private func computeWeekly(_ model: WorkModel, days: Int, hours: Int, minutes: Int) -> Double {
         let commuteDays = model == .office ? 5 : (model == .remote ? 0 : days)
         return (Double(hours) + Double(minutes)/60.0) * Double(commuteDays)
+    }
+}
+
+// Yemek imkanı sorusu: Yemekhane / Yemek Kartı / Yok (yol süresinden sonra, terfiden önce)
+fileprivate struct KiyaslamaYemekView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let currentSalaryOnlyMonthlyNets: [Double]
+    let offerSalaryOnlyMonthlyNets: [Double]
+    let currentWithPrimMonthlyNets: [Double]
+    let offerWithPrimMonthlyNets: [Double]
+    let currentCompany: String
+    let offerCompany: String
+    let currentWeeklyCommuteHours: Double
+    let offerWeeklyCommuteHours: Double
+
+    @State private var currentYemek: YemekImkani? = nil
+    @State private var currentKalite: Int = 0
+    @State private var currentGunlukTutarText: String = ""
+    @State private var offerYemek: YemekImkani? = nil
+    @State private var offerKalite: Int = 0
+    @State private var offerGunlukTutarText: String = ""
+    @State private var navigateToYanHaklar: Bool = false
+
+    private var canDevam: Bool {
+        currentYemek != nil && offerYemek != nil
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("Yemek imkanı")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+                    .padding(.top, 8)
+
+                Text("Mevcut iş ve teklifte yemek imkanı nasıl?")
+                    .font(AppTypography.subheadline)
+                    .foregroundColor(appTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                // Mevcut iş yeri
+                yemekKartiBlock(
+                    title: currentCompany.isEmpty ? "Mevcut İş Yeri" : currentCompany,
+                    selection: $currentYemek,
+                    kalite: $currentKalite,
+                    gunlukTutarText: $currentGunlukTutarText,
+                    accentColor: Color(hex: "3B82F6")
+                )
+
+                // Teklif edilen iş
+                yemekKartiBlock(
+                    title: offerCompany.isEmpty ? "Teklif Edilen İş" : offerCompany,
+                    selection: $offerYemek,
+                    kalite: $offerKalite,
+                    gunlukTutarText: $offerGunlukTutarText,
+                    accentColor: Color(hex: "8B5CF6")
+                )
+
+                Button {
+                    navigateToYanHaklar = true
+                } label: {
+                    Text("Devam")
+                        .font(AppTypography.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(canDevam ? Color(hex: "3B82F6") : appTheme.textSecondary.opacity(0.5))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .disabled(!canDevam)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                Spacer(minLength: 40)
+            }
+            .padding()
+        }
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        .navigationDestination(isPresented: $navigateToYanHaklar) {
+            KiyaslamaYanHaklarView(
+                currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
+                offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
+                currentCompany: currentCompany,
+                offerCompany: offerCompany,
+                currentWeeklyCommuteHours: currentWeeklyCommuteHours,
+                offerWeeklyCommuteHours: offerWeeklyCommuteHours
+            )
+            .environmentObject(appTheme)
+        }
+        .navigationTitle("Yemek İmkanı")
+    }
+
+    @ViewBuilder
+    private func yemekKartiBlock(
+        title: String,
+        selection: Binding<YemekImkani?>,
+        kalite: Binding<Int>,
+        gunlukTutarText: Binding<String>,
+        accentColor: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(AppTypography.subheadline)
+                .foregroundColor(appTheme.textSecondary)
+
+            HStack(spacing: 10) {
+                ForEach(YemekImkani.allCases, id: \.self) { opt in
+                    Button {
+                        selection.wrappedValue = opt
+                    } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: opt.icon)
+                                .font(.title2)
+                            Text(opt.rawValue)
+                                .font(AppTypography.caption1)
+                                .lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(selection.wrappedValue == opt ? accentColor : appTheme.listRowBackground)
+                        .foregroundColor(selection.wrappedValue == opt ? .white : appTheme.textPrimary)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if selection.wrappedValue == .yemekhane {
+                HStack(spacing: 8) {
+                    Text("Yemeklerin kalitesi (1–5)")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        ForEach(1...5, id: \.self) { star in
+                            Button {
+                                kalite.wrappedValue = star
+                            } label: {
+                                Image(systemName: star <= kalite.wrappedValue ? "star.fill" : "star")
+                                    .font(.title3)
+                                    .foregroundColor(star <= kalite.wrappedValue ? Color(hex: "F59E0B") : appTheme.textSecondary.opacity(0.5))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding(.top, 4)
+            }
+
+            if selection.wrappedValue == .yemekKarti {
+                HStack(spacing: 8) {
+                    Image(systemName: "creditcard.fill")
+                        .foregroundColor(accentColor)
+                    Text("Günlük yemek tutarı (₺)")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    TextField("0", text: gunlukTutarText)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 100)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                        .foregroundColor(appTheme.textPrimary)
+                }
+                .padding(.top, 4)
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+        .padding(.horizontal, 16)
+    }
+}
+
+// Yan haklar bilgisi (yemekten sonra, terfiden önce) — mevcut iş ve teklif için
+fileprivate struct KiyaslamaYanHaklarView: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let currentSalaryOnlyMonthlyNets: [Double]
+    let offerSalaryOnlyMonthlyNets: [Double]
+    let currentWithPrimMonthlyNets: [Double]
+    let offerWithPrimMonthlyNets: [Double]
+    let currentCompany: String
+    let offerCompany: String
+    let currentWeeklyCommuteHours: Double
+    let offerWeeklyCommuteHours: Double
+
+    @State private var mevcutYanHaklar = YanHaklarData()
+    @State private var teklifYanHaklar = YanHaklarData()
+    @State private var navigateToSoru3: Bool = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                Text("Yan haklar bilgisi")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+                    .padding(.top, 8)
+
+                Text("Mevcut iş ve teklifte hangi yan haklar var? Seçenekleri işaretleyin.")
+                    .font(AppTypography.subheadline)
+                    .foregroundColor(appTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                yanHaklarBlock(
+                    title: currentCompany.isEmpty ? "Mevcut İş Yeri" : currentCompany,
+                    data: $mevcutYanHaklar,
+                    accentColor: Color(hex: "3B82F6")
+                )
+
+                yanHaklarBlock(
+                    title: offerCompany.isEmpty ? "Teklif Edilen İş" : offerCompany,
+                    data: $teklifYanHaklar,
+                    accentColor: Color(hex: "8B5CF6")
+                )
+
+                Button {
+                    navigateToSoru3 = true
+                } label: {
+                    Text("Devam")
+                        .font(AppTypography.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(hex: "3B82F6"))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                Spacer(minLength: 40)
+            }
+            .padding()
+        }
+        .onTapGesture {
+            UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        }
+        .navigationDestination(isPresented: $navigateToSoru3) {
+            KiyaslamaSoru3View(
+                currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
+                offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
+                currentCompany: currentCompany,
+                offerCompany: offerCompany,
+                currentWeeklyCommuteHours: currentWeeklyCommuteHours,
+                offerWeeklyCommuteHours: offerWeeklyCommuteHours
+            )
+            .environmentObject(appTheme)
+        }
+        .navigationTitle("Yan Haklar")
+    }
+
+    @ViewBuilder
+    private func yanHaklarBlock(title: String, data: Binding<YanHaklarData>, accentColor: Color) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(title)
+                .font(AppTypography.subheadline)
+                .bold()
+                .foregroundColor(appTheme.textSecondary)
+
+            // Tamamlayıcı Sağlık sigortası
+            yanHakSatir(icon: "cross.case.fill", label: "Tamamlayıcı Sağlık Sigortası", isOn: yanHakBindingBool(data, keyPath: \.tamamlayiciSaglik), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.tamamlayiciSaglik))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.tamamlayiciSaglik {
+                aileyiKapsiyorSatir(data: yanHakBindingBool(data, keyPath: \.tamamlayiciSaglikAile), accentColor: accentColor)
+            }
+
+            // Özel sağlık sigortası
+            yanHakSatir(icon: "stethoscope", label: "Özel Sağlık Sigortası", isOn: yanHakBindingBool(data, keyPath: \.ozelSaglik), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.ozelSaglik))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.ozelSaglik {
+                aileyiKapsiyorSatir(data: yanHakBindingBool(data, keyPath: \.ozelSaglikAile), accentColor: accentColor)
+            }
+
+            // Gözlük, Diş vb.
+            yanHakSatir(icon: "eye.fill", label: "Gözlük, Diş vb. Teminatlar", isOn: yanHakBindingBool(data, keyPath: \.gozlukDis), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.gozlukDis))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+
+            // Şirket telefonu
+            yanHakSatir(icon: "iphone", label: "Şirket telefonu veriliyor mu?", isOn: yanHakBindingBool(data, keyPath: \.sirketTelefonu), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.sirketTelefonu))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.sirketTelefonu {
+                HStack(spacing: 8) {
+                    Image(systemName: "list.bullet.clipboard.fill")
+                        .foregroundColor(accentColor)
+                    Text("Fatura karşılanıyor mu?")
+                        .font(AppTypography.caption1)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack(spacing: 8) {
+                        Button {
+                            yanHakBindingBool(data, keyPath: \.sirketTelefonuFatura).wrappedValue = true
+                        } label: {
+                            Text("Evet")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(data.wrappedValue.sirketTelefonuFatura ? accentColor : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(data.wrappedValue.sirketTelefonuFatura ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        Button {
+                            yanHakBindingBool(data, keyPath: \.sirketTelefonuFatura).wrappedValue = false
+                        } label: {
+                            Text("Hayır")
+                                .font(AppTypography.caption1)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(!data.wrappedValue.sirketTelefonuFatura ? accentColor : appTheme.cardBackgroundSecondary)
+                                .foregroundColor(!data.wrappedValue.sirketTelefonuFatura ? .white : appTheme.textPrimary)
+                                .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.leading, 28)
+                .padding(.top, 2)
+            }
+
+            // İnternet, elektrik vb.
+            yanHakSatir(icon: "wifi", label: "İnternet, elektrik vb. destekler veriliyor mu?", isOn: yanHakBindingBool(data, keyPath: \.internetElektrik), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.internetElektrik))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.internetElektrik {
+                tutarSatir(aylikMi: yanHakBindingBool(data, keyPath: \.internetElektrikAylikMi), tutar: yanHakBindingString(data, keyPath: \.internetElektrikTutar), accentColor: accentColor)
+            }
+
+            // BES katkısı
+            yanHakSatir(icon: "chart.pie.fill", label: "BES katkısı var mı?", isOn: yanHakBindingBool(data, keyPath: \.bes), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.bes))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.bes {
+                aylikTutarSatir(label: "Aylık tutar (₺)", text: yanHakBindingString(data, keyPath: \.besAylikTutar), accentColor: accentColor)
+            }
+
+            // Yabancı dil tazminatı
+            yanHakSatir(icon: "globe", label: "Yabancı dil tazminatı var mı?", isOn: yanHakBindingBool(data, keyPath: \.yabanciDil), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.yabanciDil))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.yabanciDil {
+                aylikTutarSatir(label: "Aylık tutar (₺)", text: yanHakBindingString(data, keyPath: \.yabanciDilAylikTutar), accentColor: accentColor)
+            }
+
+            // Diğer
+            yanHakSatir(icon: "ellipsis.circle.fill", label: "Diğer", isOn: yanHakBindingBool(data, keyPath: \.diger), accentColor: accentColor) {
+                Toggle("", isOn: yanHakBindingBool(data, keyPath: \.diger))
+                    .labelsHidden()
+                    .tint(accentColor)
+            }
+            if data.wrappedValue.diger {
+                tutarSatir(aylikMi: yanHakBindingBool(data, keyPath: \.digerAylikMi), tutar: yanHakBindingString(data, keyPath: \.digerTutar), accentColor: accentColor)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+        .padding(.horizontal, 16)
+    }
+
+    private func yanHakSatir<C: View>(icon: String, label: String, isOn: Binding<Bool>, accentColor: Color, @ViewBuilder content: () -> C) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .foregroundColor(accentColor)
+                .frame(width: 22, alignment: .center)
+            Text(label)
+                .font(AppTypography.subheadline)
+                .foregroundColor(appTheme.textPrimary)
+            Spacer()
+            content()
+        }
+    }
+
+    private func aileyiKapsiyorSatir(data: Binding<Bool>, accentColor: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "person.2.fill")
+                .foregroundColor(accentColor)
+            Text("Aileyi de kapsıyor mu?")
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
+            HStack(spacing: 8) {
+                Button {
+                    data.wrappedValue = true
+                } label: {
+                    Text("Evet")
+                        .font(AppTypography.caption1)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(data.wrappedValue ? accentColor : appTheme.cardBackgroundSecondary)
+                        .foregroundColor(data.wrappedValue ? .white : appTheme.textPrimary)
+                        .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+                Button {
+                    data.wrappedValue = false
+                } label: {
+                    Text("Hayır")
+                        .font(AppTypography.caption1)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(!data.wrappedValue ? accentColor : appTheme.cardBackgroundSecondary)
+                        .foregroundColor(!data.wrappedValue ? .white : appTheme.textPrimary)
+                        .cornerRadius(8)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.leading, 32)
+        .padding(.top, 2)
+    }
+
+    private func tutarSatir(aylikMi: Binding<Bool>, tutar: Binding<String>, accentColor: Color) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "turkishlirasign")
+                    .foregroundColor(accentColor)
+                Picker("", selection: aylikMi) {
+                    Text("Aylık").tag(true)
+                    Text("Yıllık").tag(false)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 140)
+            }
+            TextField("Tutar (₺)", text: tutar)
+                .keyboardType(.decimalPad)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                .foregroundColor(appTheme.textPrimary)
+        }
+        .padding(.leading, 32)
+        .padding(.top, 2)
+    }
+
+    private func aylikTutarSatir(label: String, text: Binding<String>, accentColor: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: "turkishlirasign")
+                .foregroundColor(accentColor)
+            Text(label)
+                .font(AppTypography.caption1)
+                .foregroundColor(appTheme.textSecondary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 100)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(RoundedRectangle(cornerRadius: 8).fill(appTheme.cardBackgroundSecondary))
+                .foregroundColor(appTheme.textPrimary)
+        }
+        .padding(.leading, 32)
+        .padding(.top, 2)
+    }
+}
+
+// Third question: position type (terfi / aynı ünvan), then navigate to analysis
+fileprivate struct KiyaslamaSoru3View: View {
+    @EnvironmentObject var appTheme: AppTheme
+    let currentSalaryOnlyMonthlyNets: [Double]
+    let offerSalaryOnlyMonthlyNets: [Double]
+    let currentWithPrimMonthlyNets: [Double]
+    let offerWithPrimMonthlyNets: [Double]
+    let currentCompany: String
+    let offerCompany: String
+    let currentWeeklyCommuteHours: Double
+    let offerWeeklyCommuteHours: Double
+
+    @State private var terfiIleMi: Bool? = nil
+    @State private var mevcutUnvan: UnvanItem? = nil
+    @State private var teklifUnvan: UnvanItem? = nil
+    @State private var navigateToAnalysis: Bool = false
+
+    private var canShowAnalysis: Bool {
+        guard let terfi = terfiIleMi else { return false }
+        if !terfi { return true }
+        return mevcutUnvan != nil && teklifUnvan != nil
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("Teklifteki pozisyon nasıl?")
+                    .font(AppTypography.title2)
+                    .bold()
+                    .foregroundColor(appTheme.textPrimary)
+                    .padding(.top, 8)
+                    .multilineTextAlignment(.center)
+
+                Text("Terfi alarak mı yoksa aynı ünvanda mı geçiş yapıyorsunuz?")
+                    .font(AppTypography.subheadline)
+                    .foregroundColor(appTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                VStack(spacing: 12) {
+                    Button {
+                        terfiIleMi = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.up.forward")
+                                .font(.title2)
+                            Text("Terfi alarak")
+                                .font(AppTypography.headline)
+                            Spacer()
+                            if terfiIleMi == true {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(terfiIleMi == true ? Color(hex: "8B5CF6") : appTheme.listRowBackground)
+                        .foregroundColor(terfiIleMi == true ? .white : appTheme.textPrimary)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        terfiIleMi = false
+                        mevcutUnvan = nil
+                        teklifUnvan = nil
+                    } label: {
+                        HStack {
+                            Image(systemName: "equal.circle")
+                                .font(.title2)
+                            Text("Aynı ünvanda")
+                                .font(AppTypography.headline)
+                            Spacer()
+                            if terfiIleMi == false {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(terfiIleMi == false ? Color(hex: "8B5CF6") : appTheme.listRowBackground)
+                        .foregroundColor(terfiIleMi == false ? .white : appTheme.textPrimary)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+
+                if terfiIleMi == true {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Mevcut unvanınız nedir?")
+                            .font(AppTypography.subheadline)
+                            .bold()
+                            .foregroundColor(appTheme.textPrimary)
+                        Picker("Mevcut unvan", selection: Binding(
+                            get: { mevcutUnvan?.id ?? "" },
+                            set: { id in mevcutUnvan = unvanListesi.first { $0.id == id } }
+                        )) {
+                            Text("Seçiniz").tag("")
+                            ForEach(unvanListesi) { u in
+                                Text(u.ad).tag(u.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(appTheme.textPrimary)
+
+                        Text("Teklifteki unvan nedir?")
+                            .font(AppTypography.subheadline)
+                            .bold()
+                            .foregroundColor(appTheme.textPrimary)
+                            .padding(.top, 8)
+                        Picker("Teklif unvan", selection: Binding(
+                            get: { teklifUnvan?.id ?? "" },
+                            set: { id in teklifUnvan = unvanListesi.first { $0.id == id } }
+                        )) {
+                            Text("Seçiniz").tag("")
+                            ForEach(unvanListesi) { u in
+                                Text(u.ad).tag(u.id)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(appTheme.textPrimary)
+                    }
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    .padding(.horizontal, 16)
+                }
+
+                Button {
+                    navigateToAnalysis = true
+                } label: {
+                    Text("Analizi Gör")
+                        .font(AppTypography.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(canShowAnalysis ? Color(hex: "3B82F6") : appTheme.textSecondary.opacity(0.5))
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+                .disabled(!canShowAnalysis)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                Spacer(minLength: 40)
+            }
+            .padding()
+        }
+        .navigationDestination(isPresented: $navigateToAnalysis) {
+            KiyaslamaAnalysisView(
+                currentSalaryOnlyMonthlyNets: currentSalaryOnlyMonthlyNets,
+                offerSalaryOnlyMonthlyNets: offerSalaryOnlyMonthlyNets,
+                currentWithPrimMonthlyNets: currentWithPrimMonthlyNets,
+                offerWithPrimMonthlyNets: offerWithPrimMonthlyNets,
+                currentCompany: currentCompany,
+                offerCompany: offerCompany,
+                currentWeeklyCommuteHours: currentWeeklyCommuteHours,
+                offerWeeklyCommuteHours: offerWeeklyCommuteHours,
+                terfiMevcutRank: terfiIleMi == true ? mevcutUnvan?.rank : nil,
+                terfiMevcutKadem: terfiIleMi == true ? mevcutUnvan?.kademGrubu.displayName : nil,
+                terfiTeklifRank: terfiIleMi == true ? teklifUnvan?.rank : nil,
+                terfiTeklifKadem: terfiIleMi == true ? teklifUnvan?.kademGrubu.displayName : nil
+            )
+            .environmentObject(appTheme)
+        }
+        .navigationTitle("Pozisyon")
     }
 }
 
@@ -1096,6 +2114,10 @@ fileprivate struct KiyaslamaAnalysisView: View {
     let offerWeeklyCommuteHours: Double
     let currentCompany: String
     let offerCompany: String
+    let terfiMevcutRank: Int?
+    let terfiMevcutKadem: String?
+    let terfiTeklifRank: Int?
+    let terfiTeklifKadem: String?
     
     // Provide a custom initializer that excludes the EnvironmentObject (appTheme)
     init(currentSalaryOnlyMonthlyNets: [Double],
@@ -1105,7 +2127,11 @@ fileprivate struct KiyaslamaAnalysisView: View {
          currentCompany: String,
          offerCompany: String,
          currentWeeklyCommuteHours: Double,
-         offerWeeklyCommuteHours: Double) {
+         offerWeeklyCommuteHours: Double,
+         terfiMevcutRank: Int? = nil,
+         terfiMevcutKadem: String? = nil,
+         terfiTeklifRank: Int? = nil,
+         terfiTeklifKadem: String? = nil) {
         self.currentSalaryOnlyMonthlyNets = currentSalaryOnlyMonthlyNets
         self.offerSalaryOnlyMonthlyNets = offerSalaryOnlyMonthlyNets
         self.currentWithPrimMonthlyNets = currentWithPrimMonthlyNets
@@ -1114,6 +2140,10 @@ fileprivate struct KiyaslamaAnalysisView: View {
         self.offerCompany = offerCompany
         self.currentWeeklyCommuteHours = currentWeeklyCommuteHours
         self.offerWeeklyCommuteHours = offerWeeklyCommuteHours
+        self.terfiMevcutRank = terfiMevcutRank
+        self.terfiMevcutKadem = terfiMevcutKadem
+        self.terfiTeklifRank = terfiTeklifRank
+        self.terfiTeklifKadem = terfiTeklifKadem
     }
 
     private var currentSalaryOnlyAvg: Double {
@@ -1170,6 +2200,12 @@ fileprivate struct KiyaslamaAnalysisView: View {
         }
     }
 
+    private var terfiGosterilebilir: Bool {
+        guard let m = terfiMevcutRank, let t = terfiTeklifRank,
+              let _ = terfiMevcutKadem, let _ = terfiTeklifKadem else { return false }
+        return (1...5).contains(m) && (1...5).contains(t)
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 18) {
@@ -1177,6 +2213,57 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .font(AppTypography.title2)
                     .bold()
                     .foregroundColor(appTheme.textPrimary)
+
+                if terfiGosterilebilir, let mRank = terfiMevcutRank, let tRank = terfiTeklifRank,
+                   let mKadem = terfiMevcutKadem, let tKadem = terfiTeklifKadem {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Kıdem")
+                            .font(AppTypography.subheadline)
+                            .foregroundColor(appTheme.textSecondary)
+                        Text("\(mRank) → \(tRank) (\(mKadem) → \(tKadem))")
+                            .font(AppTypography.headline)
+                            .foregroundColor(appTheme.textPrimary)
+                        // 5 basamaklı görsel: mevcut ve teklif konumları
+                        HStack(spacing: 4) {
+                            ForEach(1...5, id: \.self) { step in
+                                ZStack(alignment: .bottom) {
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(step <= mRank ? Color(hex: "3B82F6").opacity(0.3) : appTheme.cardBackgroundSecondary)
+                                        .frame(height: 28)
+                                    if step == mRank {
+                                        Circle()
+                                            .fill(Color(hex: "3B82F6"))
+                                            .frame(width: 10, height: 10)
+                                            .offset(y: 4)
+                                    }
+                                    if step == tRank {
+                                        Circle()
+                                            .stroke(Color(hex: "8B5CF6"), lineWidth: 2)
+                                            .background(Circle().fill(Color(hex: "8B5CF6").opacity(0.4)))
+                                            .frame(width: 14, height: 14)
+                                            .offset(y: 4)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .frame(height: 36)
+                        HStack {
+                            HStack(spacing: 4) {
+                                Circle().fill(Color(hex: "3B82F6")).frame(width: 8, height: 8)
+                                Text("Mevcut").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                            }
+                            Spacer()
+                            HStack(spacing: 4) {
+                                Circle().stroke(Color(hex: "8B5CF6"), lineWidth: 1.5).frame(width: 10, height: 10)
+                                Text("Teklif").font(AppTypography.caption1).foregroundColor(appTheme.textSecondary)
+                            }
+                        }
+                    }
+                    .padding(14)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    .padding(.horizontal, 16)
+                }
 
                 // Salary-only chart
                 VStack(alignment: .leading, spacing: 8) {
@@ -1188,40 +2275,8 @@ fileprivate struct KiyaslamaAnalysisView: View {
                 }
                 .padding(.horizontal, 16)
                 
-                // Commute comparison
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Yol Süresi Karşılaştırması")
-                        .font(AppTypography.subheadline)
-                        .foregroundColor(appTheme.textSecondary)
-                    HStack(spacing: 12) {
-                        VStack(alignment: .leading) {
-                            Text(currentCompany.isEmpty ? "Mevcut (haftalık)" : "\(currentCompany) (haftalık)")
-                                .font(AppTypography.caption1)
-                                .foregroundColor(appTheme.textSecondary)
-                            let currentWeeklyCommuteStr = String(format: "%.1f", currentWeeklyCommuteHours)
-                            Text("\(currentWeeklyCommuteStr) saat")
-                                .font(AppTypography.amountMedium)
-                                .foregroundColor(Color(hex: "3B82F6"))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
-
-                        VStack(alignment: .leading) {
-                            Text(offerCompany.isEmpty ? "Teklif (haftalık)" : "\(offerCompany) (haftalık)")
-                                .font(AppTypography.caption1)
-                                .foregroundColor(appTheme.textSecondary)
-                            let offerWeeklyCommuteStr = String(format: "%.1f", offerWeeklyCommuteHours)
-                            Text("\(offerWeeklyCommuteStr) saat")
-                                .font(AppTypography.amountMedium)
-                                .foregroundColor(Color(hex: "8B5CF6"))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
-                    }
-                }
-                .padding(.horizontal, 16)
+                // Salary-only chart (kept above commute)
+                // (Commute comparison moved below salary blocks)
                 HStack(spacing: 12) {
                     VStack(alignment: .leading) {
                         Text(currentCompany.isEmpty ? "Mevcut (Net / ay)" : "\(currentCompany) (Net / ay)")
@@ -1287,6 +2342,41 @@ fileprivate struct KiyaslamaAnalysisView: View {
                     .padding(.horizontal, 16)
                 }
 
+                // Commute comparison (moved below salary and prim sections)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Yol Süresi Karşılaştırması")
+                        .font(AppTypography.subheadline)
+                        .foregroundColor(appTheme.textSecondary)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading) {
+                            Text(currentCompany.isEmpty ? "Mevcut (haftalık)" : "\(currentCompany) (haftalık)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            let currentWeeklyCommuteStr = String(format: "%.1f", currentWeeklyCommuteHours)
+                            Text("\(currentWeeklyCommuteStr) saat")
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "3B82F6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+
+                        VStack(alignment: .leading) {
+                            Text(offerCompany.isEmpty ? "Teklif (haftalık)" : "\(offerCompany) (haftalık)")
+                                .font(AppTypography.caption1)
+                                .foregroundColor(appTheme.textSecondary)
+                            let offerWeeklyCommuteStr = String(format: "%.1f", offerWeeklyCommuteHours)
+                            Text("\(offerWeeklyCommuteStr) saat")
+                                .font(AppTypography.amountMedium)
+                                .foregroundColor(Color(hex: "8B5CF6"))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(12)
+                        .background(RoundedRectangle(cornerRadius: 12).fill(appTheme.listRowBackground))
+                    }
+                }
+                .padding(.horizontal, 16)
+
                 // Scenario note (dynamic) — computed property used below
 
                 VStack(alignment: .leading, spacing: 8) {
@@ -1310,32 +2400,6 @@ fileprivate struct KiyaslamaAnalysisView: View {
     }
 }
 
-// MARK: - Color Extension
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3:
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6:
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8:
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (255, 0, 0, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}
 // MARK: - Dashboard (inline for project compilation)
 fileprivate struct DashboardView: View {
     @EnvironmentObject var dataManager: DataManager
@@ -1468,10 +2532,4 @@ fileprivate struct ToolRow: View {
         .background(Color(UIColor.secondarySystemGroupedBackground))
         .cornerRadius(12)
     }
-}
-
-#Preview {
-    ContentView()
-        .environmentObject(DataManager.shared)
-        .environmentObject(AppTheme())
 }

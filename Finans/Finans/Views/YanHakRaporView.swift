@@ -16,9 +16,9 @@ struct YanHakRaporView: View {
     @State private var aiYorumHata: String?
     @State private var aiYorumLoading = false
     
-    private let temaRengi = Color(hex: "F59E0B")
-    private let mevcutRengi = Color(hex: "3B82F6")
-    private let teklifRengi = Color(hex: "F59E0B")
+    private let temaRengi = Color("F59E0B")
+    private let mevcutRengi = Color("3B82F6")
+    private let teklifRengi = Color("F59E0B")
     
     private var yillikFark: Double {
         teklif.yillikNetMaas - mevcutIs.yillikNetMaas
@@ -123,7 +123,6 @@ struct YanHakRaporView: View {
         let mevcutAylik = mevcutIs.aylikNetMaaslar
         let teklifAylik = teklif.aylikNetMaaslar
         let maxVal = max(mevcutAylik.max() ?? 0, teklifAylik.max() ?? 0) * 1.1
-        let minVal: Double = 0
         let hasData = maxVal > 0
         
         return VStack(alignment: .leading, spacing: 16) {
@@ -679,7 +678,7 @@ struct YanHakRaporView: View {
     
     // MARK: - Commute & Life Quality Analysis Box
     private var commuteAnalysisBox: some View {
-        let (msg, impact, minutes) = YanHakVerisi.commuteComparison(mevcut: mevcutIs, teklif: teklif)
+        let (msg, impact, _) = YanHakVerisi.commuteComparison(mevcut: mevcutIs, teklif: teklif)
         let bg: Color = {
             switch impact {
             case .major: return Color.green.opacity(0.05)
@@ -704,9 +703,9 @@ struct YanHakRaporView: View {
             .padding(.horizontal, 16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
+            .background(
             RoundedRectangle(cornerRadius: 20)
-                .fill(appTheme.listRowBackground)
+                .fill(bg)
                 .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }

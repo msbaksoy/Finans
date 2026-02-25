@@ -13,7 +13,7 @@ struct MevduatFaiziView: View {
     @State private var isRefreshing = false
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
-    private let temaRengi = Color(hex: "06B6D4")
+    private let temaRengi = Color("06B6D4")
     
     private var anapara: Double { parseFormattedNumber(tutarText) ?? 0 }
     private var yillikFaiz: Double { parseFormattedNumber(yillikFaizText) ?? 0 }
@@ -193,8 +193,8 @@ struct MevduatFaiziView: View {
                 VStack(spacing: 16) {
                     HStack(spacing: 10) {
                         OzetKrediKart(title: "Faiz Geliri (Brüt)", value: b.faiz, color: temaRengi, icon: "percent")
-                        OzetKrediKart(title: "Faiz Geliri (Net)", value: netFaiz, color: Color(hex: "34D399"), icon: "checkmark.circle")
-                        OzetKrediKart(title: "Toplam Bakiye (Net)", value: netToplam, color: Color(hex: "34D399"), icon: "sum")
+                        OzetKrediKart(title: "Faiz Geliri (Net)", value: netFaiz, color: Color("34D399"), icon: "checkmark.circle")
+                        OzetKrediKart(title: "Toplam Bakiye (Net)", value: netToplam, color: Color("34D399"), icon: "sum")
                     }
                     MevduatBasitOzetView(toplam: b.toplam, faiz: b.faiz, anapara: anapara, stopajOran: stopajOran, stopajTutar: stopajTutar, netFaiz: netFaiz, netToplam: netToplam)
                     pdfButon
@@ -210,7 +210,7 @@ struct MevduatFaiziView: View {
                 VStack(spacing: 16) {
                     HStack(spacing: 10) {
                         OzetKrediKart(title: "Toplam Faiz (Brüt)", value: sonSatir.yeniBakiye - anapara, color: temaRengi, icon: "percent")
-                        OzetKrediKart(title: "Vade Sonu Bakiye", value: sonSatir.yeniBakiye, color: Color(hex: "34D399"), icon: "sum")
+                        OzetKrediKart(title: "Vade Sonu Bakiye", value: sonSatir.yeniBakiye, color: Color("34D399"), icon: "sum")
                     }
                     MevduatBirlesikTablo(tablo: birlesikFaizTablo, temaRengi: temaRengi)
                     pdfButon
@@ -275,7 +275,7 @@ struct MevduatBasitOzetView: View {
     var stopajTutar: Double? = nil
     var netFaiz: Double? = nil
     var netToplam: Double? = nil
-    var temaRengi: Color = Color(hex: "06B6D4")
+    var temaRengi: Color = Color("06B6D4")
     @EnvironmentObject var appTheme: AppTheme
     
     var body: some View {
@@ -287,9 +287,9 @@ struct MevduatBasitOzetView: View {
                 mevduatOzetSatir(label: "Anapara", value: anapara)
                 mevduatOzetSatir(label: "Faiz Geliri (Brüt)", value: faiz, renk: temaRengi)
                 if let st = stopajTutar, let nf = netFaiz, let nt = netToplam {
-                    mevduatOzetSatir(label: "Stopaj (\(Int((stopajOran ?? 0) * 100))%)", value: -st, renk: Color(hex: "F87171"))
-                    mevduatOzetSatir(label: "Faiz Geliri (Net)", value: nf, renk: Color(hex: "34D399"))
-                    mevduatOzetSatir(label: "Toplam Bakiye (Net)", value: nt, renk: Color(hex: "34D399"))
+                    mevduatOzetSatir(label: "Stopaj (\(Int((stopajOran ?? 0) * 100))%)", value: -st, renk: Color("F87171"))
+                    mevduatOzetSatir(label: "Faiz Geliri (Net)", value: nf, renk: Color("34D399"))
+                    mevduatOzetSatir(label: "Toplam Bakiye (Net)", value: nt, renk: Color("34D399"))
                 } else {
                     mevduatOzetSatir(label: "Toplam Bakiye", value: toplam, renk: Color(hex: "34D399"))
                 }
@@ -317,7 +317,7 @@ struct MevduatBasitOzetView: View {
 
 struct MevduatBirlesikTablo: View {
     let tablo: [MevduatAylikSatir]
-    var temaRengi: Color = Color(hex: "06B6D4")
+    var temaRengi: Color = Color("06B6D4")
     @EnvironmentObject var appTheme: AppTheme
     @State private var tumunuGoster = false
     private let ilkGosterim = 5

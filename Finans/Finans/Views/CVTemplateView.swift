@@ -268,12 +268,12 @@ struct CVTemplateView: View {
     var ozetDevamOverride: String? = nil
     
     // EE-CV1 referans renkleri
-    private let accentColor = Color(hex: "D97706")      // Amber 600 — başlıklar
-    private let accentLight = Color(hex: "F59E0B")      // Amber 500 — vurgular
+    private let accentColor = Color("D97706")      // Amber 600 — başlıklar
+    private let accentLight = Color("F59E0B")      // Amber 500 — vurgular
     private let leftBg = Color(red: 26/255, green: 53/255, blue: 101/255)  // Sol panel koyu mavi (R:26 G:53 B:101)
     private let rightBg = Color.white
-    private let textDark = Color(hex: "1F2937")         // Koyu metin (sağ panel)
-    private let textMuted = Color(hex: "6B7280")        // İkincil metin (sağ panel)
+    private let textDark = Color("1F2937")         // Koyu metin (sağ panel)
+    private let textMuted = Color("6B7280")        // İkincil metin (sağ panel)
     private let leftPanelText = Color.white             // Sol panel metin rengi
     private let leftPanelTextMuted = Color.white.opacity(0.85)  // Sol panel ikincil metin
     

@@ -12,7 +12,7 @@ struct TasitKredisiView: View {
     @State private var isRefreshing = false
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
-    private static let temaRengi = Color(hex: "F59E0B")
+    private static let temaRengi = Color("F59E0B")
     
     private var odemePlani: [KrediCalculator.OdemeSatiri] {
         guard let anapara = parseFormattedNumber(anaparaText),
@@ -139,8 +139,8 @@ struct TasitKredisiView: View {
     private var ozetKartlar: some View {
         HStack(spacing: 10) {
             OzetKrediKart(title: "Aylık Taksit", value: odemePlani.first?.taksitTutari ?? 0, color: Self.temaRengi, icon: "calendar")
-            OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color(hex: "F59E0B"), icon: "percent")
-            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color(hex: "34D399"), icon: "sum")
+            OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color("F59E0B"), icon: "percent")
+            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
         }
     }
     

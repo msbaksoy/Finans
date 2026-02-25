@@ -83,7 +83,7 @@ struct TuketiciKredisiView: View {
             } label: {
                 Label("PDF", systemImage: "square.and.arrow.up")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(Color(hex: "8B5CF6"))
+                    .foregroundColor(Color("8B5CF6"))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(appTheme.backgroundSecondary.opacity(0.95))
@@ -129,16 +129,16 @@ struct TuketiciKredisiView: View {
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(appTheme.listRowBackground)
-                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(hex: "8B5CF6").opacity(0.25), lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color("8B5CF6").opacity(0.25), lineWidth: 1))
                 .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
     }
     
     private var ozetKartlar: some View {
         HStack(spacing: 10) {
-            OzetKrediKart(title: "Aylık Taksit", value: odemePlani.first?.taksitTutari ?? 0, color: Color(hex: "8B5CF6"), icon: "calendar")
-            OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color(hex: "F59E0B"), icon: "percent")
-            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color(hex: "34D399"), icon: "sum")
+            OzetKrediKart(title: "Aylık Taksit", value: odemePlani.first?.taksitTutari ?? 0, color: Color("8B5CF6"), icon: "calendar")
+            OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color("F59E0B"), icon: "percent")
+            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
         }
     }
     
@@ -157,8 +157,8 @@ struct TuketiciKredisiView: View {
                 .font(.subheadline.weight(.semibold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
-                .background(Color(hex: "8B5CF6").opacity(0.2))
-                .foregroundColor(Color(hex: "8B5CF6"))
+                .background(Color("8B5CF6").opacity(0.2))
+                .foregroundColor(Color("8B5CF6"))
                 .cornerRadius(14)
         }
     }
@@ -324,7 +324,7 @@ struct OzetKrediKart: View {
 
 struct TuketiciKredisiTablo: View {
     let odemePlani: [KrediCalculator.OdemeSatiri]
-    var temaRengi: Color = Color(hex: "8B5CF6")
+    var temaRengi: Color = Color("8B5CF6")
     @EnvironmentObject var appTheme: AppTheme
     @State private var tumunuGoster = false
     private let ilkGosterim = 5
@@ -410,7 +410,7 @@ struct TaksitSatirView: View {
                 .frame(width: 92, alignment: .trailing)
                 .font(.subheadline)
                 .monospacedDigit()
-                .foregroundColor(Color(hex: "34D399"))
+                .foregroundColor(Color("34D399"))
             Text(formatCurrency(satir.faiz))
                 .frame(width: 82, alignment: .trailing)
                 .font(.subheadline)
