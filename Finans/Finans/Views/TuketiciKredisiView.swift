@@ -296,6 +296,20 @@ struct OzetKrediKart: View {
     }
 }
 
+struct TabloBaslik: View {
+    let text: String
+    let width: CGFloat
+    @EnvironmentObject var appTheme: AppTheme
+
+    var body: some View {
+        Text(text)
+            .frame(width: width, alignment: text == "No" ? .center : .trailing)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(appTheme.textPrimary)
+            .lineLimit(1)
+    }
+}
+
 #Preview {
     NavigationStack {
         TuketiciKredisiView()
