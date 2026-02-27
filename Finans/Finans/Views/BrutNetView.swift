@@ -1,25 +1,20 @@
 import SwiftUI
 import UIKit
 
-enum CalismaHayatiSecim: String, CaseIterable {
-    case cvOlusturma = "CV Oluşturma"
-    case maasHesaplama = "Maaş Hesaplama"
-    case isTeklifiKiyaslama = "İş Teklifi Kıyaslama"
-    case resmiTatiller = "Resmi Tatiller"
-}
-
 struct BrutNetView: View {
     @EnvironmentObject var dataManager: DataManager
     @EnvironmentObject var appTheme: AppTheme
-    @EnvironmentObject var yanHakKayitStore: YanHakKayitStore
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    @State private var calismaHayatiSecim: CalismaHayatiSecim = .maasHesaplama
     @State private var showMaasGirisSheet = false
     @State private var showPdfShare = false
-    @State private var showResmiTatillerFull = false
     @State private var pdfData: Data?
     @State private var yil: Int = Calendar.current.component(.year, from: Date())
     @State private var detayTablosuAcik = false
+    /// Inline maaş girişi (ekran açılınca doğrudan tablo)
+    @State private var brutlar: [String] = Array(repeating: "", count: 12)
+    @State private var primler: [String] = Array(repeating: "", count: 12)
+    @State private var triggerBrutFocus: [Bool] = Array(repeating: false, count: 12)
+    @State private var triggerPrimFocus: [Bool] = Array(repeating: false, count: 12)
     
     private var yilMaaslar: [AylikMaas] {
         dataManager.aylikMaaslar.filter { $0.yil == yil }.sorted { $0.ay < $1.ay }
@@ -76,57 +71,34 @@ struct BrutNetView: View {
                     .padding(16)
                 }
             } else {
-                // Dikey mod: filtre seçeği + seçime göre içerik
+                // Dikey mod: doğrudan maaş giriş tablosu, altında özet
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Üst filtre seçeği (yatay kaydırılabilir, metin tamamen görünür)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(CalismaHayatiSecim.allCases, id: \.self) { secim in
-                                    Button {
-                                        // Open full-screen calendar only for resmiTatiller; for others, switch selection
-                                        if secim == .resmiTatiller {
-                                            showResmiTatillerFull = true
-                                        } else {
-                                            withAnimation { calismaHayatiSecim = secim }
-                                        }
-                                    } label: {
-                                        Text(secim.rawValue)
-                                            .font(.subheadline.weight(.semibold))
-                                            .padding(.vertical, 8)
-                                            .padding(.horizontal, 14)
-                                            .background(calismaHayatiSecim == secim ? Color(hex: "F59E0B") : appTheme.listRowBackground)
-                                            .foregroundColor(calismaHayatiSecim == secim ? .white : appTheme.textPrimary)
-                                            .cornerRadius(12)
-                                    }
-                                    .accessibilityLabel(secim.rawValue)
-                                }
-                            }
-                            .padding(.horizontal)
+                        inlineMaasGirisTablosu
+                        Button {
+                            maasGirisKaydet()
+                        } label: {
+                            Label("Hesapla", systemImage: "function")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
                         }
-                        
-                        switch calismaHayatiSecim {
-                        case .cvOlusturma:
-                            cvOlusturKarti
-                        case .maasHesaplama:
-                            maasGirisKarti
-                            if !yilMaaslar.isEmpty {
-                                ozetKartlari
-                                aylikNetListesi
-                                detayTablosuBolumu
-                                pdfExportButonu
-                            } else {
-                                bosDurumView
-                            }
-                        case .isTeklifiKiyaslama:
-                            yanHakAnaliziKarti
-                            kayitliYanHakListesi
-                        case .resmiTatiller:
-                            YearCalendarForBrutNet()
-                                .environmentObject(appTheme)
+                        .buttonStyle(PrimaryButtonStyle())
+                        .accessibilityLabel("Brüt ve prim girişini hesapla")
+
+                        if !yilMaaslar.isEmpty {
+                            ozetKartlari
+                            aylikNetListesi
+                            detayTablosuBolumu
+                            pdfExportButonu
+                        } else {
+                            bosDurumView
                         }
                     }
                     .padding(AppSpacing.xxl)
+                }
+                .onTapGesture {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 }
             }
         }
@@ -147,16 +119,15 @@ struct BrutNetView: View {
                 }
             }
         }
-        .sheet(isPresented: $showResmiTatillerFull) {
-            YearCalendarForBrutNet()
-                .environmentObject(appTheme)
-        }
         .sheet(isPresented: $showMaasGirisSheet) {
             MaasGirisSheetView(yil: yil, mevcutMaaslar: yilMaaslar) {
                 showMaasGirisSheet = false
             }
             .environmentObject(dataManager)
             .environmentObject(appTheme)
+        }
+        .onAppear {
+            yilMaaslariFormaYukle()
         }
         .onDisappear {
             dataManager.brutNetVerileriniTemizle()
@@ -168,382 +139,137 @@ struct BrutNetView: View {
         }
  
     }
-    
-    private var cvOlusturKarti: some View {
-        NavigationLink(destination: CVOlusturView().environmentObject(appTheme)) {
-            HStack(spacing: 20) {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: "F59E0B").opacity(0.2))
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Image(systemName: "doc.text.fill")
-                            .font(AppTypography.title2)
-                            .foregroundColor(Color(hex: "F59E0B"))
-                    )
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("CV Oluştur")
-                        .font(AppTypography.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                    Text("cv.docx formatında özgeçmiş hazırla")
-                        .font(.subheadline)
-                        .foregroundColor(appTheme.textSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(AppTypography.title1)
-                    .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
-            }
-            .padding(AppSpacing.xxl)
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(appTheme.listRowBackground)
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
-                }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
-            )
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-    
-    private var maasGirisKarti: some View {
-        Button {
-            showMaasGirisSheet = true
-        } label: {
-            HStack(spacing: 20) {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: "F59E0B").opacity(0.2))
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Image(systemName: "square.and.pencil")
-                            .font(AppTypography.title2)
-                            .foregroundColor(Color(hex: "F59E0B"))
-                    )
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Brütten Nete ve Prim Hesaplama")
-                        .font(AppTypography.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                    Text("Brüt maaş ve prim girişi (aylık bazda)")
-                        .font(.subheadline)
-                        .foregroundColor(appTheme.textSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(AppTypography.title1)
-                    .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
-            }
-            .padding(AppSpacing.xxl)
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(appTheme.listRowBackground)
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
-                }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
-            )
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-    
-    private var yanHakAnaliziKarti: some View {
-        NavigationLink(destination: YanHakAnaliziView().environmentObject(appTheme).environmentObject(yanHakKayitStore)) {
-            HStack(spacing: 20) {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: "F59E0B").opacity(0.2))
-                    .frame(width: 56, height: 56)
-                    .overlay(
-                        Image(systemName: "chart.bar.doc.horizontal")
-                            .font(AppTypography.title2)
-                            .foregroundColor(Color(hex: "F59E0B"))
-                    )
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Yan Hak Analizi")
-                        .font(AppTypography.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                    Text("Mevcut iş vs teklif karşılaştırması")
-                        .font(.subheadline)
-                        .foregroundColor(appTheme.textSecondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right.circle.fill")
-                    .font(AppTypography.title1)
-                    .foregroundColor(Color(hex: "F59E0B").opacity(0.8))
-            }
-            .padding(AppSpacing.xxl)
-            .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(appTheme.listRowBackground)
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color(hex: "F59E0B").opacity(0.3), lineWidth: 1)
-                }
-                .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
-            )
-        }
-        .buttonStyle(ScaleButtonStyle())
-    }
-    
-    private var kayitliYanHakListesi: some View {
-        Group {
-            if !yanHakKayitStore.kayitlar.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Kayıtlı Analizler")
-                        .font(.headline)
-                        .foregroundColor(appTheme.textPrimary)
-                        .padding(.horizontal, 4)
-                    ForEach(yanHakKayitStore.kayitlar) { kayit in
-                        NavigationLink(destination: YanHakAnaliziView(duzenlenenKayit: kayit).environmentObject(appTheme).environmentObject(yanHakKayitStore)) {
-                            HStack(spacing: 16) {
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(hex: "F59E0B").opacity(0.2))
-                                    .frame(width: 44, height: 44)
-                                    .overlay(
-                                        Image(systemName: "doc.text.magnifyingglass")
-                                            .font(AppTypography.headline)
-                                            .foregroundColor(Color(hex: "F59E0B"))
-                                    )
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(kayit.name)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundColor(appTheme.textPrimary)
-                                    Text(tarihFormatla(kayit.updatedAt))
-                                        .font(.caption)
-                                        .foregroundColor(appTheme.textSecondary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundColor(appTheme.textSecondary)
-                            }
-                            .padding(16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(appTheme.listRowBackground)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Color(hex: "F59E0B").opacity(0.2), lineWidth: 1)
-                                    )
-                            )
-                        }
-                        .buttonStyle(ScaleButtonStyle())
-                    }
-                }
-            }
-        }
-    }
-    
-    // Local compact calendar for BrutNetView
-    fileprivate struct YearCalendarForBrutNet: View {
-        @EnvironmentObject var appTheme: AppTheme
-        @State private var year: Int = 2026
-        private let years = [2026, 2027, 2028]
-        private let calendar = Calendar.current
-        @State private var selectedHolidayText: String? = nil
-        @State private var showHolidayAlert = false
 
-        private func nationalHolidays(year: Int) -> [DateComponents] {
-            return [
-                DateComponents(year: year, month: 1, day: 1),
-                DateComponents(year: year, month: 4, day: 23),
-                DateComponents(year: year, month: 5, day: 1),
-                DateComponents(year: year, month: 5, day: 19),
-                DateComponents(year: year, month: 7, day: 15),
-                DateComponents(year: year, month: 8, day: 30),
-                DateComponents(year: year, month: 10, day: 29)
-            ]
-        }
-
-        private func religiousRanges(year: Int) -> [ClosedRange<Date>] {
-            func r(_ y: Int, _ m1: Int, _ d1: Int, _ m2: Int, _ d2: Int) -> ClosedRange<Date>? {
-                if let s = calendar.date(from: DateComponents(year: y, month: m1, day: d1)),
-                   let e = calendar.date(from: DateComponents(year: y, month: m2, day: d2)) {
-                    return s...e
-                }
-                return nil
-            }
-            switch year {
-            case 2026:
-                return [r(2026,3,20,3,22), r(2026,5,27,5,30)].compactMap { $0 }
-            case 2027:
-                return [r(2027,3,9,3,11), r(2027,5,16,5,19)].compactMap { $0 }
-            case 2028:
-                return [r(2028,2,27,2,29), r(2028,5,5,5,8)].compactMap { $0 }
-            default:
-                return []
-            }
-        }
-
-        private func isHoliday(_ date: Date) -> Bool {
-            let comps = calendar.dateComponents([.year, .month, .day], from: date)
-            for nh in nationalHolidays(year: year) {
-                if nh.year == comps.year && nh.month == comps.month && nh.day == comps.day { return true }
-            }
-            for range in religiousRanges(year: year) {
-                if range.contains(date) { return true }
-            }
-            return false
-        }
-
-        private func holidayName(for date: Date) -> String? {
-            let comps = calendar.dateComponents([.year, .month, .day], from: date)
-            // national fixed
-            let fixed = nationalHolidays(year: year)
-            for nh in fixed {
-                if nh.year == comps.year && nh.month == comps.month && nh.day == comps.day {
-                    switch (nh.month, nh.day) {
-                    case (1,1): return "Yeni Yıl"
-                    case (4,23): return "Ulusal Egemenlik ve Çocuk Bayramı"
-                    case (5,1): return "Emek ve Dayanışma Günü"
-                    case (5,19): return "Atatürk'ü Anma, Gençlik ve Spor Bayramı"
-                    case (7,15): return "Demokrasi ve Millî Birlik Günü"
-                    case (8,30): return "Zafer Bayramı"
-                    case (10,29): return "Cumhuriyet Bayramı"
-                    default: return "Resmî Tatil"
-                    }
-                }
-            }
-            for range in religiousRanges(year: year) {
-                if range.contains(date) {
-                    let dayIndex = calendar.dateComponents([.day], from: range.lowerBound, to: date).day ?? 0
-                    let startComps = calendar.dateComponents([.month], from: range.lowerBound)
-                    if startComps.month == 3 || startComps.month == 2 {
-                        return "Ramazan Bayramı \(dayIndex + 1). günü"
-                    } else {
-                        return "Kurban Bayramı \(dayIndex + 1). günü"
-                    }
-                }
-            }
-            return nil
-        }
-
-        private func isWeekend(_ date: Date) -> Bool {
-            let wd = calendar.component(.weekday, from: date)
-            return wd == 1 || wd == 7
-        }
-
-        var body: some View {
-            ZStack {
-                (appTheme.isLight ? appTheme.background : Color.black).ignoresSafeArea()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Text(String(year))
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.red)
-                            Spacer()
-                            Picker("", selection: $year) {
-                                ForEach(years, id: \.self) { y in Text(String(y)).tag(y) }
-                            }
-                            .pickerStyle(.menu)
-                        }
-                        .padding(.horizontal, 18)
-                        .padding(.top, 8)
-
-                        let cols = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
-                        LazyVGrid(columns: cols, spacing: 12) {
-                        ForEach(1...12, id: \.self) { month in
-                                MonthCompactBrut(
-                                    year: year,
-                                    month: month,
-                                    isHoliday: isHoliday(_:),
-                                    isWeekend: isWeekend(_:),
-                                    holidayNameProvider: { d in holidayName(for: d) },
-                                    onSelectHoliday: { text in
-                                        selectedHolidayText = text
-                                        showHolidayAlert = true
-                                    }
-                                )
-                                .environmentObject(appTheme)
-                            }
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 20)
-                    }
-                }
-            }
+    /// Mevcut yıl verisini forma doldurur
+    private func yilMaaslariFormaYukle() {
+        for (_, maas) in yilMaaslar.enumerated() {
+            let ay = maas.ay
+            guard ay >= 1, ay <= 12 else { continue }
+            let i = ay - 1
+            if maas.brutTutar > 0 { brutlar[i] = "\(Int(maas.brutTutar))" }
+            if maas.primTutar > 0 { primler[i] = "\(Int(maas.primTutar))" }
         }
     }
 
-    fileprivate struct MonthCompactBrut: View {
-        @EnvironmentObject var appTheme: AppTheme
-        let year: Int
-        let month: Int
-        let isHoliday: (Date) -> Bool
-        let isWeekend: (Date) -> Bool
-        let holidayNameProvider: (Date) -> String?
-        let onSelectHoliday: (String) -> Void
-        private let cal = Calendar.current
+    /// Inline tablo: brüt/prim binding (ay N güncellenince N ve sonrası aynı değeri alır)
+    private func bindingBrutForAy(_ ay: Int) -> Binding<String> {
+        let idx = ay - 1
+        return Binding(
+            get: { brutlar[idx] },
+            set: { newValue in
+                for i in idx..<12 { brutlar[i] = newValue }
+            }
+        )
+    }
 
-        private var monthName: String {
-            let df = DateFormatter()
-            df.locale = Locale(identifier: "tr_TR")
-            return df.shortMonthSymbols[month - 1]
+    private func bindingPrimForAy(_ ay: Int) -> Binding<String> {
+        Binding(
+            get: { primler[ay - 1] },
+            set: { primler[ay - 1] = $0 }
+        )
+    }
+
+    /// Inline girişten kaydet (sheet’teki kaydetVeKapat ile aynı mantık)
+    private func maasGirisKaydet() {
+        let brutListesi: [Double] = (0..<12).map { parseFormattedNumber(brutlar[$0]) ?? 0 }
+        let primListesi: [Double] = (0..<12).map { parseFormattedNumber(primler[$0]) ?? 0 }
+        guard brutListesi.contains(where: { $0 > 0 }) else { return }
+        let sonuclar = BrutNetCalculator.hesaplaYillik(brutlar: brutListesi, primler: primListesi)
+        for (index, sonuc) in sonuclar.enumerated() {
+            let ay = index + 1
+            let brut = brutListesi[index]
+            let prim = primListesi[index]
+            let kesintiCodable = sonuc.kesintiler.map { KesintiKalemCodable(ad: $0.ad, tutar: $0.tutar, oran: $0.oran) }
+            let maas = AylikMaas(ay: ay, brutTutar: brut, primTutar: prim, netTutar: sonuc.net, kesintiler: kesintiCodable, yil: yil)
+            dataManager.setAylikMaas(maas)
         }
+    }
 
-        var body: some View {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(monthName)
+    private var inlineMaasGirisTablosu: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("Ay")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
-                CompactDaysBrut(
-                    year: year,
-                    month: month,
-                    isHoliday: isHoliday,
-                    isWeekend: isWeekend,
-                    holidayNameProvider: holidayNameProvider,
-                    onSelectHoliday: onSelectHoliday
-                )
+                    .foregroundColor(appTheme.textSecondary)
+                    .frame(width: 70, alignment: .leading)
+                Text("Brüt (₺)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(appTheme.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Prim (₺)")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(appTheme.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
-        }
-    }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
 
-    fileprivate struct CompactDaysBrut: View {
-        let year: Int
-        let month: Int
-        let isHoliday: (Date) -> Bool
-        let isWeekend: (Date) -> Bool
-        let holidayNameProvider: (Date) -> String?
-        let onSelectHoliday: (String) -> Void
-        @EnvironmentObject var appTheme: AppTheme
-        private let cal = Calendar.current
-        private func monthNameFor(month: Int) -> String {
-            let df = DateFormatter()
-            df.locale = Locale(identifier: "tr_TR")
-            return df.monthSymbols[month - 1]
-        }
-        var body: some View {
-            let first = cal.date(from: DateComponents(year: year, month: month, day: 1))!
-            let range = cal.range(of: .day, in: .month, for: first)!
-            let weekdayOffset = (cal.component(.weekday, from: first) + 6) % 7
+            ForEach(1...12, id: \.self) { ay in
+                HStack(spacing: 12) {
+                    Text(ayIsimleri[ay - 1])
+                        .font(.subheadline.weight(.medium))
+                        .foregroundColor(appTheme.textPrimary)
+                        .frame(width: 70, alignment: .leading)
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 6) {
-                ForEach(0..<weekdayOffset, id: \.self) { _ in
-                    Text(" ").font(.system(size: 9)).frame(minHeight: 10)
-                }
-            ForEach(range, id: \.self) { day in
-                let date = cal.date(from: DateComponents(year: year, month: month, day: day))!
-                let holiday = isHoliday(date)
-                let weekend = isWeekend(date)
-                Text("\(day)")
-                    .font(.system(size: 13, weight: weekend ? .bold : .regular))
-                    .foregroundColor(holiday ? Color.blue : appTheme.textPrimary)
-                    .padding(.vertical, 6)
-                    .frame(minWidth: 28, minHeight: 28)
+                    FormattedNumberField(
+                        text: bindingBrutForAy(ay),
+                        placeholder: "0",
+                        allowDecimals: false,
+                        focusTrigger: Binding(
+                            get: { triggerBrutFocus.indices.contains(ay - 1) ? triggerBrutFocus[ay - 1] : false },
+                            set: { if triggerBrutFocus.indices.contains(ay - 1) { triggerBrutFocus[ay - 1] = $0 } }
+                        ),
+                        isLightMode: appTheme.isLight
+                    )
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(appTheme.cardBackgroundSecondary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(appTheme.cardStroke.opacity(0.5), lineWidth: 1)
+                            )
+                    )
                     .contentShape(Rectangle())
-                    .onTapGesture {
-                        if holiday, let name = holidayNameProvider(date) {
-                            onSelectHoliday("\(day) \(monthNameFor(month: month)) \(year) — \(name)")
-                        }
-                    }
-            }
+                    .onTapGesture { triggerBrutFocus[ay - 1] = true }
+
+                    FormattedNumberField(
+                        text: bindingPrimForAy(ay),
+                        placeholder: "0",
+                        allowDecimals: false,
+                        focusTrigger: Binding(
+                            get: { triggerPrimFocus.indices.contains(ay - 1) ? triggerPrimFocus[ay - 1] : false },
+                            set: { if triggerPrimFocus.indices.contains(ay - 1) { triggerPrimFocus[ay - 1] = $0 } }
+                        ),
+                        isLightMode: appTheme.isLight
+                    )
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(appTheme.cardBackgroundSecondary)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(appTheme.cardStroke.opacity(0.5), lineWidth: 1)
+                            )
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture { triggerPrimFocus[ay - 1] = true }
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 4)
             }
         }
+        .padding(AppSpacing.lg)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(appTheme.listRowBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color(hex: "F59E0B").opacity(0.25), lineWidth: 1)
+                )
+        )
     }
-    
+
     private func tarihFormatla(_ date: Date) -> String {
         let f = DateFormatter()
         f.dateStyle = .short

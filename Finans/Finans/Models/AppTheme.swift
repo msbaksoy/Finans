@@ -1,6 +1,6 @@
 import SwiftUI
 
-// HEX destekli Color initializer (bu hedefin içinde garanti olsun diye burada tanımlıyoruz)
+// HEX destekli Color initializer — proje genelinde kullanılıyor.
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -123,7 +123,22 @@ enum AppSpacing {
     static let xxl: CGFloat = 24
 }
 
-// MARK: - Primary / Secondary Button Styles and Helpers (included in target)
+// MARK: - Finans Formatlayıcıları
+
+enum FinanceFormatter {
+    static func currencyString(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.numberStyle = .currency
+        formatter.currencySymbol = "₺"
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: value)) ?? "₺\(Int(value))"
+    }
+}
+
+// MARK: - Buton Stilleri
+
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -161,42 +176,5 @@ struct SecondaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.995 : 1)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
             .contentShape(Rectangle())
-    }
-}
-
-extension View {
-    /// Minimum erişilebilir dokunma alanı sağlar (44pt)
-    func accessibleHitArea(minSize: CGFloat = 44) -> some View {
-        padding(.vertical,  max(0, (minSize - 16) / 2))
-            .contentShape(Rectangle())
-    }
-}
-
-/// Merkezi formatterlar — tek kaynak olmalı
-enum FinanceFormatter {
-    static let currency: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .currency
-        f.locale = Locale(identifier: "tr_TR")
-        f.maximumFractionDigits = 0
-        f.minimumFractionDigits = 0
-        return f
-    }()
-
-    static let decimal: NumberFormatter = {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.minimumFractionDigits = 0
-        f.maximumFractionDigits = 2
-        f.locale = Locale(identifier: "tr_TR")
-        return f
-    }()
-
-    static func currencyString(_ value: Double) -> String {
-        currency.string(from: NSNumber(value: value)) ?? "₺0"
-    }
-
-    static func decimalString(_ value: Double) -> String {
-        decimal.string(from: NSNumber(value: value)) ?? "\(value)"
     }
 }

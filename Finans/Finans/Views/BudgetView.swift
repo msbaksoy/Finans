@@ -71,21 +71,27 @@ struct BudgetView: View {
         .toolbarBackground(appTheme.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .sheet(isPresented: $showAddIncome) {
-            AddIncomeView().environmentObject(appTheme)
+            AddIncomeView()
+                .environmentObject(dataManager)
+                .environmentObject(appTheme)
         }
         .sheet(isPresented: $showAddExpense) {
-            AddExpenseView().environmentObject(appTheme)
+            AddExpenseView()
+                .environmentObject(dataManager)
+                .environmentObject(appTheme)
         }
         .sheet(item: $editingIncome) { income in
             EditIncomeView(income: income) {
                 editingIncome = nil
             }
+            .environmentObject(dataManager)
             .environmentObject(appTheme)
         }
         .sheet(item: $editingExpense) { expense in
             EditExpenseView(expense: expense) {
                 editingExpense = nil
             }
+            .environmentObject(dataManager)
             .environmentObject(appTheme)
         }
         .sheet(isPresented: $showPdfShare) {

@@ -72,16 +72,20 @@ struct KrediHesaplamaView: View {
     
     @ViewBuilder
     private func krediDetayView(_ tur: KrediTuru) -> some View {
-        switch tur {
-        case .tuketici:
-            TuketiciKredisiView()
-        case .konut:
-            KonutKredisiView()
-        case .tasit:
-            TasitKredisiView()
-        case .mevduat:
-            MevduatFaiziView()
+        Group {
+            switch tur {
+            case .tuketici:
+                TuketiciKredisiView()
+            case .konut:
+                KonutKredisiView()
+            case .tasit:
+                TasitKredisiView()
+            case .mevduat:
+                MevduatFaiziView()
+                    .environmentObject(appTheme)
+            }
         }
+        .environmentObject(appTheme)
     }
     
     private func krediTuruRengi(_ tur: KrediTuru) -> Color {

@@ -34,17 +34,19 @@
 		A1000029 /* MevduatFaiziView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000029 /* MevduatFaiziView.swift */; };
 		A1000030 /* KrediConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* KrediConfigService.swift */; };
 		A1000031 /* MevduatConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000031 /* MevduatConfigService.swift */; };
-		A1000032 /* YanHakModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000032 /* YanHakModels.swift */; };
-		A1000033 /* YanHakAnaliziView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000033 /* YanHakAnaliziView.swift */; };
 		A1000034 /* GeminiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000034 /* GeminiService.swift */; };
 		A1000035 /* DeepSeekService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000035 /* DeepSeekService.swift */; };
 		A1000036 /* GroqService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000036 /* GroqService.swift */; };
-		A1000037 /* YanHakRaporView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000037 /* YanHakRaporView.swift */; };
-		A1000038 /* YanHakKayitStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000038 /* YanHakKayitStore.swift */; };
 		A1000039 /* CVModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000039 /* CVModel.swift */; };
 		A1000040 /* CVOlusturView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000040 /* CVOlusturView.swift */; };
 		A1000041 /* CVTemplateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000041 /* CVTemplateView.swift */; };
 		A1000042 /* JobOfferDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000042 /* JobOfferDashboardView.swift */; };
+		B1000101 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000101 /* DashboardView.swift */; };
+		B1000102 /* KiyaslamaFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000102 /* KiyaslamaFlow.swift */; };
+		B1000103 /* KiyaslamaComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000103 /* KiyaslamaComponents.swift */; };
+		B1000104 /* YearCalendarCompact.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000104 /* YearCalendarCompact.swift */; };
+		B1000105 /* SalaryVersusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000105 /* SalaryVersusCard.swift */; };
+		B1000106 /* KiyaslamaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000106 /* KiyaslamaModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -76,17 +78,19 @@
 		A2000029 /* MevduatFaiziView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MevduatFaiziView.swift; sourceTree = "<group>"; };
 		A2000030 /* KrediConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediConfigService.swift; sourceTree = "<group>"; };
 		A2000031 /* MevduatConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MevduatConfigService.swift; sourceTree = "<group>"; };
-		A2000032 /* YanHakModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakModels.swift; sourceTree = "<group>"; };
-		A2000033 /* YanHakAnaliziView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakAnaliziView.swift; sourceTree = "<group>"; };
 		A2000034 /* GeminiService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiService.swift; sourceTree = "<group>"; };
 		A2000035 /* DeepSeekService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepSeekService.swift; sourceTree = "<group>"; };
 		A2000036 /* GroqService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroqService.swift; sourceTree = "<group>"; };
-		A2000037 /* YanHakRaporView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakRaporView.swift; sourceTree = "<group>"; };
-		A2000038 /* YanHakKayitStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YanHakKayitStore.swift; sourceTree = "<group>"; };
 		A2000039 /* CVModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVModel.swift; sourceTree = "<group>"; };
 		A2000040 /* CVOlusturView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVOlusturView.swift; sourceTree = "<group>"; };
 		A2000041 /* CVTemplateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVTemplateView.swift; sourceTree = "<group>"; };
 		A2000042 /* JobOfferDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobOfferDashboardView.swift; sourceTree = "<group>"; };
+		B2000101 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		B2000102 /* KiyaslamaFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaFlow.swift; sourceTree = "<group>"; };
+		B2000103 /* KiyaslamaComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaComponents.swift; sourceTree = "<group>"; };
+		B2000104 /* YearCalendarCompact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearCalendarCompact.swift; sourceTree = "<group>"; };
+		B2000105 /* SalaryVersusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SalaryVersusCard.swift; sourceTree = "<group>"; };
+		B2000106 /* KiyaslamaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaModels.swift; sourceTree = "<group>"; };
 		A3000001 /* Finans.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Finans.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -131,7 +135,6 @@
 				A2000034 /* GeminiService.swift */,
 				A2000035 /* DeepSeekService.swift */,
 				A2000036 /* GroqService.swift */,
-				A2000038 /* YanHakKayitStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -157,8 +160,8 @@
 				A2000022 /* CloudKitSync.swift */,
 				A2000027 /* BudgetPdfOlusturucu.swift */,
 				A2000028 /* AppTheme.swift */,
-				A2000032 /* YanHakModels.swift */,
 				A2000039 /* CVModel.swift */,
+				B2000106 /* KiyaslamaModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -169,6 +172,7 @@
 				A2000005 /* BudgetView.swift */,
 				A2000006 /* AddIncomeView.swift */,
 				A2000007 /* AddExpenseView.swift */,
+				B2000101 /* DashboardView.swift */,
 				A2000010 /* PortfolioView.swift */,
 				A2000011 /* AddAssetView.swift */,
 				A2000012 /* EditAssetView.swift */,
@@ -178,11 +182,13 @@
 				A2000019 /* KonutKredisiView.swift */,
 				A2000021 /* TasitKredisiView.swift */,
 				A2000029 /* MevduatFaiziView.swift */,
-				A2000033 /* YanHakAnaliziView.swift */,
-				A2000037 /* YanHakRaporView.swift */,
 				A2000040 /* CVOlusturView.swift */,
 				A2000041 /* CVTemplateView.swift */,
 				A2000042 /* JobOfferDashboardView.swift */,
+				B2000102 /* KiyaslamaFlow.swift */,
+				B2000103 /* KiyaslamaComponents.swift */,
+				B2000105 /* SalaryVersusCard.swift */,
+				B2000104 /* YearCalendarCompact.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -283,17 +289,19 @@
 				A1000029 /* MevduatFaiziView.swift in Sources */,
 				A1000030 /* KrediConfigService.swift in Sources */,
 				A1000031 /* MevduatConfigService.swift in Sources */,
-				A1000032 /* YanHakModels.swift in Sources */,
-				A1000033 /* YanHakAnaliziView.swift in Sources */,
 				A1000034 /* GeminiService.swift in Sources */,
 				A1000035 /* DeepSeekService.swift in Sources */,
 				A1000036 /* GroqService.swift in Sources */,
-				A1000037 /* YanHakRaporView.swift in Sources */,
-				A1000038 /* YanHakKayitStore.swift in Sources */,
 				A1000039 /* CVModel.swift in Sources */,
 				A1000040 /* CVOlusturView.swift in Sources */,
 				A1000041 /* CVTemplateView.swift in Sources */,
 				A1000042 /* JobOfferDashboardView.swift in Sources */,
+				B1000101 /* DashboardView.swift in Sources */,
+				B1000102 /* KiyaslamaFlow.swift in Sources */,
+				B1000103 /* KiyaslamaComponents.swift in Sources */,
+				B1000104 /* YearCalendarCompact.swift in Sources */,
+				B1000105 /* SalaryVersusCard.swift in Sources */,
+				B1000106 /* KiyaslamaModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

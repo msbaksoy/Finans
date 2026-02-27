@@ -3,10 +3,8 @@ import SwiftUI
 struct DashboardView: View {
     @EnvironmentObject var dataManager: DataManager
     @EnvironmentObject var appTheme: AppTheme
-    @EnvironmentObject var yanHakKayitStore: YanHakKayitStore
 
     private var bakiye: Double { dataManager.balance }
-    private var teklifSayisi: Int { yanHakKayitStore.all.count }
 
     var body: some View {
         ScrollView {
@@ -36,15 +34,14 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     SectionHeader(title: "Kariyer Stratejisi", subtitle: "Tekliflerini ve gelişimini yönet")
 
-                    NavigationLink(destination: YanHakAnaliziView().environmentObject(yanHakKayitStore)) {
+                    NavigationLink(destination: KiyaslamaView()) {
                         FeaturedCard(
-                            title: "İş Teklifi Analizi",
-                            description: "Yeni teklifleri yaşam kalitesi ve kariyer etkisiyle kıyasla.",
+                            title: "Kıyaslama",
+                            description: "Mevcut iş ile teklifi maaş, yol, yemek ve kıdemle kıyasla.",
                             icon: "briefcase.fill",
                             color: Color(hex: "3B82F6")
                         )
                     }
-                    // (Only the original İş Teklifi Analizi card is shown)
                 }
                 .padding(.horizontal)
 
@@ -67,6 +64,10 @@ struct DashboardView: View {
                 // 3. SEKTÖR: ARAÇLAR
                 VStack(alignment: .leading, spacing: 12) {
                     SectionHeader(title: "Yardımcı Araçlar", subtitle: "Hesaplamalar ve simülasyonlar")
+
+                    NavigationLink(destination: CVOlusturView().environmentObject(appTheme)) {
+                        ToolRow(title: "CV Oluştur", icon: "doc.text.fill", color: Color(hex: "3B82F6"))
+                    }
 
                     NavigationLink(destination: KrediHesaplamaView()) {
                         ToolRow(title: "Kredi Hesaplama", icon: "percent", color: Color(hex: "F59E0B"))

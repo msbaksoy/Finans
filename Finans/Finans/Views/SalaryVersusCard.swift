@@ -52,7 +52,8 @@ struct SalaryVersusCard: View {
                         Text("Yıllık Toplam Fark")
                             .font(AppTypography.subheadline)
                             .foregroundColor(appTheme.textSecondary)
-                        Text("\(FinanceFormatter.currencyString(abs(diff * 12))). \(diff >= 0 ? \"Artış\" : \"Azalış\")")
+                        let label = diff >= 0 ? "Artış" : "Azalış"
+                        Text("\(FinanceFormatter.currencyString(abs(diff * 12))). \(label)")
                             .font(compact ? AppTypography.amountMedium : AppTypography.amountMedium)
                             .foregroundColor(diff >= 0 ? Color(hex: "16A34A") : Color(hex: "EF4444"))
                             .monospacedDigit()

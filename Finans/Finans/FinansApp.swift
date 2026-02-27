@@ -6,7 +6,6 @@ struct FinansApp: App {
     @StateObject private var appTheme = AppTheme()
     @StateObject private var krediConfig = KrediConfigService.shared
     @StateObject private var mevduatConfig = MevduatConfigService.shared
-    @StateObject private var yanHakKayitStore = YanHakKayitStore.shared
     
     var body: some Scene {
         WindowGroup {
@@ -15,7 +14,6 @@ struct FinansApp: App {
                 .environmentObject(appTheme)
                 .environmentObject(krediConfig)
                 .environmentObject(mevduatConfig)
-                .environmentObject(yanHakKayitStore)
                 .preferredColorScheme(appTheme.colorScheme)
         }
     }

@@ -34,11 +34,8 @@ struct TuketiciKredisiView: View {
         ZStack {
             appTheme.background.ignoresSafeArea()
             
-            if isLandscape && !odemePlani.isEmpty {
-                tuketiciLandscapeView
-            } else {
-                tuketiciPortraitView
-            }
+            // Ödeme planı tablosu kaldırıldı; sadece giriş ve özet kartlar gösteriliyor.
+            tuketiciPortraitView
         }
         .navigationTitle("Tüketici Kredisi")
         .navigationBarTitleDisplayMode(.inline)
@@ -66,40 +63,12 @@ struct TuketiciKredisiView: View {
         }
     }
     
-    private var tuketiciLandscapeView: some View {
-        ZStack(alignment: .topTrailing) {
-            TuketiciKredisiTablo(odemePlani: odemePlani)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Button {
-                pdfData = KrediPdfOlusturucu.tuketiciPdf(
-                    anapara: anaparaText, vade: vadeText, faiz: faizOraniText,
-                    plan: odemePlani,
-                    aylikTaksit: odemePlani.first?.taksitTutari ?? 0,
-                    toplamFaiz: toplamFaiz,
-                    toplamMaliyet: odemePlani.reduce(0) { $0 + $1.taksitTutari }
-                )
-                showPdfShare = true
-            } label: {
-                Label("PDF", systemImage: "square.and.arrow.up")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(Color("8B5CF6"))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(appTheme.backgroundSecondary.opacity(0.95))
-                    .cornerRadius(12)
-            }
-            .padding(16)
-        }
-    }
-    
     private var tuketiciPortraitView: some View {
         ScrollView {
             VStack(spacing: 16) {
                 girisAlani
                 if !odemePlani.isEmpty {
                     ozetKartlar
-                    TuketiciKredisiTablo(odemePlani: odemePlani)
                     pdfButon
                 }
             }
@@ -137,8 +106,11 @@ struct TuketiciKredisiView: View {
     private var ozetKartlar: some View {
         HStack(spacing: 10) {
             OzetKrediKart(title: "Aylık Taksit", value: odemePlani.first?.taksitTutari ?? 0, color: Color("8B5CF6"), icon: "calendar")
+                .frame(minWidth: 100)
             OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color("F59E0B"), icon: "percent")
-            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
+                .frame(minWidth: 100)
+            OzetKrediKart(title: "Top. Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
+                .frame(minWidth: 100)
         }
     }
     
@@ -309,9 +281,11 @@ struct OzetKrediKart: View {
                 .monospacedDigit()
                 .foregroundColor(color)
                 .lineLimit(1)
-                .minimumScaleFactor(0.8)
+                .minimumScaleFactor(0.7)
+                .layoutPriority(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(minWidth: 90)
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 14)
@@ -319,135 +293,6 @@ struct OzetKrediKart: View {
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(color.opacity(0.25), lineWidth: 1))
                 .shadow(color: .black.opacity(appTheme.isLight ? 0.03 : 0), radius: appTheme.isLight ? 8 : 0, y: 4)
         )
-    }
-}
-
-struct TuketiciKredisiTablo: View {
-    let odemePlani: [KrediCalculator.OdemeSatiri]
-    var temaRengi: Color = Color("8B5CF6")
-    @EnvironmentObject var appTheme: AppTheme
-    @State private var tumunuGoster = false
-    private let ilkGosterim = 5
-    
-    private var gosterilecekPlani: [KrediCalculator.OdemeSatiri] {
-        if tumunuGoster || odemePlani.count <= ilkGosterim {
-            return odemePlani
-        }
-        return Array(odemePlani.prefix(ilkGosterim))
-    }
-    
-    var body: some View {
-        ScrollView([.horizontal, .vertical]) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 0) {
-                    TabloBaslik(text: "No", width: 44)
-                    TabloBaslik(text: "Taksit", width: 92)
-                    TabloBaslik(text: "Anapara", width: 92)
-                    TabloBaslik(text: "Faiz", width: 82)
-                    TabloBaslik(text: "KKDF", width: 72)
-                    TabloBaslik(text: "BSMV", width: 72)
-                    TabloBaslik(text: "Kalan", width: 92)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 14)
-                .background(
-                    LinearGradient(
-                        colors: [temaRengi.opacity(0.25), temaRengi.opacity(0.12)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                Divider().background(Color.white.opacity(0.2))
-                ForEach(gosterilecekPlani) { satir in
-                    TaksitSatirView(satir: satir)
-                }
-                if odemePlani.count > ilkGosterim {
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.25)) { tumunuGoster.toggle() }
-                    } label: {
-                        HStack(spacing: 6) {
-                            Text(tumunuGoster ? "Daha Az Göster" : "Tümünü Göster (\(odemePlani.count) taksit)")
-                                .font(AppTypography.footnote.weight(.semibold))
-                            Image(systemName: tumunuGoster ? "chevron.up" : "chevron.down")
-                                .font(AppTypography.caption1.weight(.semibold))
-                        }
-                        .foregroundColor(temaRengi)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(12)
-        }
-        .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(appTheme.listRowBackground)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(appTheme.cardStroke.opacity(appTheme.isLight ? 0.8 : 0.3), lineWidth: 1)
-                )
-        )
-    }
-}
-
-struct TaksitSatirView: View {
-    let satir: KrediCalculator.OdemeSatiri
-    @EnvironmentObject var appTheme: AppTheme
-    
-    var body: some View {
-        HStack(spacing: 0) {
-            Text("\(satir.taksitNo)")
-                .frame(width: 44, alignment: .center)
-                .font(.subheadline.weight(.medium))
-                .foregroundColor(appTheme.textPrimary)
-            Text(formatCurrency(satir.taksitTutari))
-                .frame(width: 92, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(appTheme.textPrimary)
-            Text(formatCurrency(satir.anapara))
-                .frame(width: 92, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(Color("34D399"))
-            Text(formatCurrency(satir.faiz))
-                .frame(width: 82, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(appTheme.textSecondary)
-            Text(formatCurrency(satir.kkdf))
-                .frame(width: 72, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(appTheme.textSecondary)
-            Text(formatCurrency(satir.bsmv))
-                .frame(width: 72, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(appTheme.textSecondary)
-            Text(formatCurrency(satir.kalanAnapara))
-                .frame(width: 92, alignment: .trailing)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundColor(appTheme.textSecondary)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(satir.taksitNo.isMultiple(of: 2) ? appTheme.textSecondary.opacity(0.05) : Color.clear)
-    }
-}
-
-struct TabloBaslik: View {
-    let text: String
-    let width: CGFloat
-    @EnvironmentObject var appTheme: AppTheme
-    
-    var body: some View {
-        Text(text)
-            .frame(width: width, alignment: text == "No" ? .center : .trailing)
-            .font(.caption.weight(.semibold))
-            .foregroundColor(appTheme.textPrimary)
     }
 }
 

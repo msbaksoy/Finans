@@ -36,11 +36,8 @@ struct TasitKredisiView: View {
         ZStack {
             appTheme.background.ignoresSafeArea()
             
-            if isLandscape && !odemePlani.isEmpty {
-                tasitLandscapeView
-            } else {
-                tasitPortraitView
-            }
+            // Ödeme planı tablosu kaldırıldı; sadece giriş, özet ve PDF gösteriliyor.
+            tasitPortraitView
         }
         .navigationTitle("Taşıt Kredisi")
         .navigationBarTitleDisplayMode(.inline)
@@ -68,40 +65,12 @@ struct TasitKredisiView: View {
         }
     }
     
-    private var tasitLandscapeView: some View {
-        ZStack(alignment: .topTrailing) {
-            TuketiciKredisiTablo(odemePlani: odemePlani, temaRengi: Self.temaRengi)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            Button {
-                pdfData = KrediPdfOlusturucu.tasitPdf(
-                    anapara: anaparaText, vade: vadeText, faiz: faizOraniText,
-                    plan: odemePlani,
-                    aylikTaksit: odemePlani.first?.taksitTutari ?? 0,
-                    toplamFaiz: toplamFaiz,
-                    toplamMaliyet: odemePlani.reduce(0) { $0 + $1.taksitTutari }
-                )
-                showPdfShare = true
-            } label: {
-                Label("PDF", systemImage: "square.and.arrow.up")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(Self.temaRengi)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(appTheme.backgroundSecondary.opacity(0.95))
-                    .cornerRadius(12)
-            }
-            .padding(16)
-        }
-    }
-    
     private var tasitPortraitView: some View {
         ScrollView {
             VStack(spacing: 16) {
                 girisAlani
                 if !odemePlani.isEmpty {
                     ozetKartlar
-                    TuketiciKredisiTablo(odemePlani: odemePlani, temaRengi: Self.temaRengi)
                     pdfButon
                 }
             }
@@ -139,8 +108,11 @@ struct TasitKredisiView: View {
     private var ozetKartlar: some View {
         HStack(spacing: 10) {
             OzetKrediKart(title: "Aylık Taksit", value: odemePlani.first?.taksitTutari ?? 0, color: Self.temaRengi, icon: "calendar")
+                .frame(minWidth: 100)
             OzetKrediKart(title: "Toplam Faiz", value: toplamFaiz, color: Color("F59E0B"), icon: "percent")
-            OzetKrediKart(title: "Toplam Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
+                .frame(minWidth: 100)
+            OzetKrediKart(title: "Top. Maliyet", value: odemePlani.reduce(0) { $0 + $1.taksitTutari }, color: Color("34D399"), icon: "sum")
+                .frame(minWidth: 100)
         }
     }
     

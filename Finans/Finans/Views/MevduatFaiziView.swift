@@ -320,7 +320,7 @@ struct MevduatBirlesikTablo: View {
     var temaRengi: Color = Color("06B6D4")
     @EnvironmentObject var appTheme: AppTheme
     @State private var tumunuGoster = false
-    private let ilkGosterim = 5
+    private let ilkGosterim = 12
     
     private var gosterilecekSatirlar: [MevduatAylikSatir] {
         if tumunuGoster || tablo.count <= ilkGosterim {

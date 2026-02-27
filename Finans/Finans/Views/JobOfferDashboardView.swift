@@ -205,11 +205,6 @@ struct JobOfferDashboardView: View {
     private let mockCompanyB = "Teklif Edilen"
     private let mockSalaryA: Double = 85_000
     private let mockSalaryB: Double = 98_000
-    private let mockBenefits: [(icon: String, title: String, valueA: String, valueB: String)] = [
-        ("shield.fill", "Sigorta", "ÖSS, Aile Kapsamlı", "TSS + ÖSS, Aile Kapsamlı"),
-        ("fork.knife", "Yemek", "Yemek Kartı 150₺/gün", "Yemekhane + Yemek Kartı"),
-        ("laptopcomputer", "Çalışma Modeli", "Hibrit (3 gün ofis)", "Remote (Tam uzaktan)")
-    ]
     private let mockInflationRate = 45
     private var mockTodayValue: Double { mockSalaryA }
     private var mockFutureValue: Double { mockSalaryA / (1 + Double(mockInflationRate) / 100) }
@@ -229,43 +224,6 @@ struct JobOfferDashboardView: View {
                         salaryB: mockSalaryB,
                         winnerIsB: true
                     )
-                    .modifier(PremiumCardModifier())
-                    
-                    // Yan Haklar
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Yan Haklar")
-                            .font(.headline)
-                            .foregroundColor(Color(UIColor.label))
-                            .padding(.horizontal, 24)
-                            .padding(.top, 24)
-                        
-                        // Tablo başlıkları — Mevcut İş | Teklif
-                        HStack(spacing: 16) {
-                            Spacer().frame(width: 32)
-                            Spacer().frame(width: 72)
-                            Text("Mevcut İş")
-                                .font(.caption2)
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text("Teklif")
-                                .font(.caption2)
-                                .foregroundColor(Color(UIColor.tertiaryLabel))
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding(.horizontal, 16)
-                        
-                        VStack(spacing: 0) {
-                            ForEach(Array(mockBenefits.enumerated()), id: \.offset) { _, benefit in
-                                BenefitDetailRow(
-                                    icon: benefit.icon,
-                                    title: benefit.title,
-                                    companyAValue: benefit.valueA,
-                                    companyBValue: benefit.valueB
-                                )
-                            }
-                        }
-                        .padding(.bottom, 16)
-                    }
                     .modifier(PremiumCardModifier())
                     
                     // Enflasyon Kartı — dinamik: currentSalary, futureSalary dışarıdan verilir
