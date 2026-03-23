@@ -1,0 +1,701 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1000001 /* FinansApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* FinansApp.swift */; };
+		A1000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002 /* ContentView.swift */; };
+		A1000004 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000004 /* DataManager.swift */; };
+		A1000008 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000008 /* Assets.xcassets */; };
+		A1000013 /* BrutNetModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013 /* BrutNetModels.swift */; };
+		A1000014 /* BrutNetCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014 /* BrutNetCalculator.swift */; };
+		A1000015 /* BrutNetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000015 /* BrutNetView.swift */; };
+		A1000016 /* KrediCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000016 /* KrediCalculator.swift */; };
+		A1000017 /* KrediHesaplamaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000017 /* KrediHesaplamaView.swift */; };
+		A1000020 /* KrediPdfOlusturucu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000020 /* KrediPdfOlusturucu.swift */; };
+		A1000022 /* CloudKitSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000022 /* CloudKitSync.swift */; };
+		A1000027 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000028 /* AppTheme.swift */; };
+		A1000030 /* KrediConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000030 /* KrediConfigService.swift */; };
+		B1000103 /* KiyaslamaComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000103 /* KiyaslamaComponents.swift */; };
+		B1000106 /* KiyaslamaModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000106 /* KiyaslamaModels.swift */; };
+		B1000111 /* DataManager+CloudKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000111 /* DataManager+CloudKit.swift */; };
+		B1000112 /* KrediViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000112 /* KrediViewModel.swift */; };
+		B1000113 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000113 /* SwiftDataModels.swift */; };
+		B1000118 /* SyncProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000118 /* SyncProvider.swift */; };
+		B1000126 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000127 /* AppConfig.swift */; };
+		B1000133 /* CloudKitSyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000133 /* CloudKitSyncService.swift */; };
+		B1000134 /* BrutNetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000134 /* BrutNetViewModel.swift */; };
+		B1000137 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000137 /* AppError.swift */; };
+		B1000139 /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000139 /* SyncEngine.swift */; };
+		B1000146 /* TeklifWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000146 /* TeklifWizardView.swift */; };
+		B1000147 /* KariyerKiyaslamaViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000147 /* KariyerKiyaslamaViewModel.swift */; };
+		B1000148 /* KiyaslamaAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000148 /* KiyaslamaAnalysisView.swift */; };
+		B1000149 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000149 /* OpenAIService.swift */; };
+		B1000150 /* CarPriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000150 /* CarPriceService.swift */; };
+		B1000152 /* HealthInsurancePriceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000152 /* HealthInsurancePriceService.swift */; };
+		B1000153 /* DeepKiyaslamaAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000153 /* DeepKiyaslamaAnalysisView.swift */; };
+		B1000154 /* KiyaslamaWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000154 /* KiyaslamaWizardView.swift */; };
+		B1000155 /* KiyaslamaSecimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000155 /* KiyaslamaSecimView.swift */; };
+		B1000158 /* KariyerProfiliManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000158 /* KariyerProfiliManager.swift */; };
+		B1000160 /* IK Pusula/Finans/Views/SurveyEngineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000160 /* IK Pusula/Finans/Views/SurveyEngineView.swift */; };
+		B1000161 /* IK Pusula/Finans/Services/CompanySearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000161 /* IK Pusula/Finans/Services/CompanySearchService.swift */; };
+		B1000177 /* OzgecmisModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000177 /* OzgecmisModel.swift */; };
+		B1000178 /* OzgecmisStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000178 /* OzgecmisStore.swift */; };
+		B1000179 /* OzgecmisAnaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000179 /* OzgecmisAnaView.swift */; };
+		B1000180 /* OzgecmisFormViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000180 /* OzgecmisFormViews.swift */; };
+		B1000183 /* UniversiteDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000183 /* UniversiteDataService.swift */; };
+		B1000184 /* FakulteDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000184 /* FakulteDataService.swift */; };
+		B1000185 /* FormHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000185 /* FormHelpers.swift */; };
+		B1000186 /* AracSegmentBilgisi.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000186 /* AracSegmentBilgisi.swift */; };
+		B1000187 /* KiyaslamaPdfOlusturucu.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000187 /* KiyaslamaPdfOlusturucu.swift */; };
+		B1000190 /* KariyerKiyaslamaViewModel+AnalizMotoru.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000190 /* KariyerKiyaslamaViewModel+AnalizMotoru.swift */; };
+		B1000191 /* IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000191 /* IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift */; };
+		B1000192 /* IK Pusula/Finans/Views/AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000192 /* IK Pusula/Finans/Views/AppIconView.swift */; };
+		B1000193 /* OzgecmisPDFRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000193 /* OzgecmisPDFRenderer.swift */; };
+		B1000194 /* MulakatModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000194 /* MulakatModels.swift */; };
+		B1000195 /* MulakatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000195 /* MulakatViewModel.swift */; };
+		B1000196 /* OpenAIService+Mulakat.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000196 /* OpenAIService+Mulakat.swift */; };
+		B1000197 /* MulakatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000197 /* MulakatView.swift */; };
+		B1000198 /* MulakatPdfOlusturucu.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000198 /* MulakatPdfOlusturucu.swift */; };
+		B1000199 /* KliseIKSorulari.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000199 /* KliseIKSorulari.swift */; };
+		B100019A /* KliseIKView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200019A /* KliseIKView.swift */; };
+		B100019B /* ZamHesaplayiciView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200019B /* ZamHesaplayiciView.swift */; };
+		B100019C /* KidemIhbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200019C /* KidemIhbarView.swift */; };
+		B100019D /* RealMaasKaybiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200019D /* RealMaasKaybiView.swift */; };
+		B100019E /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B200019E /* Vision.framework */; };
+		B100019F /* CVOkuyucuService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B200019F /* CVOkuyucuService.swift */; };
+		B10001A0 /* CVRendererProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001A0 /* CVRendererProtocol.swift */; };
+		B10001A1 /* CVRenderers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001A1 /* CVRenderers.swift */; };
+		B10001A2 /* IKDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001A2 /* IKDesignSystem.swift */; };
+		B10001A3 /* BrutNetView_YENI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001A3 /* BrutNetView_YENI.swift */; };
+		B10001B0 /* ProfilimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001B0 /* ProfilimView.swift */; };
+		B10001C5 /* KartPaylasim_GERCEK.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001C5 /* KartPaylasim_GERCEK.swift */; };
+		B10001D2 /* CVRenderers_NEW.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001D2 /* CVRenderers_NEW.swift */; };
+		B10001D3 /* CircularPhotoCropView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001D3 /* CircularPhotoCropView.swift */; };
+		C97047312F71AFBD00055C56 /* Algorithms in Frameworks */ = {isa = PBXBuildFile; productRef = C97047302F71AFBD00055C56 /* Algorithms */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A2000001 /* FinansApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinansApp.swift; sourceTree = "<group>"; };
+		A2000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A2000004 /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		A2000008 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2000013 /* BrutNetModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetModels.swift; sourceTree = "<group>"; };
+		A2000014 /* BrutNetCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetCalculator.swift; sourceTree = "<group>"; };
+		A2000015 /* BrutNetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetView.swift; sourceTree = "<group>"; };
+		A2000016 /* KrediCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediCalculator.swift; sourceTree = "<group>"; };
+		A2000017 /* KrediHesaplamaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediHesaplamaView.swift; sourceTree = "<group>"; };
+		A2000020 /* KrediPdfOlusturucu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediPdfOlusturucu.swift; sourceTree = "<group>"; };
+		A2000022 /* CloudKitSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSync.swift; sourceTree = "<group>"; };
+		A2000023 /* Finans.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Finans.entitlements; sourceTree = "<group>"; };
+		A2000028 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		A2000030 /* KrediConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediConfigService.swift; sourceTree = "<group>"; };
+		A3000001 /* IKPusula.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IKPusula.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2000103 /* KiyaslamaComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaComponents.swift; sourceTree = "<group>"; };
+		B2000106 /* KiyaslamaModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaModels.swift; sourceTree = "<group>"; };
+		B2000111 /* DataManager+CloudKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataManager+CloudKit.swift"; sourceTree = "<group>"; };
+		B2000112 /* KrediViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KrediViewModel.swift; sourceTree = "<group>"; };
+		B2000113 /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
+		B2000118 /* SyncProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncProvider.swift; sourceTree = "<group>"; };
+		B2000126 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B2000127 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
+		B2000133 /* CloudKitSyncService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitSyncService.swift; sourceTree = "<group>"; };
+		B2000134 /* BrutNetViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetViewModel.swift; sourceTree = "<group>"; };
+		B2000137 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		B2000139 /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
+		B2000140 /* BrutNetCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetCalculatorTests.swift; sourceTree = "<group>"; };
+		B2000146 /* TeklifWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeklifWizardView.swift; sourceTree = "<group>"; };
+		B2000147 /* KariyerKiyaslamaViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KariyerKiyaslamaViewModel.swift; sourceTree = "<group>"; };
+		B2000148 /* KiyaslamaAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaAnalysisView.swift; sourceTree = "<group>"; };
+		B2000149 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
+		B2000150 /* CarPriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPriceService.swift; sourceTree = "<group>"; };
+		B2000152 /* HealthInsurancePriceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthInsurancePriceService.swift; sourceTree = "<group>"; };
+		B2000153 /* DeepKiyaslamaAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepKiyaslamaAnalysisView.swift; sourceTree = "<group>"; };
+		B2000154 /* KiyaslamaWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaWizardView.swift; sourceTree = "<group>"; };
+		B2000155 /* KiyaslamaSecimView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaSecimView.swift; sourceTree = "<group>"; };
+		B2000158 /* KariyerProfiliManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KariyerProfiliManager.swift; sourceTree = "<group>"; };
+		B2000160 /* IK Pusula/Finans/Views/SurveyEngineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IK Pusula/Finans/Views/SurveyEngineView.swift"; sourceTree = SOURCE_ROOT; };
+		B2000161 /* IK Pusula/Finans/Services/CompanySearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IK Pusula/Finans/Services/CompanySearchService.swift"; sourceTree = SOURCE_ROOT; };
+		B2000177 /* OzgecmisModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OzgecmisModel.swift; sourceTree = "<group>"; };
+		B2000178 /* OzgecmisStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OzgecmisStore.swift; sourceTree = "<group>"; };
+		B2000179 /* OzgecmisAnaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OzgecmisAnaView.swift; sourceTree = "<group>"; };
+		B2000180 /* OzgecmisFormViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OzgecmisFormViews.swift; sourceTree = "<group>"; };
+		B2000183 /* UniversiteDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniversiteDataService.swift; sourceTree = "<group>"; };
+		B2000184 /* FakulteDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakulteDataService.swift; sourceTree = "<group>"; };
+		B2000185 /* FormHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormHelpers.swift; sourceTree = "<group>"; };
+		B2000186 /* AracSegmentBilgisi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AracSegmentBilgisi.swift; sourceTree = "<group>"; };
+		B2000187 /* KiyaslamaPdfOlusturucu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KiyaslamaPdfOlusturucu.swift; sourceTree = "<group>"; };
+		B2000190 /* KariyerKiyaslamaViewModel+AnalizMotoru.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KariyerKiyaslamaViewModel+AnalizMotoru.swift"; sourceTree = "<group>"; };
+		B2000191 /* IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift"; sourceTree = SOURCE_ROOT; };
+		B2000192 /* IK Pusula/Finans/Views/AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IK Pusula/Finans/Views/AppIconView.swift"; sourceTree = SOURCE_ROOT; };
+		B2000193 /* OzgecmisPDFRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OzgecmisPDFRenderer.swift; sourceTree = "<group>"; };
+		B2000194 /* MulakatModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MulakatModels.swift; sourceTree = "<group>"; };
+		B2000195 /* MulakatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MulakatViewModel.swift; sourceTree = "<group>"; };
+		B2000196 /* OpenAIService+Mulakat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OpenAIService+Mulakat.swift"; sourceTree = "<group>"; };
+		B2000197 /* MulakatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MulakatView.swift; sourceTree = "<group>"; };
+		B2000198 /* MulakatPdfOlusturucu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MulakatPdfOlusturucu.swift; sourceTree = "<group>"; };
+		B2000199 /* KliseIKSorulari.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KliseIKSorulari.swift; sourceTree = "<group>"; };
+		B200019A /* KliseIKView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KliseIKView.swift; sourceTree = "<group>"; };
+		B200019B /* ZamHesaplayiciView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZamHesaplayiciView.swift; sourceTree = "<group>"; };
+		B200019C /* KidemIhbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KidemIhbarView.swift; sourceTree = "<group>"; };
+		B200019D /* RealMaasKaybiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealMaasKaybiView.swift; sourceTree = "<group>"; };
+		B200019E /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
+		B200019F /* CVOkuyucuService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVOkuyucuService.swift; sourceTree = "<group>"; };
+		B20001A0 /* CVRendererProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVRendererProtocol.swift; sourceTree = "<group>"; };
+		B20001A1 /* CVRenderers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVRenderers.swift; sourceTree = "<group>"; };
+		B20001A2 /* IKDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IKDesignSystem.swift; sourceTree = "<group>"; };
+		B20001A3 /* BrutNetView_YENI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrutNetView_YENI.swift; sourceTree = "<group>"; };
+		B20001B0 /* ProfilimView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilimView.swift; sourceTree = "<group>"; };
+		B20001C5 /* KartPaylasim_GERCEK.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KartPaylasim_GERCEK.swift; sourceTree = "<group>"; };
+		B20001D2 /* CVRenderers_NEW.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CVRenderers_NEW.swift; sourceTree = "<group>"; };
+		B20001D3 /* CircularPhotoCropView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularPhotoCropView.swift; sourceTree = "<group>"; };
+		E20001D0 /* APIKeys.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = APIKeys.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A4000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C97047312F71AFBD00055C56 /* Algorithms in Frameworks */,
+				B100019E /* Vision.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A5000001 = {
+			isa = PBXGroup;
+			children = (
+				A5000002 /* IK Pusula/Finans */,
+				A5000003 /* Products */,
+				C970472E2F71A90200055C56 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		A5000002 /* IK Pusula/Finans */ = {
+			isa = PBXGroup;
+			children = (
+				A2000001 /* FinansApp.swift */,
+				A2000002 /* ContentView.swift */,
+				A2000023 /* Finans.entitlements */,
+				B2000126 /* Info.plist */,
+				D20001D0 /* Config */,
+				A5000004 /* Models */,
+				A5000006 /* Services */,
+				A5000005 /* Views */,
+				A2000008 /* Assets.xcassets */,
+				A5000009 /* FinansTests */,
+			);
+			path = "IK Pusula/Finans";
+			sourceTree = "<group>";
+		};
+		A5000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A3000001 /* IKPusula.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A5000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A2000004 /* DataManager.swift */,
+				B2000111 /* DataManager+CloudKit.swift */,
+				B2000118 /* SyncProvider.swift */,
+				B2000127 /* AppConfig.swift */,
+				A2000013 /* BrutNetModels.swift */,
+				A2000014 /* BrutNetCalculator.swift */,
+				A2000016 /* KrediCalculator.swift */,
+				A2000020 /* KrediPdfOlusturucu.swift */,
+				A2000022 /* CloudKitSync.swift */,
+				A2000028 /* AppTheme.swift */,
+				B2000106 /* KiyaslamaModels.swift */,
+				B2000186 /* AracSegmentBilgisi.swift */,
+				B2000187 /* KiyaslamaPdfOlusturucu.swift */,
+				B2000147 /* KariyerKiyaslamaViewModel.swift */,
+				B2000190 /* KariyerKiyaslamaViewModel+AnalizMotoru.swift */,
+				B2000158 /* KariyerProfiliManager.swift */,
+				B2000112 /* KrediViewModel.swift */,
+				B2000113 /* SwiftDataModels.swift */,
+				B2000134 /* BrutNetViewModel.swift */,
+				B2000137 /* AppError.swift */,
+				B2000177 /* OzgecmisModel.swift */,
+				B2000178 /* OzgecmisStore.swift */,
+				B2000183 /* UniversiteDataService.swift */,
+				B2000184 /* FakulteDataService.swift */,
+				B2000194 /* MulakatModels.swift */,
+				B2000195 /* MulakatViewModel.swift */,
+				B2000198 /* MulakatPdfOlusturucu.swift */,
+				B2000199 /* KliseIKSorulari.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A5000005 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2000185 /* FormHelpers.swift */,
+				B20001A2 /* IKDesignSystem.swift */,
+				A2000015 /* BrutNetView.swift */,
+				B20001A3 /* BrutNetView_YENI.swift */,
+				A2000017 /* KrediHesaplamaView.swift */,
+				B200019D /* RealMaasKaybiView.swift */,
+				B200019B /* ZamHesaplayiciView.swift */,
+				B200019C /* KidemIhbarView.swift */,
+				B2000103 /* KiyaslamaComponents.swift */,
+				B2000148 /* KiyaslamaAnalysisView.swift */,
+				B2000153 /* DeepKiyaslamaAnalysisView.swift */,
+				B2000146 /* TeklifWizardView.swift */,
+				B2000154 /* KiyaslamaWizardView.swift */,
+				B2000155 /* KiyaslamaSecimView.swift */,
+				B2000160 /* IK Pusula/Finans/Views/SurveyEngineView.swift */,
+				B2000191 /* IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift */,
+				B2000192 /* IK Pusula/Finans/Views/AppIconView.swift */,
+				B20001B0 /* ProfilimView.swift */,
+				B2000179 /* OzgecmisAnaView.swift */,
+				B2000193 /* OzgecmisPDFRenderer.swift */,
+				B2000180 /* OzgecmisFormViews.swift */,
+				B20001D3 /* CircularPhotoCropView.swift */,
+				B2000197 /* MulakatView.swift */,
+				B200019A /* KliseIKView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A5000006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A2000030 /* KrediConfigService.swift */,
+				B2000133 /* CloudKitSyncService.swift */,
+				B2000149 /* OpenAIService.swift */,
+				B20001C5 /* KartPaylasim_GERCEK.swift */,
+				B2000196 /* OpenAIService+Mulakat.swift */,
+				B2000150 /* CarPriceService.swift */,
+				B2000152 /* HealthInsurancePriceService.swift */,
+				B2000139 /* SyncEngine.swift */,
+				B2000161 /* IK Pusula/Finans/Services/CompanySearchService.swift */,
+				B200019F /* CVOkuyucuService.swift */,
+				B20001A0 /* CVRendererProtocol.swift */,
+				B20001A1 /* CVRenderers.swift */,
+				B20001D2 /* CVRenderers_NEW.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A5000009 /* FinansTests */ = {
+			isa = PBXGroup;
+			children = (
+				B2000140 /* BrutNetCalculatorTests.swift */,
+			);
+			path = FinansTests;
+			sourceTree = "<group>";
+		};
+		C970472E2F71A90200055C56 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B200019E /* Vision.framework */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		D20001D0 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				E20001D0 /* APIKeys.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A6000001 /* IKPusula */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7000003 /* Build configuration list for PBXNativeTarget "IKPusula" */;
+			buildPhases = (
+				A6000002 /* Sources */,
+				A4000001 /* Frameworks */,
+				A6000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = IKPusula;
+			productName = IKPusula;
+			productReference = A3000001 /* IKPusula.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A8000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 2640;
+				TargetAttributes = {
+					A6000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A7000001 /* Build configuration list for PBXProject "IK Pusula" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = tr;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				tr,
+			);
+			mainGroup = A5000001;
+			packageReferences = (
+				C970472F2F71AFBD00055C56 /* XCRemoteSwiftPackageReference "swift-algorithms" */,
+			);
+			productRefGroup = A5000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A6000001 /* IKPusula */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A6000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000008 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A6000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000001 /* FinansApp.swift in Sources */,
+				B1000185 /* FormHelpers.swift in Sources */,
+				B10001A2 /* IKDesignSystem.swift in Sources */,
+				A1000002 /* ContentView.swift in Sources */,
+				A1000004 /* DataManager.swift in Sources */,
+				A1000013 /* BrutNetModels.swift in Sources */,
+				A1000014 /* BrutNetCalculator.swift in Sources */,
+				A1000015 /* BrutNetView.swift in Sources */,
+				B10001A3 /* BrutNetView_YENI.swift in Sources */,
+				A1000016 /* KrediCalculator.swift in Sources */,
+				A1000017 /* KrediHesaplamaView.swift in Sources */,
+				A1000020 /* KrediPdfOlusturucu.swift in Sources */,
+				A1000022 /* CloudKitSync.swift in Sources */,
+				B1000126 /* AppConfig.swift in Sources */,
+				A1000027 /* AppTheme.swift in Sources */,
+				A1000030 /* KrediConfigService.swift in Sources */,
+				B1000103 /* KiyaslamaComponents.swift in Sources */,
+				B1000148 /* KiyaslamaAnalysisView.swift in Sources */,
+				B1000153 /* DeepKiyaslamaAnalysisView.swift in Sources */,
+				B1000106 /* KiyaslamaModels.swift in Sources */,
+				B1000186 /* AracSegmentBilgisi.swift in Sources */,
+				B1000187 /* KiyaslamaPdfOlusturucu.swift in Sources */,
+				B1000111 /* DataManager+CloudKit.swift in Sources */,
+				B1000118 /* SyncProvider.swift in Sources */,
+				B1000112 /* KrediViewModel.swift in Sources */,
+				B1000113 /* SwiftDataModels.swift in Sources */,
+				B1000133 /* CloudKitSyncService.swift in Sources */,
+				B1000134 /* BrutNetViewModel.swift in Sources */,
+				B1000149 /* OpenAIService.swift in Sources */,
+				B10001C5 /* KartPaylasim_GERCEK.swift in Sources */,
+				B1000150 /* CarPriceService.swift in Sources */,
+				B1000152 /* HealthInsurancePriceService.swift in Sources */,
+				B1000137 /* AppError.swift in Sources */,
+				B1000139 /* SyncEngine.swift in Sources */,
+				B100019F /* CVOkuyucuService.swift in Sources */,
+				B10001A0 /* CVRendererProtocol.swift in Sources */,
+				B10001A1 /* CVRenderers.swift in Sources */,
+				B10001D2 /* CVRenderers_NEW.swift in Sources */,
+				B10001D3 /* CircularPhotoCropView.swift in Sources */,
+				B1000147 /* KariyerKiyaslamaViewModel.swift in Sources */,
+				B1000190 /* KariyerKiyaslamaViewModel+AnalizMotoru.swift in Sources */,
+				B1000146 /* TeklifWizardView.swift in Sources */,
+				B1000154 /* KiyaslamaWizardView.swift in Sources */,
+				B1000155 /* KiyaslamaSecimView.swift in Sources */,
+				B1000158 /* KariyerProfiliManager.swift in Sources */,
+				B1000160 /* IK Pusula/Finans/Views/SurveyEngineView.swift in Sources */,
+				B1000191 /* IK Pusula/Finans/Views/SurveyEngineView_Adimlar5to9.swift in Sources */,
+				B1000192 /* IK Pusula/Finans/Views/AppIconView.swift in Sources */,
+				B10001B0 /* ProfilimView.swift in Sources */,
+				B1000161 /* IK Pusula/Finans/Services/CompanySearchService.swift in Sources */,
+				B1000177 /* OzgecmisModel.swift in Sources */,
+				B1000178 /* OzgecmisStore.swift in Sources */,
+				B1000183 /* UniversiteDataService.swift in Sources */,
+				B1000184 /* FakulteDataService.swift in Sources */,
+				B1000179 /* OzgecmisAnaView.swift in Sources */,
+				B1000193 /* OzgecmisPDFRenderer.swift in Sources */,
+				B1000180 /* OzgecmisFormViews.swift in Sources */,
+				B1000194 /* MulakatModels.swift in Sources */,
+				B1000195 /* MulakatViewModel.swift in Sources */,
+				B1000196 /* OpenAIService+Mulakat.swift in Sources */,
+				B1000197 /* MulakatView.swift in Sources */,
+				B1000198 /* MulakatPdfOlusturucu.swift in Sources */,
+				B1000199 /* KliseIKSorulari.swift in Sources */,
+				B100019A /* KliseIKView.swift in Sources */,
+				B100019B /* ZamHesaplayiciView.swift in Sources */,
+				B100019C /* KidemIhbarView.swift in Sources */,
+				B100019D /* RealMaasKaybiView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A9000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A9000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8T6WU7ZL7A;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A9000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E20001D0 /* APIKeys.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "IK Pusula/Finans/Finans.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IK Pusula/Finans/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "İK Pusula";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.musabaksoy.ikpusula;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		A9000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E20001D0 /* APIKeys.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "IK Pusula/Finans/Finans.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "IK Pusula/Finans/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "İK Pusula";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.musabaksoy.ikpusula;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A7000001 /* Build configuration list for PBXProject "IK Pusula" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9000001 /* Debug */,
+				A9000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A7000003 /* Build configuration list for PBXNativeTarget "IKPusula" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9000003 /* Debug */,
+				A9000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C970472F2F71AFBD00055C56 /* XCRemoteSwiftPackageReference "swift-algorithms" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-algorithms.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C97047302F71AFBD00055C56 /* Algorithms */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C970472F2F71AFBD00055C56 /* XCRemoteSwiftPackageReference "swift-algorithms" */;
+			productName = Algorithms;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A8000001 /* Project object */;
+}

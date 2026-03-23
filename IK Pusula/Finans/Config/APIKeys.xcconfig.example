@@ -1,0 +1,4 @@
+// Kopyala: APIKeys.xcconfig olarak kaydet ve gerçek anahtarı yaz.
+// APIKeys.xcconfig git'e eklenmemeli (gizli tutun).
+OPENAI_API_KEY = sk-your-key-here
+INFOPLIST_KEY_OPENAI_API_KEY = $(OPENAI_API_KEY)
