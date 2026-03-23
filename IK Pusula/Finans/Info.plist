@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>OPENAI_API_KEY</key>
+	<string>$(INFOPLIST_KEY_OPENAI_API_KEY)</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Vergi dilimi degisikliklerinden ve maas gununden haberdar olmak icin bildirimlere izin verin.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Ozgecmise profil fotografi ekleyebilmeniz icin fotograflariniza erisim gerekiyor.</string>
+</dict>
+</plist>
