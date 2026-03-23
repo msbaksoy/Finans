@@ -9,12 +9,8 @@ class DataManager: ObservableObject {
 
     private let container: ModelContainer
     let modelContext: ModelContext
-    let syncProvider: SyncProvider?
     let aylikMaaslarKey = "finans_aylik_maaslar"
-    let cloudKitMigratedKey = "finans_cloudkit_migrated"
     let swiftDataMigratedKey = "finans_swiftdata_migrated"
-
-    let useCloudKit = false
 
     static var previewContainer: ModelContainer = {
         let schema = Schema([AylikMaas.self])
@@ -24,13 +20,15 @@ class DataManager: ObservableObject {
         }
         assertionFailure("Preview ModelContainer olusturulamadi, fallback denenecek.")
         let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
-        return try! ModelContainer(for: schema, configurations: [fallback])
+        if let c = try? ModelContainer(for: schema, configurations: [fallback]) {
+            return c
+        }
+        preconditionFailure("Preview ModelContainer olusturulamadi.")
     }()
 
-    init(container: ModelContainer, syncProvider: SyncProvider? = nil) {
+    init(container: ModelContainer) {
         self.container = container
         self.modelContext = ModelContext(container)
-        self.syncProvider = syncProvider
 
         Task { @MainActor in
             self.loadData()
@@ -39,9 +37,6 @@ class DataManager: ObservableObject {
 
     private func loadData() {
         migrateFromUserDefaultsIfNeeded()
-        if useCloudKit, syncProvider != nil {
-            Task { await syncFromCloud() }
-        }
     }
 
     private func migrateFromUserDefaultsIfNeeded() {

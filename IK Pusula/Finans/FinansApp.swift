@@ -9,7 +9,7 @@ struct IKPusulaApp: App {
             return c
         }
         assertionFailure("In-memory fallback container olusturulamadi.")
-        return try! ModelContainer(for: schema, configurations: [fallback])
+        preconditionFailure("In-memory fallback container olusturulamadi.")
     }
 
     // MARK: - Güvenli Container Açma
@@ -133,8 +133,7 @@ struct IKPusulaApp: App {
 
     // MARK: - App Body
     @StateObject private var dataManager = DataManager(
-        container: IKPusulaApp.modelContainer,
-        syncProvider: nil
+        container: IKPusulaApp.modelContainer
     )
     @StateObject private var appTheme = AppTheme()
     @StateObject private var krediConfig = KrediConfigService.shared
