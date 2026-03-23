@@ -1549,9 +1549,13 @@ struct AylikKesintiDetaySheet: View {
 }
 
 #Preview {
-    NavigationStack {
-        BrutNetView()
-            .modelContainer(DataManager.previewContainer)
-            .environmentObject(AppTheme())
+    if let c = DataManager.previewContainer {
+        NavigationStack {
+            BrutNetView()
+                .modelContainer(c)
+                .environmentObject(AppTheme())
+        }
+    } else {
+        Text("Preview container olusturulamadi.")
     }
 }

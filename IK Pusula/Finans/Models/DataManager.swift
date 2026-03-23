@@ -12,18 +12,13 @@ class DataManager: ObservableObject {
     let aylikMaaslarKey = "finans_aylik_maaslar"
     let swiftDataMigratedKey = "finans_swiftdata_migrated"
 
-    static var previewContainer: ModelContainer = {
+    static var previewContainer: ModelContainer? = {
         let schema = Schema([AylikMaas.self])
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         if let c = try? ModelContainer(for: schema, configurations: [config]) {
             return c
         }
-        assertionFailure("Preview ModelContainer olusturulamadi, fallback denenecek.")
-        let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
-        if let c = try? ModelContainer(for: schema, configurations: [fallback]) {
-            return c
-        }
-        preconditionFailure("Preview ModelContainer olusturulamadi.")
+        return nil
     }()
 
     init(container: ModelContainer) {

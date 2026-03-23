@@ -3,17 +3,13 @@ import SwiftData
 
 @main
 struct IKPusulaApp: App {
-    private static func inMemoryFallbackContainer(for schema: Schema) -> ModelContainer {
+    private static func inMemoryFallbackContainer(for schema: Schema) -> ModelContainer? {
         let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
-        if let c = try? ModelContainer(for: schema, configurations: [fallback]) {
-            return c
-        }
-        assertionFailure("In-memory fallback container olusturulamadi.")
-        preconditionFailure("In-memory fallback container olusturulamadi.")
+        return try? ModelContainer(for: schema, configurations: [fallback])
     }
 
     // MARK: - Güvenli Container Açma
-    static let modelContainer: ModelContainer = {
+    static let modelContainer: ModelContainer? = {
         let schema = Schema([
             AylikMaas.self,
             MulakatOturumu.self
@@ -58,7 +54,7 @@ struct IKPusulaApp: App {
     }()
 
     // MARK: - Teklif Container
-    static let teklifContainer: ModelContainer = {
+    static let teklifContainer: ModelContainer? = {
         let schema = Schema([TeklifKiyaslama.self])
         let storeURL = URL.documentsDirectory.appendingPathComponent("teklifler.sqlite")
         let config = ModelConfiguration(url: storeURL)
@@ -132,28 +128,70 @@ struct IKPusulaApp: App {
     }
 
     // MARK: - App Body
-    @StateObject private var dataManager = DataManager(
-        container: IKPusulaApp.modelContainer
-    )
     @StateObject private var appTheme = AppTheme()
     @StateObject private var krediConfig = KrediConfigService.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(dataManager)
-                .environmentObject(appTheme)
-                .environmentObject(krediConfig)
-                .modelContainer(IKPusulaApp.modelContainer)
-                .preferredColorScheme(appTheme.isLight ? .light : .dark)
-                .onAppear {
-                    _ = IKPusulaApp.teklifContainer
-                    MaasAlarmService.shared.setup()
-                    Task {
-                        await CarPriceService.shared.fetchPrices()
-                        await HealthInsurancePriceService.shared.fetchPrices()
-                    }
-                }
+            if let container = IKPusulaApp.modelContainer {
+                AppRootView(
+                    container: container,
+                    appTheme: appTheme,
+                    krediConfig: krediConfig
+                )
+            } else {
+                DataStoreErrorView()
+                    .preferredColorScheme(appTheme.isLight ? .light : .dark)
+            }
         }
+    }
+}
+
+private struct AppRootView: View {
+    let container: ModelContainer
+    @ObservedObject var appTheme: AppTheme
+    @ObservedObject var krediConfig: KrediConfigService
+    @StateObject private var dataManager: DataManager
+
+    init(container: ModelContainer, appTheme: AppTheme, krediConfig: KrediConfigService) {
+        self.container = container
+        self.appTheme = appTheme
+        self.krediConfig = krediConfig
+        _dataManager = StateObject(wrappedValue: DataManager(container: container))
+    }
+
+    var body: some View {
+        ContentView()
+            .environmentObject(dataManager)
+            .environmentObject(appTheme)
+            .environmentObject(krediConfig)
+            .modelContainer(container)
+            .preferredColorScheme(appTheme.isLight ? .light : .dark)
+            .onAppear {
+                _ = IKPusulaApp.teklifContainer
+                MaasAlarmService.shared.setup()
+                Task {
+                    await CarPriceService.shared.fetchPrices()
+                    await HealthInsurancePriceService.shared.fetchPrices()
+                }
+            }
+    }
+}
+
+private struct DataStoreErrorView: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.orange)
+            Text("Uygulama baslatilamadi")
+                .font(.headline)
+            Text("Veri deposu olusturulamadi. Lutfen uygulamayi kapatip tekrar acin.")
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(.systemBackground))
     }
 }
