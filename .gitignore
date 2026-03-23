@@ -26,9 +26,17 @@ Pods/
 # Cursor IDE
 .cursor/
 
+# Local secret config
+**/APIKeys.xcconfig
+
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 Thumbs.db
 *~
+
+# Local artifacts
+*.tmp
+IK\ Pusula.txt
+IK\ Pusula/IKPusula/
